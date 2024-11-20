@@ -7,7 +7,8 @@ const ChatRoom = ({ socket }: { socket: Socket }) => {
   const [messages, setMessages] = useState<
     Array<{ text: string; createdAt: Date }>
   >([]);
-  const BACKEND_URL = "http://localhost:8000";
+  const BACKEND_URL =
+    process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:8000";
 
   useEffect(() => {
     socket.on(
