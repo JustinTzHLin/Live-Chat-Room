@@ -1,11 +1,15 @@
 "use client";
 
+import { useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
-import { Mail } from "lucide-react";
+import { Mail, X } from "lucide-react";
 
 export default function Home() {
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+
   return (
     <div className="flex flex-col h-screen items-center justify-center gap-4">
       <h1 className="text-3xl font-bold">Just In Chat</h1>
@@ -20,14 +24,25 @@ export default function Home() {
           <Input
             id="email"
             type="email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
             placeholder="JustInChat@example.com"
             className="focus-visible:ring-slate-400 pl-8"
+            autoFocus
           />
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => setEmail("")}
+            className="absolute right-1 top-1.5 h-6 w-6 text-muted-foreground rounded-full"
+          >
+            <X />
+          </Button>
         </div>
         <Button
           className="w-full max-w-sm mt-4"
           onClick={() => {
-            alert("Continue");
+            alert(email);
           }}
         >
           Continue
