@@ -1,10 +1,6 @@
-import { useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { useToast } from "@/hooks/use-toast";
-import { Toaster } from "@/components/ui/toaster";
 import { Mail, X } from "lucide-react";
-import { useAuthStore } from "@/providers/auth-store-provider";
 import {
   Form,
   FormControl,
@@ -22,10 +18,8 @@ const formSchema = z.object({
   email: z.string().email(),
 });
 
-const SignupForm = () => {
+const SignupForm = ({ toast }: { toast: any }) => {
   const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL;
-  const { authAction } = useAuthStore((state) => state);
-  const { toast } = useToast();
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -38,7 +32,8 @@ const SignupForm = () => {
     try {
       const userExists = await axios.post(
         BACKEND_URL + "/user/userExists",
-        values
+        values,
+        { withCredentials: true }
       );
       if (userExists.data.userExists)
         toast({
@@ -52,7 +47,8 @@ const SignupForm = () => {
           description: "Please check your email to complete signup.",
           duration: 3000,
         });
-    } catch (error) {
+    } catch (err) {
+      console.log(err);
       toast({
         variant: "destructive",
         title: "Error occurred",
@@ -60,7 +56,6 @@ const SignupForm = () => {
         duration: 3000,
       });
     }
-    console.log(values);
   };
 
   return (
@@ -104,10 +99,9 @@ const SignupForm = () => {
           )}
         />
         <Button className="w-full mt-3" type="submit">
-          {authAction === "login" ? "Login" : "Sign Up"}
+          Sign Up
         </Button>
       </form>
-      <Toaster />
     </Form>
   );
 };

@@ -1,11 +1,70 @@
 "use client";
 
+import { useEffect, useState, Suspense } from "react";
+import { useToast } from "@/hooks/use-toast";
+import { Toaster } from "@/components/ui/toaster";
 import LoginForm from "./components/loginForm";
 import SignupForm from "./components/signupForm";
+import RegisterForm from "./components/registerForm";
 import { useAuthStore } from "@/providers/auth-store-provider";
+import { useSearchParams } from "next/navigation";
+import axios from "axios";
 
-export default function Home() {
+const Home = () => {
+  const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL;
   const { authAction, updateAuthAction } = useAuthStore((state) => state);
+  const searchParams = useSearchParams();
+  const { toast } = useToast();
+  const [registerEmail, setRegisterEmail] = useState("");
+
+  useEffect(() => {
+    const verifyRegisterToken = async () => {
+      const registerToken = searchParams.get("registerToken");
+      if (registerToken) {
+        try {
+          const tokenVerified = await axios.post(
+            BACKEND_URL + "/token/verifyParamToken",
+            { registerToken },
+            { withCredentials: true }
+          );
+          if (tokenVerified.data.tokenVerified) {
+            updateAuthAction("register");
+            setRegisterEmail(tokenVerified.data.useremail);
+            toast({
+              title: "Token verified",
+              description: "Please complete the registration form.",
+              duration: 3000,
+            });
+          } else if (tokenVerified.data.errorMessage === "jwt malformed")
+            toast({
+              variant: "destructive",
+              title: "Token malformed",
+              description: "The token is malformed. Please signup again.",
+              duration: 3000,
+            });
+          else if (tokenVerified.data.errorMessage === "jwt expired")
+            toast({
+              variant: "destructive",
+              title: "Token expired",
+              description: "The token has expired. Please signup again.",
+              duration: 3000,
+            });
+          else throw new Error("Token not verified");
+        } catch (err) {
+          console.log(err);
+          toast({
+            variant: "destructive",
+            title: "Error occurred",
+            description: "Something went wrong. Please try again.",
+            duration: 3000,
+          });
+          updateAuthAction("login");
+        }
+      }
+    };
+    verifyRegisterToken();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchParams]);
 
   return (
     <div className="flex flex-col h-screen items-center justify-center gap-4">
@@ -14,7 +73,13 @@ export default function Home() {
         Your <span className="font-semibold">Secure</span> and{" "}
         <span className="font-semibold">Private</span> Live Chat Space
       </p>
-      {authAction === "login" ? <LoginForm /> : <SignupForm />}
+      {authAction === "login" ? (
+        <LoginForm toast={toast} />
+      ) : authAction === "signup" ? (
+        <SignupForm toast={toast} />
+      ) : (
+        <RegisterForm toast={toast} registerEmail={registerEmail} />
+      )}
       <p className="text-slate-600">
         {authAction === "login"
           ? "Don't have an account? "
@@ -23,43 +88,23 @@ export default function Home() {
           className="font-semibold hover:underline hover:cursor-pointer"
           onClick={() => {
             if (authAction === "login") updateAuthAction("signup");
-            else if (authAction === "signup") updateAuthAction("login");
+            else updateAuthAction("login");
           }}
         >
           {authAction === "login" ? "Sign Up" : "Login"}
         </span>
       </p>
-      {/* <div className="flex flex-col w-full max-w-sm justify-center gap-1.5 p-4">
-        <Label htmlFor="email">Email</Label>
-        <div className="relative">
-          <Mail className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
-          <Input
-            id="email"
-            type="email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            placeholder="JustInChat@example.com"
-            className="focus-visible:ring-slate-400 pl-8"
-            autoFocus
-          />
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={() => setEmail("")}
-            className="absolute right-1 top-1.5 h-6 w-6 text-muted-foreground rounded-full"
-          >
-            <X />
-          </Button>
-        </div>
-        <Button
-          className="w-full max-w-sm mt-4"
-          onClick={() => {
-            alert(email);
-          }}
-        >
-          Continue
-        </Button>
-      </div> */}
+      <Toaster />
     </div>
   );
-}
+};
+
+const App = () => {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <Home />
+    </Suspense>
+  );
+};
+
+export default App;

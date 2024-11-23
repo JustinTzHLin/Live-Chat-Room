@@ -2,8 +2,10 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Mail, Lock, X, Eye, EyeOff } from "lucide-react";
+import { Label } from "@/components/ui/label";
+import { Mail, Lock, X, Eye, EyeOff, UserRound } from "lucide-react";
 import { useAuthStore } from "@/providers/auth-store-provider";
+import axios from "axios";
 import {
   Form,
   FormControl,
@@ -15,17 +17,25 @@ import {
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
-import axios from "axios";
 
 const formSchema = z.object({
-  email: z.string().email(),
+  username: z
+    .string()
+    .min(3, { message: "Username must be at least 3 characters" })
+    .max(32, { message: "Username must be at most 32 characters" }),
   password: z
     .string()
     .min(8, { message: "Password must be at least 8 characters" })
     .max(32, { message: "Password must be at most 32 characters" }),
 });
 
-const LoginForm = ({ toast }: { toast: any }) => {
+const RegisterForm = ({
+  toast,
+  registerEmail,
+}: {
+  toast: any;
+  registerEmail: string;
+}) => {
   const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL;
   const [showPassword, setShowPassword] = useState(false);
   const { updatePreviousURL } = useAuthStore((state) => state);
@@ -34,40 +44,34 @@ const LoginForm = ({ toast }: { toast: any }) => {
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      email: "",
+      username: "",
       password: "",
     },
   });
 
   const handleSubmit = async (values: z.infer<typeof formSchema>) => {
-    console.log(values);
-    const { email, password } = values;
+    const { username, password } = values;
     try {
-      const loginResult = await axios.post(
-        BACKEND_URL + "/user/signIn",
-        { email, password },
+      const registerResult = await axios.post(
+        BACKEND_URL + "/user/signUp",
+        { username, password, email: registerEmail },
         { withCredentials: true }
       );
-      if (!loginResult.data.userExists)
+      if (registerResult.data.userExists)
         toast({
-          title: "User not found",
-          description: "Please signup instead.",
+          title: "User already exists",
+          description: "Please login instead.",
           duration: 3000,
         });
-      else if (loginResult.data.userVerified) {
+      else if (registerResult.data.userCreated) {
         updatePreviousURL("/home");
         router.push("/main");
         toast({
-          title: "User logged in",
-          description: "Welcome back!",
+          title: "User created",
+          description: "Happy chatting!",
           duration: 3000,
         });
-      } else
-        toast({
-          title: "Email or password incorrect",
-          description: "Please try again.",
-          duration: 3000,
-        });
+      } else throw new Error("User not created");
     } catch (err) {
       console.log(err);
       toast({
@@ -85,18 +89,30 @@ const LoginForm = ({ toast }: { toast: any }) => {
         className="flex flex-col w-full max-w-sm justify-center gap-3 px-4"
         onSubmit={form.handleSubmit(handleSubmit)}
       >
+        <Label htmlFor="email">Email</Label>
+        <div className="relative">
+          <Mail className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
+          <Input
+            id="email"
+            type="email"
+            placeholder="JustInChat@example.com"
+            className="bg-slate-200 pl-8"
+            value={registerEmail}
+            disabled
+          />
+        </div>
         <FormField
           control={form.control}
-          name="email"
+          name="username"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Email</FormLabel>
+              <FormLabel>Username(Nickname)</FormLabel>
               <div className="relative">
-                <Mail className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
+                <UserRound className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
                 <FormControl>
                   <Input
                     type="text"
-                    placeholder="JustInChat@example.com"
+                    placeholder="New Chatter"
                     className="focus-visible:ring-slate-400 pl-8"
                     autoFocus
                     {...field}
@@ -107,8 +123,7 @@ const LoginForm = ({ toast }: { toast: any }) => {
                   size="icon"
                   type="button"
                   onClick={() => {
-                    form.setValue("email", "");
-                    console.log(field.onChange);
+                    form.setValue("username", "");
                   }}
                   className="absolute right-1 top-1.5 h-6 w-6 text-muted-foreground rounded-full"
                 >
@@ -150,11 +165,11 @@ const LoginForm = ({ toast }: { toast: any }) => {
           )}
         />
         <Button className="w-full mt-3" type="submit">
-          Login
+          Register
         </Button>
       </form>
     </Form>
   );
 };
 
-export default LoginForm;
+export default RegisterForm;
