@@ -37,11 +37,18 @@ const Page = () => {
           { withCredentials: true }
         );
         if (tokenVerified.data.tokenVerified) {
-          toast({
-            title: "Token verified",
-            description: "Welcome back!",
-            duration: 3000,
-          });
+          if (previousURL === "/home")
+            toast({
+              title: "Successfully logged in",
+              description: "Welcome back!",
+              duration: 3000,
+            });
+          else
+            toast({
+              title: "Token verified",
+              description: "Welcome back!",
+              duration: 3000,
+            });
           setUserInformation(tokenVerified.data.user);
           return tokenVerified.data.user.userId;
         } else {
