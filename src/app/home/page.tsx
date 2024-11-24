@@ -67,7 +67,7 @@ const Home = () => {
   }, [searchParams]);
 
   return (
-    <div className="flex flex-col h-screen items-center justify-center gap-4">
+    <div className="flex flex-col h-screen items-center justify-center gap-4 min-h-[500px] min-w-[320px]">
       <h1 className="text-3xl font-bold">Just In Chat</h1>
       <p className="text-sm text-slate-500">
         Your <span className="font-semibold">Secure</span> and{" "}
