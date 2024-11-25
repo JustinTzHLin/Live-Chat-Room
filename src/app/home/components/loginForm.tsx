@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Mail, Lock, X, Eye, EyeOff } from "lucide-react";
+import { Mail, Lock, X, Eye, EyeOff, LoaderCircle } from "lucide-react";
 import { useAuthStore } from "@/providers/auth-store-provider";
 import {
   Form,
@@ -28,6 +28,7 @@ const formSchema = z.object({
 const LoginForm = ({ toast }: { toast: any }) => {
   const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL;
   const [showPassword, setShowPassword] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
   const { updatePreviousURL } = useAuthStore((state) => state);
   const router = useRouter();
 
@@ -40,6 +41,7 @@ const LoginForm = ({ toast }: { toast: any }) => {
   });
 
   const handleSubmit = async (values: z.infer<typeof formSchema>) => {
+    setIsLoading(true);
     console.log(values);
     const { email, password } = values;
     try {
@@ -68,6 +70,7 @@ const LoginForm = ({ toast }: { toast: any }) => {
           description: "Please try again.",
           duration: 3000,
         });
+      setIsLoading(false);
     } catch (err) {
       console.log(err);
       toast({
@@ -76,6 +79,7 @@ const LoginForm = ({ toast }: { toast: any }) => {
         description: "Something went wrong. Please try again.",
         duration: 3000,
       });
+      setIsLoading(false);
     }
   };
 
@@ -149,8 +153,9 @@ const LoginForm = ({ toast }: { toast: any }) => {
             </FormItem>
           )}
         />
-        <Button className="w-full mt-3" type="submit">
-          Login
+        <Button className="w-full mt-3" type="submit" disabled={isLoading}>
+          {isLoading && <LoaderCircle className="animate-spin" />}
+          {isLoading ? "Logging in..." : "Login"}
         </Button>
       </form>
     </Form>

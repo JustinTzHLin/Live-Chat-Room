@@ -1,6 +1,7 @@
+import { useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Mail, X } from "lucide-react";
+import { Mail, X, LoaderCircle } from "lucide-react";
 import {
   Form,
   FormControl,
@@ -20,6 +21,7 @@ const formSchema = z.object({
 
 const SignupForm = ({ toast }: { toast: any }) => {
   const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL;
+  const [isLoading, setIsLoading] = useState(false);
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -29,6 +31,7 @@ const SignupForm = ({ toast }: { toast: any }) => {
   });
 
   const handleSubmit = async (values: z.infer<typeof formSchema>) => {
+    setIsLoading(true);
     try {
       const userExists = await axios.post(
         BACKEND_URL + "/user/userExists",
@@ -47,6 +50,7 @@ const SignupForm = ({ toast }: { toast: any }) => {
           description: "Please check your email to complete signup.",
           duration: 3000,
         });
+      setIsLoading(false);
     } catch (err) {
       console.log(err);
       toast({
@@ -55,6 +59,7 @@ const SignupForm = ({ toast }: { toast: any }) => {
         description: "Something went wrong. Please try again.",
         duration: 3000,
       });
+      setIsLoading(false);
     }
   };
 
@@ -98,8 +103,9 @@ const SignupForm = ({ toast }: { toast: any }) => {
             </FormItem>
           )}
         />
-        <Button className="w-full mt-3" type="submit">
-          Sign Up
+        <Button className="w-full mt-3" type="submit" disabled={isLoading}>
+          {isLoading && <LoaderCircle className="animate-spin" />}
+          {isLoading ? "Sending Email..." : "Sign Up"}
         </Button>
       </form>
     </Form>

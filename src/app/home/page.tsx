@@ -101,7 +101,13 @@ const Home = () => {
 
 const App = () => {
   return (
-    <Suspense fallback={<div>Loading...</div>}>
+    <Suspense
+      fallback={
+        <div className="flex flex-col h-screen items-center justify-center gap-4 min-h-[500px] min-w-[320px]">
+          <h1 className="text-4xl font-bold text-slate-300">Loading</h1>
+        </div>
+      }
+    >
       <Home />
     </Suspense>
   );

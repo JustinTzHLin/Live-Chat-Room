@@ -3,7 +3,15 @@ import { useRouter } from "next/navigation";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
-import { Mail, Lock, X, Eye, EyeOff, UserRound } from "lucide-react";
+import {
+  Mail,
+  Lock,
+  X,
+  Eye,
+  EyeOff,
+  UserRound,
+  LoaderCircle,
+} from "lucide-react";
 import { useAuthStore } from "@/providers/auth-store-provider";
 import axios from "axios";
 import {
@@ -38,6 +46,7 @@ const RegisterForm = ({
 }) => {
   const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL;
   const [showPassword, setShowPassword] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
   const { updatePreviousURL } = useAuthStore((state) => state);
   const router = useRouter();
 
@@ -50,6 +59,7 @@ const RegisterForm = ({
   });
 
   const handleSubmit = async (values: z.infer<typeof formSchema>) => {
+    setIsLoading(true);
     const { username, password } = values;
     try {
       const registerResult = await axios.post(
@@ -72,6 +82,7 @@ const RegisterForm = ({
           duration: 3000,
         });
       } else throw new Error("User not created");
+      setIsLoading(false);
     } catch (err) {
       console.log(err);
       toast({
@@ -80,6 +91,7 @@ const RegisterForm = ({
         description: "Something went wrong. Please try again.",
         duration: 3000,
       });
+      setIsLoading(false);
     }
   };
 
@@ -164,8 +176,9 @@ const RegisterForm = ({
             </FormItem>
           )}
         />
-        <Button className="w-full mt-3" type="submit">
-          Register
+        <Button className="w-full mt-3" type="submit" disabled={isLoading}>
+          {isLoading && <LoaderCircle className="animate-spin" />}
+          {isLoading ? "Registering..." : "Register"}
         </Button>
       </form>
     </Form>
