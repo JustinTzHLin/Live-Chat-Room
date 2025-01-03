@@ -103,7 +103,10 @@ const App = () => {
   return (
     <Suspense
       fallback={
-        <div className="flex flex-col h-screen items-center justify-center gap-4 min-h-[500px] min-w-[320px]">
+        <div
+          className="flex flex-col h-screen items-center justify-center gap-4 min-h-[500px] min-w-[320px]"
+          aria-busy="true"
+        >
           <h1 className="text-4xl font-bold text-slate-300">Loading</h1>
         </div>
       }

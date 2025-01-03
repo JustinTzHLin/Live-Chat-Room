@@ -50,7 +50,6 @@ const SignupForm = ({ toast }: { toast: any }) => {
           description: "Please check your email to complete signup.",
           duration: 3000,
         });
-      setIsLoading(false);
     } catch (err) {
       console.log(err);
       toast({
@@ -59,6 +58,7 @@ const SignupForm = ({ toast }: { toast: any }) => {
         description: "Something went wrong. Please try again.",
         duration: 3000,
       });
+    } finally {
       setIsLoading(false);
     }
   };
@@ -103,7 +103,12 @@ const SignupForm = ({ toast }: { toast: any }) => {
             </FormItem>
           )}
         />
-        <Button className="w-full mt-3" type="submit" disabled={isLoading}>
+        <Button
+          className="w-full mt-3"
+          type="submit"
+          disabled={isLoading}
+          aria-busy={isLoading}
+        >
           {isLoading && <LoaderCircle className="animate-spin" />}
           {isLoading ? "Sending Email..." : "Sign Up"}
         </Button>

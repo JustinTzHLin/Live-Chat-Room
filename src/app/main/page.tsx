@@ -7,18 +7,9 @@ import { Toaster } from "@/components/ui/toaster";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import {
-  Search,
-  EllipsisVertical,
-  Bolt,
-  ArrowBigLeft,
-  ArrowLeft,
-  ArrowLeftFromLine,
-  ArrowLeftToLine,
-  ChevronLeft,
-  MoveLeft,
-  Undo2,
-} from "lucide-react";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import ContactInfoDialog from "./components/contactInfoDialog";
+import { Search, EllipsisVertical, Bolt, ChevronLeft } from "lucide-react";
 import { useAuthStore } from "@/providers/auth-store-provider";
 import axios from "axios";
 
@@ -51,81 +42,94 @@ const Page = () => {
   const [currentSection, setCurrentSection] = useState("tabs"); // tabs, chats
   const [currentChatInfo, setCurrentChatInfo] = useState<{
     messages: any[];
-    participantsIDs: string[];
+    participantIDs: string[];
     roomName: string;
     type: string;
   }>({
     messages: [],
-    participantsIDs: [],
+    participantIDs: [],
     roomName: "",
     type: "",
   });
-  useEffect(() => {
-    const verifyLoggedInToken = async () => {
-      try {
-        const tokenVerified = await axios(
-          BACKEND_URL + "/token/verifyLoggedInToken",
-          { withCredentials: true }
-        );
-        if (tokenVerified.data.tokenVerified) {
-          if (previousURL !== "/home")
-            toast({
-              title: "Token verified",
-              description: "Welcome back!",
-              duration: 3000,
-            });
-          setUserInformation(tokenVerified.data.user);
-          return tokenVerified.data.user.userId;
-        } else {
-          if (tokenVerified.data.errorMessage === "no token found")
-            toast({
-              title: "No token found",
-              description: "Please login instead.",
-              duration: 3000,
-            });
-          else if (tokenVerified.data.errorMessage === "jwt malformed")
-            toast({
-              variant: "destructive",
-              title: "Token malformed",
-              description: "The token is malformed. Please login instead.",
-              duration: 3000,
-            });
-          else if (tokenVerified.data.errorMessage === "jwt expired")
-            toast({
-              variant: "destructive",
-              title: "Token expired",
-              description: "The token has expired. Please login instead.",
-              duration: 3000,
-            });
-          else throw new Error("Token not verified");
-          router.push("/home");
-          return false;
-        }
-      } catch (err) {
-        console.log(err);
-        toast({
-          variant: "destructive",
-          title: "Error occurred",
-          description: "Something went wrong. Please login instead.",
-          duration: 3000,
-        });
+  const [contactInfoDialogOpen, setContactInfoDialogOpen] = useState(false);
+  const [contactInfo, setContactInfo] = useState<{
+    username: string;
+    email: string;
+    friendId: string;
+  }>({
+    username: "",
+    email: "",
+    friendId: "",
+  });
+
+  const verifyLoggedInToken = async () => {
+    try {
+      const tokenVerified = await axios(
+        BACKEND_URL + "/token/verifyLoggedInToken",
+        { withCredentials: true }
+      );
+      if (tokenVerified.data.tokenVerified) {
+        if (previousURL !== "/home")
+          toast({
+            title: "Token verified",
+            description: "Welcome back!",
+            duration: 3000,
+          });
+        setUserInformation(tokenVerified.data.user);
+        return tokenVerified.data.user.userId;
+      } else {
+        if (tokenVerified.data.errorMessage === "no token found")
+          toast({
+            title: "No token found",
+            description: "Please login instead.",
+            duration: 3000,
+          });
+        else if (tokenVerified.data.errorMessage === "jwt malformed")
+          toast({
+            variant: "destructive",
+            title: "Token malformed",
+            description: "The token is malformed. Please login instead.",
+            duration: 3000,
+          });
+        else if (tokenVerified.data.errorMessage === "jwt expired")
+          toast({
+            variant: "destructive",
+            title: "Token expired",
+            description: "The token has expired. Please login instead.",
+            duration: 3000,
+          });
+        else throw new Error("Token not verified");
         router.push("/home");
         return false;
       }
-    };
-    const fetchChatData = async (userId: string) => {
-      try {
-        const chatData = await axios.post(
-          BACKEND_URL + "/user/getChatData",
-          { userId },
-          { withCredentials: true }
-        );
-        setUserChatData(chatData.data);
-        console.log(chatData);
-      } catch (err) {
-        console.log(err);
-      }
-    };
+    } catch (err) {
+      console.log(err);
+      toast({
+        variant: "destructive",
+        title: "Error occurred",
+        description: "Something went wrong. Please login instead.",
+        duration: 3000,
+      });
+      router.push("/home");
+      return false;
+    }
+  };
+
+  const fetchChatData = async (userId: string) => {
+    try {
+      const chatData = await axios.post(
+        BACKEND_URL + "/user/getChatData",
+        { userId },
+        { withCredentials: true }
+      );
+      setUserChatData(chatData.data);
+      console.log(chatData);
+    } catch (err) {
+      console.log(err);
+    }
+  };
+
+  useEffect(() => {
     const verifyAndFetchUser = async () => {
       const userVerifiedId = await verifyLoggedInToken();
       if (userVerifiedId) fetchChatData(userVerifiedId);
@@ -148,6 +152,17 @@ const Page = () => {
     }
     return initials.toUpperCase();
   };
+
+  const timestampToFormattedTime = (timestamp: Date) => {
+    const date = new Date(timestamp);
+    const options = {
+      hour: "numeric" as const,
+      minute: "numeric" as const,
+      hour12: true,
+    };
+    return date.toLocaleTimeString("en-US", options);
+  };
+
   return (
     <div className="flex flex-col h-screen items-center min-h-[500px] min-w-[320px]">
       <div className="flex w-full">
@@ -196,6 +211,7 @@ const Page = () => {
       {currentSection === "tabs" ? (
         <Tabs
           defaultValue="chatroom"
+          value={currentTab}
           onValueChange={(value) => setCurrentTab(value)}
           className="w-full px-2 h-[calc(100%-80px)]"
         >
@@ -250,13 +266,17 @@ const Page = () => {
                 <div
                   key={"friend_" + index}
                   className="flex items-center justify-between gap-2 p-1 hover:bg-slate-100 hover:cursor-pointer rounded-lg"
+                  onClick={() => {
+                    setContactInfoDialogOpen(true);
+                    setContactInfo(friendInfo);
+                  }}
                 >
                   <Avatar>
                     <AvatarFallback className="bg-slate-200 font-semibold text-lg">
                       {getNameInitials(friendInfo.username)}
                     </AvatarFallback>
                   </Avatar>
-                  {friendInfo.username} {friendInfo.email}
+                  {friendInfo.username}
                   <div></div>
                 </div>
               ))}
@@ -264,32 +284,89 @@ const Page = () => {
           </TabsContent>
         </Tabs>
       ) : (
-        <div className="w-full px-2 h-[calc(100%-80px)] flex flex-col">
-          <div className="w-full flex items-center justify-between">
+        <div className="w-full px-2 h-[calc(100%-80px)] flex flex-col items-center">
+          <div className="w-full flex items-center justify-center h-10">
             <Button
               variant="ghost"
               size="icon"
               type="button"
-              className="text-muted-foreground rounded-full w-10 h-10"
+              className="text-muted-foreground rounded-full w-10 h-10 absolute left-2"
               onClick={() => {
                 setCurrentSection("tabs");
               }}
             >
               <ChevronLeft style={{ width: "26px", height: "26px" }} />
             </Button>
-            {/*
-
-  ArrowBigLeft,
-  ArrowLeft,
-  ArrowLeftToLine,
-  ChevronLeft,
-            */}
-
-            <div className="">Centered Content</div>
-            <div className="w-[40px]"></div>
+            <div className="text-xl font-semibold">
+              {currentChatInfo.roomName}
+            </div>
           </div>
+          <ScrollArea className="w-full h-[calc(100%-80px)] flex flex-col px-4 overflow-y-always">
+            {currentChatInfo.messages
+              .concat(currentChatInfo.messages)
+              .map((message, index) => {
+                return (
+                  <div
+                    key={"message_" + index}
+                    className={
+                      "w-full flex mb-2 " +
+                      (message.senderId === userInformation.userId
+                        ? "justify-end"
+                        : "justify-start")
+                    }
+                  >
+                    <div
+                      className={
+                        "flex flex-col p-2 hover:cursor-pointer rounded-xl " +
+                        (message.senderId === userInformation.userId
+                          ? "items-end rounded-br-none bg-slate-800"
+                          : "items-end rounded-bl-none bg-slate-100")
+                      }
+                    >
+                      <div
+                        className={
+                          "px-2 pt-1 text-lg " +
+                          (message.senderId === userInformation.userId
+                            ? "text-white"
+                            : "")
+                        }
+                      >
+                        {message.content}
+                      </div>
+                      <div
+                        className={
+                          "text-sm " +
+                          (message.senderId === userInformation.userId
+                            ? "text-white"
+                            : "")
+                        }
+                      >
+                        {timestampToFormattedTime(message.timestamp)}
+                      </div>
+                      {/* <div className="text-xs text-muted-foreground">
+                        {userChatData.friends.find(
+                          (friend) => friend.friendId === message.senderId
+                        )?.username ||
+                          (userInformation.userId === message.senderId
+                            ? "You"
+                            : "Unknown")}
+                      </div> */}
+                    </div>
+                  </div>
+                );
+              })}
+          </ScrollArea>
         </div>
       )}
+      <ContactInfoDialog
+        contactInfoDialogOpen={contactInfoDialogOpen}
+        setContactInfoDialogOpen={setContactInfoDialogOpen}
+        contactInfo={contactInfo}
+        getNameInitials={getNameInitials}
+        userConversationsData={userChatData.conversations}
+        setCurrentSection={setCurrentSection}
+        setCurrentChatInfo={setCurrentChatInfo}
+      />
       <Toaster />
     </div>
   );
