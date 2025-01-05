@@ -138,32 +138,42 @@ const Page = () => {
   }, []);
 
   useEffect(() => {
-    // send data and save ti on server
-    socket?.on("receive_message", (message: any) => {
-      console.log(message);
-      setUserChatData((prev) => {
-        if (message.conversationId in prev.conversations) {
-          const conversation = prev.conversations[message.conversationId];
-          conversation.messages.push(message);
-          return {
-            ...prev,
-            conversations: {
-              ...prev.conversations,
-              [message.conversationId]: conversation,
-            },
-          };
-        } else return prev;
-      });
-      setCurrentChatInfo((prev) => {
-        if (prev.conversationId === message.conversationId) {
-          return {
-            ...prev,
-            messages: [...prev.messages, message],
-          };
-        }
-        return prev;
-      });
-    });
+    // send data and save it on server
+    if (socket) {
+      const handleMessage = (message: any) => {
+        console.log(message);
+        setUserChatData((prev) => {
+          if (message.conversationId in prev.conversations) {
+            const updatedConversation = {
+              ...prev.conversations[message.conversationId],
+              messages: [
+                ...prev.conversations[message.conversationId].messages,
+                message,
+              ],
+            };
+            return {
+              ...prev,
+              conversations: {
+                ...prev.conversations,
+                [message.conversationId]: updatedConversation,
+              },
+            };
+          } else return prev;
+        });
+        setCurrentChatInfo((prev) => {
+          if (prev.conversationId === message.conversationId) {
+            return {
+              ...prev,
+              messages: [...prev.messages, message],
+            };
+          } else return prev;
+        });
+      };
+      socket.on("receive_message", handleMessage);
+      return () => {
+        socket.off("receive_message", handleMessage);
+      };
+    }
   }, [socket]);
 
   return (
