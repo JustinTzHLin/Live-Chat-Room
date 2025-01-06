@@ -34,7 +34,7 @@ const SignupForm = ({ toast }: { toast: any }) => {
     setIsLoading(true);
     try {
       const userExists = await axios.post(
-        BACKEND_URL + "/user/userExists",
+        BACKEND_URL + "/user/registerCheck",
         values,
         { withCredentials: true }
       );
@@ -94,7 +94,7 @@ const SignupForm = ({ toast }: { toast: any }) => {
                     form.setValue("email", "");
                     console.log(field.onChange);
                   }}
-                  className="absolute right-1 top-1.5 h-6 w-6 text-muted-foreground rounded-full"
+                  className="absolute right-1 top-1.5 h-6 w-6 text-muted-foreground hover:bg-transparent rounded-full"
                 >
                   <X />
                 </Button>

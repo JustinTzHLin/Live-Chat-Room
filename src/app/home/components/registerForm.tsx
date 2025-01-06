@@ -137,7 +137,7 @@ const RegisterForm = ({
                   onClick={() => {
                     form.setValue("username", "");
                   }}
-                  className="absolute right-1 top-1.5 h-6 w-6 text-muted-foreground rounded-full"
+                  className="absolute right-1 top-1.5 h-6 w-6 text-muted-foreground hover:bg-transparent rounded-full"
                 >
                   <X />
                 </Button>
@@ -167,7 +167,7 @@ const RegisterForm = ({
                   size="icon"
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-1 top-1.5 h-6 w-6 text-muted-foreground rounded-full"
+                  className="absolute right-1 top-1.5 h-6 w-6 text-muted-foreground hover:bg-transparent rounded-full"
                 >
                   {showPassword ? <Eye /> : <EyeOff />}
                 </Button>

@@ -12,8 +12,7 @@ import { io } from "socket.io-client";
 import axios from "axios";
 
 const Page = () => {
-  const BACKEND_URL =
-    process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:8000";
+  const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL;
   const { previousURL, updatePreviousURL } = useAuthStore((state) => state);
   const router = useRouter();
   const { toast } = useToast();
@@ -178,7 +177,11 @@ const Page = () => {
 
   return (
     <div className="flex flex-col h-screen items-center min-h-[500px] min-w-[320px]">
-      <NavBar username={userInformation?.username} />
+      <NavBar
+        userInformation={userInformation}
+        friendsList={userChatData?.friends}
+        toast={toast}
+      />
       {currentSection === "tabs" ? (
         <TabsSection
           currentTab={currentTab}

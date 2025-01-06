@@ -4,7 +4,9 @@ import {
   DialogContent,
   DialogDescription,
   DialogHeader,
+  DialogTitle,
 } from "@/components/ui/dialog";
+import * as VisuallyHidden from "@radix-ui/react-visually-hidden";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { MessageSquareMore } from "lucide-react";
 
@@ -36,6 +38,9 @@ const ContactInfoDialog = ({
     >
       <DialogContent>
         <DialogHeader>
+          <VisuallyHidden.Root asChild>
+            <DialogTitle>Contact Info</DialogTitle>
+          </VisuallyHidden.Root>
           <div className="flex flex-col justify-center items-center w-full gap-2">
             <Avatar className="w-20 h-20">
               <AvatarFallback className="text-3xl font-semibold">

@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -15,13 +16,30 @@ import {
   Users,
   Inbox,
 } from "lucide-react";
+import AddFriendDialog from "./addFriendDiallog";
 
-const NavBar = ({ username }: { username: string }) => {
+const NavBar = ({
+  userInformation,
+  friendsList,
+  toast,
+}: {
+  userInformation: {
+    userId: string;
+    username: string;
+    email: string;
+    createdAt: Date;
+    lastActive: Date;
+  };
+  friendsList: any[];
+  toast: any;
+}) => {
+  const [addFriendDialogOpen, setAddFriendDialogOpen] = useState(false);
+
   return (
     <div className="flex w-full">
       <div className="w-1/2 p-4">
         <div className="text-sm text-muted-foreground">Welcome,</div>
-        <div className="text-xl font-semibold">{username}</div>
+        <div className="text-xl font-semibold">{userInformation.username}</div>
       </div>
       <div className="flex w-1/2 items-center justify-end pr-4 gap-1">
         <Button
@@ -49,15 +67,18 @@ const NavBar = ({ username }: { username: string }) => {
           <DropdownMenuContent>
             <DropdownMenuLabel>Social</DropdownMenuLabel>
             <DropdownMenuSeparator />
-            <DropdownMenuItem>
+            <DropdownMenuItem
+              className="hover:cursor-pointer"
+              onClick={() => setAddFriendDialogOpen(true)}
+            >
               <UserPlus style={{ width: "18px", height: "18px" }} />
               Add Friend
             </DropdownMenuItem>
-            <DropdownMenuItem>
+            <DropdownMenuItem className="hover:cursor-pointer">
               <Users style={{ width: "18px", height: "18px" }} />
               Add Group
             </DropdownMenuItem>
-            <DropdownMenuItem>
+            <DropdownMenuItem className="hover:cursor-pointer">
               <Inbox style={{ width: "18px", height: "18px" }} />
               Invites
             </DropdownMenuItem>
@@ -75,6 +96,13 @@ const NavBar = ({ username }: { username: string }) => {
           <Bolt style={{ width: "26px", height: "26px" }} />
         </Button>
       </div>
+      <AddFriendDialog
+        addFriendDialogOpen={addFriendDialogOpen}
+        setAddFriendDialogOpen={setAddFriendDialogOpen}
+        userId={userInformation.userId}
+        friendsList={friendsList}
+        toast={toast}
+      />
     </div>
   );
 };

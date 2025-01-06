@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Input } from "@/components/ui/input";
 import { SendHorizontal, ChevronLeft } from "lucide-react";
+import timestampToFormattedTime from "@/utils/timestampToFormattedTime";
 import axios from "axios";
 
 const ChatSection = ({
@@ -28,17 +29,7 @@ const ChatSection = ({
   setCurrentSection: (section: string) => void;
   socket: any;
 }) => {
-  const BACKEND_URL =
-    process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:8000";
-  const timestampToFormattedTime = (timestamp: Date) => {
-    const date = new Date(timestamp);
-    const options = {
-      hour: "numeric" as const,
-      minute: "numeric" as const,
-      hour12: true,
-    };
-    return date.toLocaleTimeString("en-US", options);
-  };
+  const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL;
   const [inputMessage, setInputMessage] = useState<string>("");
 
   const sendMessage = async (e: React.SyntheticEvent) => {
@@ -86,7 +77,7 @@ const ChatSection = ({
         </Button>
         <div className="text-xl font-semibold">{currentChatInfo.roomName}</div>
       </div>
-      <ScrollArea className="w-full h-[calc(100%-120px)] flex flex-col px-4 overflow-y-always">
+      <ScrollArea className="w-full h-[calc(100%-120px)] flex flex-col px-4">
         {currentChatInfo.messages.map((message, index) => {
           return (
             <div
@@ -139,7 +130,7 @@ const ChatSection = ({
           );
         })}
       </ScrollArea>
-      <div className="flex w-full h-[80px] px-4 items-center ">
+      <div className="flex w-full h-[80px] px-4 items-center">
         <form onSubmit={sendMessage} className="w-full flex gap-2">
           <Input
             type="text"

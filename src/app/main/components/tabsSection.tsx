@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import ContactInfoDialog from "./contactInfoDialog";
+import getNameInitials from "@/utils/getNameInitials";
 
 const TabsSection = ({
   currentTab,
@@ -37,21 +38,6 @@ const TabsSection = ({
     email: "",
     friendId: "",
   });
-
-  const getNameInitials = (name: string) => {
-    const nameWords = name.split(" ");
-    let initials = "";
-    if (nameWords.length > 3) {
-      initials += nameWords[0][0] + nameWords[nameWords.length - 1][0];
-    } else if (nameWords.length === 3) {
-      initials += nameWords[0][0] + nameWords[1][0] + nameWords[2][0];
-    } else {
-      nameWords.forEach((word) => {
-        initials += word[0];
-      });
-    }
-    return initials.toUpperCase();
-  };
 
   return (
     <Tabs
