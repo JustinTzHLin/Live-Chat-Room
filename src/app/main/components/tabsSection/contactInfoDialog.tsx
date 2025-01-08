@@ -24,7 +24,7 @@ const ContactInfoDialog = ({
   contactInfo: {
     username: string;
     email: string;
-    friendId: string;
+    id: string;
   };
   userConversationsData: any[];
   setCurrentSection: (section: string) => void;
@@ -53,14 +53,17 @@ const ContactInfoDialog = ({
               size="icon"
               className="text-muted-foreground w-10 h-10"
               onClick={() => {
+                console.log(userConversationsData);
+                console.log(contactInfo);
                 setContactInfoDialogOpen(false);
                 setCurrentSection("chat");
                 setCurrentChatInfo(
-                  userConversationsData.find(
-                    (conversation) =>
-                      conversation.type === "private" &&
-                      conversation.participantIDs.includes(contactInfo.friendId)
-                  )
+                  (prev: any) =>
+                    userConversationsData.find(
+                      (conversation) =>
+                        conversation.type === "private" &&
+                        conversation.participantIDs.includes(contactInfo.id)
+                    ) || prev
                 );
               }}
             >

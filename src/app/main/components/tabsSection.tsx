@@ -32,11 +32,11 @@ const TabsSection = ({
   const [contactInfo, setContactInfo] = useState<{
     username: string;
     email: string;
-    friendId: string;
+    id: string;
   }>({
     username: "",
     email: "",
-    friendId: "",
+    id: "",
   });
 
   return (
