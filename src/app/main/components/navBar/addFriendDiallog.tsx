@@ -22,15 +22,23 @@ const jicIdSchema = z.string().min(8).max(16);
 const AddFriendDialog = ({
   addFriendDialogOpen,
   setAddFriendDialogOpen,
-  userId,
+  userInformation,
   friendsList,
   toast,
+  socket,
 }: {
   addFriendDialogOpen: boolean;
   setAddFriendDialogOpen: (open: boolean) => void;
-  userId: string;
+  userInformation: {
+    userId: string;
+    username: string;
+    email: string;
+    createdAt: Date;
+    lastActive: Date;
+  };
   friendsList: any[];
   toast: any;
+  socket: any;
 }) => {
   const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL;
   const [radioValue, setRadioValue] = useState<string>("email");
@@ -49,6 +57,7 @@ const AddFriendDialog = ({
 
   useEffect(() => {
     if (addFriendDialogOpen) {
+      setRadioValue("email");
       setError(null);
       setSearchInput("");
       setSearchedUser(null);
@@ -87,13 +96,13 @@ const AddFriendDialog = ({
         try {
           jicIdSchema.parse(searchInput);
           setError(null);
-          const searchUserByEmail = await axios.post(
+          const searchUserByJICId = await axios.post(
             BACKEND_URL + "/user/searchUser",
             { jicId: searchInput },
             { withCredentials: true }
           );
-          if (searchUserByEmail.data.userExists) {
-            setSearchedUser(searchUserByEmail.data.searchedUser);
+          if (searchUserByJICId.data.userExists) {
+            setSearchedUser(searchUserByJICId.data.searchedUser);
           }
         } catch (error) {
           setError("Invalid ID");
@@ -105,7 +114,7 @@ const AddFriendDialog = ({
   };
 
   const sendFriendRequest = async () => {
-    if (userId === searchedUser?.id) {
+    if (userInformation.userId === searchedUser?.id) {
       toast({
         title: "Cannot add yourself",
         description: "You cannot add yourself as a friend.",
@@ -125,7 +134,7 @@ const AddFriendDialog = ({
       try {
         const sendFriendRequest = await axios.post(
           BACKEND_URL + "/user/sendFriendRequest",
-          { senderId: userId, receiverId: searchedUser?.id },
+          { senderId: userInformation.userId, receiverId: searchedUser?.id },
           { withCredentials: true }
         );
         if (sendFriendRequest.data.friendRequestSent) {
@@ -134,6 +143,25 @@ const AddFriendDialog = ({
             description: "Friend request sent successfully.",
             duration: 3000,
           });
+          if (
+            sendFriendRequest.data.newFriendRequest.receiverId ===
+            searchedUser?.id
+          ) {
+            socket.emit("send_friend_request", {
+              id: sendFriendRequest.data.newFriendRequest._id,
+              sender: {
+                senderId: userInformation.userId,
+                username: userInformation.username,
+                email: userInformation.email,
+              },
+              receiver: {
+                receiverId: searchedUser?.id,
+                username: searchedUser?.username,
+                email: searchedUser?.email,
+              },
+              createdAt: sendFriendRequest.data.newFriendRequest.createdAt,
+            });
+          }
         } else if (sendFriendRequest.data.message === "Request already sent.") {
           toast({
             title: "Request already sent",
@@ -157,7 +185,7 @@ const AddFriendDialog = ({
     <Dialog open={addFriendDialogOpen} onOpenChange={setAddFriendDialogOpen}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Add Friend</DialogTitle>
+          <DialogTitle className="text-xl">Add Friend</DialogTitle>
           <VisuallyHidden.Root asChild>
             <DialogDescription>
               Enter the email or JIC ID of the user you would like to add as a

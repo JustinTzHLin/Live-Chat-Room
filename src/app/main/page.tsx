@@ -67,7 +67,6 @@ const Page = () => {
         BACKEND_URL + "/token/verifyLoggedInToken",
         { withCredentials: true }
       );
-      console.log();
       if (tokenVerified.data.tokenVerified) {
         if (previousURL !== "/home")
           toast({
@@ -121,7 +120,6 @@ const Page = () => {
         { withCredentials: true }
       );
       setUserChatData(chatData.data);
-      console.log(chatData);
       setSocket(io(BACKEND_URL));
     } catch (err) {
       console.log(err);
@@ -136,41 +134,65 @@ const Page = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  const handleSocketSentMessage = (message: any) => {
+    setUserChatData((prev) => {
+      if (message.conversationId in prev.conversations) {
+        const updatedConversation = {
+          ...prev.conversations[message.conversationId],
+          messages: [
+            ...prev.conversations[message.conversationId].messages,
+            message,
+          ],
+        };
+        return {
+          ...prev,
+          conversations: {
+            ...prev.conversations,
+            [message.conversationId]: updatedConversation,
+          },
+        };
+      } else return prev;
+    });
+    setCurrentChatInfo((prev) => {
+      if (prev.conversationId === message.conversationId) {
+        return {
+          ...prev,
+          messages: [...prev.messages, message],
+        };
+      } else return prev;
+    });
+  };
+
+  const handleSocketAcceptedFriendRequest = (request: any) => {
+    setUserChatData((prev) => {
+      if (
+        request.senderId === userInformation.userId ||
+        request.receiverId === userInformation.userId
+      ) {
+        return {
+          ...prev,
+          friends: [
+            ...prev.friends,
+            request.senderId === userInformation.userId
+              ? request.receiver
+              : request.sender,
+          ],
+        };
+      } else return prev;
+    });
+  };
+
   useEffect(() => {
     // send data and save it on server
     if (socket) {
-      const handleMessage = (message: any) => {
-        console.log(message);
-        setUserChatData((prev) => {
-          if (message.conversationId in prev.conversations) {
-            const updatedConversation = {
-              ...prev.conversations[message.conversationId],
-              messages: [
-                ...prev.conversations[message.conversationId].messages,
-                message,
-              ],
-            };
-            return {
-              ...prev,
-              conversations: {
-                ...prev.conversations,
-                [message.conversationId]: updatedConversation,
-              },
-            };
-          } else return prev;
-        });
-        setCurrentChatInfo((prev) => {
-          if (prev.conversationId === message.conversationId) {
-            return {
-              ...prev,
-              messages: [...prev.messages, message],
-            };
-          } else return prev;
-        });
-      };
-      socket.on("receive_message", handleMessage);
+      socket.on("receive_message", handleSocketSentMessage);
+      socket.on("accepted_friend_request", handleSocketAcceptedFriendRequest);
       return () => {
-        socket.off("receive_message", handleMessage);
+        socket.off("receive_message", handleSocketSentMessage);
+        socket.off(
+          "accepted_friend_request",
+          handleSocketAcceptedFriendRequest
+        );
       };
     }
   }, [socket]);
@@ -181,6 +203,7 @@ const Page = () => {
         userInformation={userInformation}
         friendsList={userChatData?.friends}
         toast={toast}
+        socket={socket}
       />
       {currentSection === "tabs" ? (
         <TabsSection

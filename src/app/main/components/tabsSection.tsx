@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import ContactInfoDialog from "./contactInfoDialog";
+import ContactInfoDialog from "./tabsSection/contactInfoDialog";
 import getNameInitials from "@/utils/getNameInitials";
 
 const TabsSection = ({
@@ -117,7 +117,6 @@ const TabsSection = ({
         contactInfoDialogOpen={contactInfoDialogOpen}
         setContactInfoDialogOpen={setContactInfoDialogOpen}
         contactInfo={contactInfo}
-        getNameInitials={getNameInitials}
         userConversationsData={Object.values(userChatData.conversations)}
         setCurrentSection={setCurrentSection}
         setCurrentChatInfo={setCurrentChatInfo}

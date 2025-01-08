@@ -1,12 +1,12 @@
-"use client";
-import ChatRoom from "@/components/chatroom";
-import { io } from "socket.io-client";
+// "use client";
+// import ChatRoom from "@/components/chatroom";
+// import { io } from "socket.io-client";
 
-const Page = () => {
-  const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL;
-  const socket = io(BACKEND_URL);
+// const Page = () => {
+//   const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL;
+//   const socket = io(BACKEND_URL);
 
-  return <ChatRoom socket={socket} />;
-};
+//   return <ChatRoom socket={socket} />;
+// };
 
-export default Page;
+// export default Page;

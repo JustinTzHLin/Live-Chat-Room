@@ -9,12 +9,12 @@ import {
 import * as VisuallyHidden from "@radix-ui/react-visually-hidden";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { MessageSquareMore } from "lucide-react";
+import getNameInitials from "@/utils/getNameInitials";
 
 const ContactInfoDialog = ({
   contactInfoDialogOpen,
   setContactInfoDialogOpen,
   contactInfo,
-  getNameInitials,
   userConversationsData,
   setCurrentSection,
   setCurrentChatInfo,
@@ -26,7 +26,6 @@ const ContactInfoDialog = ({
     email: string;
     friendId: string;
   };
-  getNameInitials: (name: string) => string;
   userConversationsData: any[];
   setCurrentSection: (section: string) => void;
   setCurrentChatInfo: (chatInfo: any) => void;

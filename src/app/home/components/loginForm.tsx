@@ -112,7 +112,6 @@ const LoginForm = ({ toast }: { toast: any }) => {
                   type="button"
                   onClick={() => {
                     form.setValue("email", "");
-                    console.log(field.onChange);
                   }}
                   className="absolute right-1 top-1.5 h-6 w-6 text-muted-foreground hover:bg-transparent rounded-full"
                 >

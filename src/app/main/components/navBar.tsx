@@ -15,13 +15,17 @@ import {
   UserPlus,
   Users,
   Inbox,
+  LogOut,
 } from "lucide-react";
-import AddFriendDialog from "./addFriendDiallog";
+import AddFriendDialog from "./navBar/addFriendDiallog";
+import FriendRequestsDialog from "./navBar/friendRequestsDialog";
+import LogoutDialog from "./navBar/logoutDialog";
 
 const NavBar = ({
   userInformation,
   friendsList,
   toast,
+  socket,
 }: {
   userInformation: {
     userId: string;
@@ -32,8 +36,12 @@ const NavBar = ({
   };
   friendsList: any[];
   toast: any;
+  socket: any;
 }) => {
   const [addFriendDialogOpen, setAddFriendDialogOpen] = useState(false);
+  const [friendRequestsDialogOpen, setFriendRequestsDialogOpen] =
+    useState(false);
+  const [logoutDialogOpen, setLogoutDialogOpen] = useState(false);
 
   return (
     <div className="flex w-full">
@@ -78,9 +86,19 @@ const NavBar = ({
               <Users style={{ width: "18px", height: "18px" }} />
               Add Group
             </DropdownMenuItem>
-            <DropdownMenuItem className="hover:cursor-pointer">
+            <DropdownMenuItem
+              className="hover:cursor-pointer"
+              onClick={() => setFriendRequestsDialogOpen(true)}
+            >
               <Inbox style={{ width: "18px", height: "18px" }} />
-              Invites
+              Feiend Requests
+            </DropdownMenuItem>
+            <DropdownMenuItem
+              className="hover:cursor-pointer"
+              onClick={() => setLogoutDialogOpen(true)}
+            >
+              <LogOut style={{ width: "18px", height: "18px" }} />
+              Logout
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
@@ -96,11 +114,27 @@ const NavBar = ({
           <Bolt style={{ width: "26px", height: "26px" }} />
         </Button>
       </div>
-      <AddFriendDialog
-        addFriendDialogOpen={addFriendDialogOpen}
-        setAddFriendDialogOpen={setAddFriendDialogOpen}
-        userId={userInformation.userId}
-        friendsList={friendsList}
+      {addFriendDialogOpen && (
+        <AddFriendDialog
+          addFriendDialogOpen={addFriendDialogOpen}
+          setAddFriendDialogOpen={setAddFriendDialogOpen}
+          userInformation={userInformation}
+          friendsList={friendsList}
+          toast={toast}
+          socket={socket}
+        />
+      )}
+      {friendRequestsDialogOpen && (
+        <FriendRequestsDialog
+          friendRequestsDialogOpen={friendRequestsDialogOpen}
+          setFriendRequestsDialogOpen={setFriendRequestsDialogOpen}
+          userId={userInformation.userId}
+          socket={socket}
+        />
+      )}
+      <LogoutDialog
+        logoutDialogOpen={logoutDialogOpen}
+        setLogoutDialogOpen={setLogoutDialogOpen}
         toast={toast}
       />
     </div>

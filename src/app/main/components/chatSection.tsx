@@ -119,7 +119,7 @@ const ChatSection = ({
                 </div>
                 {/* <div className="text-xs text-muted-foreground">
                     {userChatData.friends.find(
-                      (friend) => friend.friendId === message.senderId
+                      (friend) => friend.id === message.senderId
                     )?.username ||
                       (userInformation.userId === message.senderId
                         ? "You"
