@@ -1,4 +1,4 @@
-export default (timestamp: Date) => {
+const timestampToFormattedTime = (timestamp: Date) => {
   const date = new Date(timestamp);
   const options = {
     hour: "numeric" as const,
@@ -7,3 +7,5 @@ export default (timestamp: Date) => {
   };
   return date.toLocaleTimeString("en-US", options);
 };
+
+export default timestampToFormattedTime;

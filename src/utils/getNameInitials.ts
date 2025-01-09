@@ -1,4 +1,4 @@
-export default (name: string) => {
+const getNameInitials = (name: string) => {
   const nameWords = name.split(" ");
   let initials = "";
   if (nameWords.length > 3) {
@@ -12,3 +12,5 @@ export default (name: string) => {
   }
   return initials.toUpperCase();
 };
+
+export default getNameInitials;
