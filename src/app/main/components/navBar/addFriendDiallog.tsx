@@ -121,9 +121,7 @@ const AddFriendDialog = ({
         duration: 3000,
       });
       return;
-    } else if (
-      friendsList.some((friend) => friend.friendId === searchedUser?.id)
-    ) {
+    } else if (friendsList.some((friend) => friend.id === searchedUser?.id)) {
       toast({
         title: "Already a friend",
         description: "You are already friends with this user.",
