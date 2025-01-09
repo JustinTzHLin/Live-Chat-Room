@@ -24,6 +24,7 @@ import LogoutDialog from "./navBar/logoutDialog";
 const NavBar = ({
   userInformation,
   friendsList,
+  setCurrentSection,
   toast,
   socket,
 }: {
@@ -35,6 +36,7 @@ const NavBar = ({
     lastActive: Date;
   };
   friendsList: any[];
+  setCurrentSection: (section: string) => void;
   toast: any;
   socket: any;
 }) => {
@@ -44,22 +46,22 @@ const NavBar = ({
   const [logoutDialogOpen, setLogoutDialogOpen] = useState(false);
 
   return (
-    <div className="flex w-full">
-      <div className="w-1/2 p-4">
+    <div className="flex w-full justify-between">
+      <div className="p-4">
         <div className="text-sm text-muted-foreground">Welcome,</div>
         <div className="text-xl font-semibold">{userInformation.username}</div>
       </div>
-      <div className="flex w-1/2 items-center justify-end pr-4 gap-1">
+      <div className="flex items-center justify-end pr-4 gap-1">
         <Button
           variant="ghost"
           size="icon"
           type="button"
-          className="text-muted-foreground rounded-full w-10 h-10"
+          className="text-muted-foreground w-10 h-10 hover:bg-transparent"
           onClick={() => {
             alert("search");
           }}
         >
-          <Search style={{ width: "26px", height: "26px" }} />
+          <Search style={{ width: "28px", height: "28px" }} />
         </Button>
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
@@ -67,9 +69,9 @@ const NavBar = ({
               variant="ghost"
               size="icon"
               type="button"
-              className="text-muted-foreground rounded-full w-10 h-10"
+              className="text-muted-foreground w-10 h-10 hover:bg-transparent"
             >
-              <EllipsisVertical style={{ width: "26px", height: "26px" }} />
+              <EllipsisVertical style={{ width: "28px", height: "28px" }} />
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent>
@@ -106,12 +108,10 @@ const NavBar = ({
           variant="ghost"
           size="icon"
           type="button"
-          className="text-muted-foreground rounded-full w-10 h-10"
-          onClick={() => {
-            alert("setting");
-          }}
+          className="text-muted-foreground w-10 h-10 hover:bg-transparent"
+          onClick={() => setCurrentSection("settings")}
         >
-          <Bolt style={{ width: "26px", height: "26px" }} />
+          <Bolt style={{ width: "28px", height: "28px" }} />
         </Button>
       </div>
       {addFriendDialogOpen && (

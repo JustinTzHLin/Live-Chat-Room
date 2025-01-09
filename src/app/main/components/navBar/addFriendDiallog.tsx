@@ -80,7 +80,7 @@ const AddFriendDialog = ({
           emailSchema.parse(searchInput);
           setError(null);
           const searchUserByEmail = await axios.post(
-            BACKEND_URL + "/user/searchUser",
+            `${BACKEND_URL}/user/searchUser`,
             { email: searchInput },
             { withCredentials: true }
           );
@@ -97,7 +97,7 @@ const AddFriendDialog = ({
           jicIdSchema.parse(searchInput);
           setError(null);
           const searchUserByJICId = await axios.post(
-            BACKEND_URL + "/user/searchUser",
+            `${BACKEND_URL}/user/searchUser`,
             { jicId: searchInput },
             { withCredentials: true }
           );
@@ -133,7 +133,7 @@ const AddFriendDialog = ({
     } else {
       try {
         const sendFriendRequest = await axios.post(
-          BACKEND_URL + "/user/sendFriendRequest",
+          `${BACKEND_URL}/user/sendFriendRequest`,
           { senderId: userInformation.userId, receiverId: searchedUser?.id },
           { withCredentials: true }
         );

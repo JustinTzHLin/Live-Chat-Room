@@ -38,7 +38,7 @@ const FriendRequestsDialog = ({
       setFetchingFriendRequests(true);
       try {
         const fetchFriendRequestsResponse = await axios(
-          BACKEND_URL + "/user/fetchFriendRequests",
+          `${BACKEND_URL}/user/fetchFriendRequests`,
           { withCredentials: true }
         );
         setFriendRequests(fetchFriendRequestsResponse.data);
@@ -105,7 +105,7 @@ const FriendRequestsDialog = ({
   const handleRequestAction = async (action: string, requestId: string) => {
     try {
       const requestActionResponse = await axios.post(
-        BACKEND_URL + "/user/friendRequestAction",
+        `${BACKEND_URL}/user/friendRequestAction`,
         { action, requestId },
         { withCredentials: true }
       );

@@ -7,6 +7,7 @@ import { Toaster } from "@/components/ui/toaster";
 import NavBar from "./components/navBar";
 import TabsSection from "./components/tabsSection";
 import ChatSection from "./components/chatSection";
+import SettingsSection from "./components/settingsSection";
 import { useAuthStore } from "@/providers/auth-store-provider";
 import { io } from "socket.io-client";
 import axios from "axios";
@@ -64,7 +65,7 @@ const Page = () => {
   const verifyLoggedInToken = async () => {
     try {
       const tokenVerified = await axios(
-        BACKEND_URL + "/token/verifyLoggedInToken",
+        `${BACKEND_URL}/token/verifyLoggedInToken`,
         { withCredentials: true }
       );
       if (tokenVerified.data.tokenVerified) {
@@ -115,7 +116,7 @@ const Page = () => {
   const fetchChatData = async (userId: string) => {
     try {
       const chatData = await axios.post(
-        BACKEND_URL + "/user/getChatData",
+        `${BACKEND_URL}/user/getChatData`,
         { userId },
         { withCredentials: true }
       );
@@ -202,6 +203,7 @@ const Page = () => {
       <NavBar
         userInformation={userInformation}
         friendsList={userChatData?.friends}
+        setCurrentSection={setCurrentSection}
         toast={toast}
         socket={socket}
       />
@@ -220,6 +222,8 @@ const Page = () => {
           setCurrentSection={setCurrentSection}
           socket={socket}
         />
+      ) : currentSection === "settings" ? (
+        <SettingsSection setCurrentSection={setCurrentSection} />
       ) : null}
       <Toaster />
     </div>

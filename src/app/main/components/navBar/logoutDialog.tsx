@@ -23,7 +23,7 @@ const LogoutDialog = ({
   const router = useRouter();
   const handleLogout = async () => {
     try {
-      const logoutResponse = await axios(BACKEND_URL + "/token/logout", {
+      const logoutResponse = await axios(`${BACKEND_URL}/token/logout`, {
         withCredentials: true,
       });
       if (logoutResponse.data.success) {

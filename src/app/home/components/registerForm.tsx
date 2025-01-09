@@ -63,7 +63,7 @@ const RegisterForm = ({
     const { username, password } = values;
     try {
       const registerResult = await axios.post(
-        BACKEND_URL + "/user/signUp",
+        `${BACKEND_URL}/user/signUp`,
         { username, password, email: registerEmail },
         { withCredentials: true }
       );
@@ -125,7 +125,7 @@ const RegisterForm = ({
                   <Input
                     type="text"
                     placeholder="New Chatter"
-                    className="focus-visible:ring-slate-400 pl-8"
+                    className="focus-visible:ring-slate-400 pl-8 pr-8"
                     autoFocus
                     {...field}
                   />
@@ -158,7 +158,7 @@ const RegisterForm = ({
                   <Input
                     type={showPassword ? "text" : "password"}
                     placeholder="Secure Password"
-                    className="focus-visible:ring-slate-400 pl-8"
+                    className="focus-visible:ring-slate-400 pl-8 pr-8"
                     {...field}
                   />
                 </FormControl>

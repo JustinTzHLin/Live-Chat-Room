@@ -37,7 +37,7 @@ const ChatSection = ({
     if (inputMessage) {
       try {
         await axios.post(
-          BACKEND_URL + "/chat/sendMessage",
+          `${BACKEND_URL}/chat/sendMessage`,
           {
             senderId: userInformation.userId,
             content: inputMessage,
@@ -62,7 +62,6 @@ const ChatSection = ({
 
   return (
     <div className="w-full h-[calc(100%-80px)] flex flex-col items-center">
-      {/*  */}
       <div className="w-full flex items-center justify-center h-10">
         <Button
           variant="ghost"
@@ -81,7 +80,7 @@ const ChatSection = ({
         {currentChatInfo.messages.map((message, index) => {
           return (
             <div
-              key={"message_" + index}
+              key={`message_${index}`}
               className={
                 "w-full flex mb-2 " +
                 (message.senderId === userInformation.userId

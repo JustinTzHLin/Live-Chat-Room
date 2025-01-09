@@ -47,7 +47,7 @@ const ChatRoom = ({ socket }: { socket: Socket }) => {
       </form>
       <button
         onClick={async () => {
-          const result = await axios(BACKEND_URL + "/test", {
+          const result = await axios(`${BACKEND_URL}/test`, {
             withCredentials: true,
           });
           console.log(result);

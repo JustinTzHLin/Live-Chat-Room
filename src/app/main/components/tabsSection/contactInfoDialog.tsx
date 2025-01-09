@@ -53,8 +53,6 @@ const ContactInfoDialog = ({
               size="icon"
               className="text-muted-foreground w-10 h-10"
               onClick={() => {
-                console.log(userConversationsData);
-                console.log(contactInfo);
                 setContactInfoDialogOpen(false);
                 setCurrentSection("chat");
                 setCurrentChatInfo(

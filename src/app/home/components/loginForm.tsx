@@ -46,7 +46,7 @@ const LoginForm = ({ toast }: { toast: any }) => {
     const { email, password } = values;
     try {
       const loginResult = await axios.post(
-        BACKEND_URL + "/user/signIn",
+        `${BACKEND_URL}/user/signIn`,
         { email, password },
         { withCredentials: true }
       );
@@ -101,7 +101,7 @@ const LoginForm = ({ toast }: { toast: any }) => {
                   <Input
                     type="text"
                     placeholder="JustInChat@example.com"
-                    className="focus-visible:ring-slate-400 pl-8"
+                    className="focus-visible:ring-slate-400 pl-8 pr-8"
                     autoFocus
                     {...field}
                   />
@@ -134,7 +134,7 @@ const LoginForm = ({ toast }: { toast: any }) => {
                   <Input
                     type={showPassword ? "text" : "password"}
                     placeholder="Secure Password"
-                    className="focus-visible:ring-slate-400 pl-8"
+                    className="focus-visible:ring-slate-400 pl-8 pr-8"
                     {...field}
                   />
                 </FormControl>

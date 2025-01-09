@@ -23,7 +23,7 @@ const Home = () => {
       if (registerToken) {
         try {
           const tokenVerified = await axios.post(
-            BACKEND_URL + "/token/verifyParamToken",
+            `${BACKEND_URL}/token/verifyParamToken`,
             { registerToken },
             { withCredentials: true }
           );

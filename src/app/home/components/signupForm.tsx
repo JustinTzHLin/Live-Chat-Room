@@ -34,7 +34,7 @@ const SignupForm = ({ toast }: { toast: any }) => {
     setIsLoading(true);
     try {
       const userExists = await axios.post(
-        BACKEND_URL + "/user/registerCheck",
+        `${BACKEND_URL}/user/registerCheck`,
         values,
         { withCredentials: true }
       );
@@ -81,7 +81,7 @@ const SignupForm = ({ toast }: { toast: any }) => {
                   <Input
                     type="text"
                     placeholder="JustInChat@example.com"
-                    className="focus-visible:ring-slate-400 pl-8"
+                    className="focus-visible:ring-slate-400 pl-8 pr-8"
                     autoFocus
                     {...field}
                   />

@@ -55,7 +55,7 @@ const TabsSection = ({
         <div className="flex flex-col justify-center gap-2">
           {Object.values(userChatData.conversations).map((chatInfo, index) => (
             <div
-              key={"chat_" + index}
+              key={`chat_${index}`}
               className="flex items-center justify-between gap-2 p-2 hover:bg-slate-100 hover:cursor-pointer rounded-lg"
               onClick={() => {
                 setCurrentSection("chat");
@@ -76,7 +76,7 @@ const TabsSection = ({
             .filter((conversation) => conversation.type === "group")
             .map((groupInfo, index) => (
               <div
-                key={"group_" + index}
+                key={`group_${index}`}
                 className="flex items-center justify-between gap-2 p-2 hover:bg-slate-100 hover:cursor-pointer rounded-lg"
                 onClick={() => {
                   setCurrentSection("chat");
@@ -95,7 +95,7 @@ const TabsSection = ({
         <div className="flex flex-col justify-center gap-1">
           {userChatData.friends.map((friendInfo, index) => (
             <div
-              key={"friend_" + index}
+              key={`friend_${index}`}
               className="flex items-center justify-between gap-2 p-1 hover:bg-slate-100 hover:cursor-pointer rounded-lg"
               onClick={() => {
                 setContactInfoDialogOpen(true);
