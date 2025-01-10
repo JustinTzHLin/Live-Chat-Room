@@ -47,7 +47,10 @@ const NavBar = ({
 
   return (
     <div className="flex w-full justify-between">
-      <div className="p-4">
+      <div
+        className="p-4 hover:cursor-pointer"
+        onClick={() => setCurrentSection("tabs")}
+      >
         <div className="text-sm text-muted-foreground">Welcome,</div>
         <div className="text-xl font-semibold">{userInformation.username}</div>
       </div>

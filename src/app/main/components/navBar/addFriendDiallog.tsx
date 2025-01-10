@@ -160,7 +160,9 @@ const AddFriendDialog = ({
               createdAt: sendFriendRequest.data.newFriendRequest.createdAt,
             });
           }
-        } else if (sendFriendRequest.data.message === "Request already sent.") {
+        } else if (
+          sendFriendRequest.data.errorMessage === "request already sent"
+        ) {
           toast({
             title: "Request already sent",
             description: "You have already sent a friend request to this user.",

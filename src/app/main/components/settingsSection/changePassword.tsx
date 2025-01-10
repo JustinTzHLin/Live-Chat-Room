@@ -15,21 +15,37 @@ import { useForm } from "react-hook-form";
 import { z } from "zod";
 import axios from "axios";
 
-const formSchema = z.object({
-  oldPassword: z
-    .string()
-    .min(8, { message: "Password must be at least 8 characters" })
-    .max(32, { message: "Password must be at most 32 characters" }),
-  newPassword: z
-    .string()
-    .min(8, { message: "Password must be at least 8 characters" })
-    .max(32, { message: "Password must be at most 32 characters" }),
-});
+const formSchema = z
+  .object({
+    oldPassword: z
+      .string()
+      .min(8, { message: "Password must be at least 8 characters" })
+      .max(32, { message: "Password must be at most 32 characters" }),
+    newPassword: z
+      .string()
+      .min(8, { message: "Password must be at least 8 characters" })
+      .max(32, { message: "Password must be at most 32 characters" }),
+    confirmNewPassword: z
+      .string()
+      .min(8, { message: "Password must be at least 8 characters" })
+      .max(32, { message: "Password must be at most 32 characters" }),
+  })
+  .refine((data) => data.newPassword === data.confirmNewPassword, {
+    message: "Passwords do not match",
+    path: ["confirmNewPassword"],
+  });
 
-const ChangePassword = () => {
+const ChangePassword = ({
+  setCurrentSetting,
+  toast,
+}: {
+  setCurrentSetting: (section: string) => void;
+  toast: any;
+}) => {
   const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL;
   const [showOldPassword, setShowOldPassword] = useState(false);
   const [showNewPassword, setShowNewPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
   const form = useForm<z.infer<typeof formSchema>>({
@@ -37,16 +53,70 @@ const ChangePassword = () => {
     defaultValues: {
       oldPassword: "",
       newPassword: "",
+      confirmNewPassword: "",
     },
   });
 
   const handleSubmit = async (values: z.infer<typeof formSchema>) => {
-    setIsLoading(true);
-    setTimeout(() => {
-      setIsLoading(false);
-    }, 2000);
     console.log(values);
+    if (values.oldPassword === values.newPassword) {
+      toast({
+        title: "Old password cannot be the same as new password",
+        description: "Please try again.",
+        duration: 3000,
+      });
+      return;
+    }
+    setIsLoading(true);
+    try {
+      const changePassword = await axios.post(
+        `${BACKEND_URL}/user/changePassword`,
+        values,
+        { withCredentials: true }
+      );
+      if (changePassword.data.passwordChanged) {
+        setCurrentSetting("settings");
+        toast({
+          title: "Password changed",
+          description: "Your password has been changed.",
+          duration: 3000,
+        });
+      } else if (changePassword.data.errorMessage === "incorrect password")
+        toast({
+          title: "Password incorrect",
+          description: "Please try again.",
+          duration: 3000,
+        });
+    } catch (err) {
+      console.log(err);
+    } finally {
+      setIsLoading(false);
+    }
   };
+
+  const formInputItems = [
+    {
+      name: "oldPassword",
+      label: "Current Password",
+      placeholder: "Current Secure Password",
+      showPassword: showOldPassword,
+      setShowPassword: setShowOldPassword,
+    },
+    {
+      name: "newPassword",
+      label: "New Password",
+      placeholder: "New Secure Password",
+      showPassword: showNewPassword,
+      setShowPassword: setShowNewPassword,
+    },
+    {
+      name: "confirmNewPassword",
+      label: "Confirm New Password",
+      placeholder: "Confirm New Secure Password",
+      showPassword: showConfirmPassword,
+      setShowPassword: setShowConfirmPassword,
+    },
+  ];
 
   return (
     <div className="flex w-full justify-center">
@@ -55,66 +125,46 @@ const ChangePassword = () => {
           className="flex flex-col w-full max-w-sm justify-center gap-3 px-4 mt-4"
           onSubmit={form.handleSubmit(handleSubmit)}
         >
-          <FormField
-            control={form.control}
-            name="oldPassword"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Old Password</FormLabel>
-                <div className="relative">
-                  <Lock className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
-                  <FormControl>
-                    <Input
-                      type={showOldPassword ? "text" : "password"}
-                      placeholder="Old Secure Password"
-                      className="focus-visible:ring-slate-400 pl-8 pr-8"
-                      {...field}
-                    />
-                  </FormControl>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    type="button"
-                    onClick={() => setShowOldPassword(!showOldPassword)}
-                    className="absolute right-1 top-1.5 h-6 w-6 text-muted-foreground hover:bg-transparent rounded-full"
-                  >
-                    {showOldPassword ? <Eye /> : <EyeOff />}
-                  </Button>
-                </div>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-          <FormField
-            control={form.control}
-            name="newPassword"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Password</FormLabel>
-                <div className="relative">
-                  <Lock className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
-                  <FormControl>
-                    <Input
-                      type={showNewPassword ? "text" : "password"}
-                      placeholder="New Secure Password"
-                      className="focus-visible:ring-slate-400 pl-8 pr-8"
-                      {...field}
-                    />
-                  </FormControl>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    type="button"
-                    onClick={() => setShowNewPassword(!showNewPassword)}
-                    className="absolute right-1 top-1.5 h-6 w-6 text-muted-foreground hover:bg-transparent rounded-full"
-                  >
-                    {showNewPassword ? <Eye /> : <EyeOff />}
-                  </Button>
-                </div>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
+          {formInputItems.map((inputItem) => (
+            <FormField
+              key={`input_item_${inputItem.name}`}
+              control={form.control}
+              name={
+                inputItem.name as
+                  | "oldPassword"
+                  | "newPassword"
+                  | "confirmNewPassword"
+              }
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>{inputItem.label}</FormLabel>
+                  <div className="relative">
+                    <Lock className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
+                    <FormControl>
+                      <Input
+                        type={inputItem.showPassword ? "text" : "password"}
+                        placeholder={inputItem.placeholder}
+                        className="focus-visible:ring-slate-400 pl-8 pr-8"
+                        {...field}
+                      />
+                    </FormControl>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      type="button"
+                      onClick={() =>
+                        inputItem.setShowPassword(!inputItem.showPassword)
+                      }
+                      className="absolute right-1 top-1.5 h-6 w-6 text-muted-foreground hover:bg-transparent rounded-full"
+                    >
+                      {inputItem.showPassword ? <Eye /> : <EyeOff />}
+                    </Button>
+                  </div>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          ))}
           <Button className="w-full mt-3" type="submit" disabled={isLoading}>
             {isLoading && <LoaderCircle className="animate-spin" />}
             {isLoading ? "Submitting..." : "Submit"}

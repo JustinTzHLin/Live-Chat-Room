@@ -13,12 +13,13 @@ import {
   UserPen,
 } from "lucide-react";
 import ChangePassword from "./settingsSection/changePassword";
-import { set } from "date-fns";
 
 const SettingsSection = ({
   setCurrentSection,
+  toast,
 }: {
   setCurrentSection: (section: string) => void;
+  toast: any;
 }) => {
   const settingItems = {
     password: {
@@ -95,7 +96,7 @@ const SettingsSection = ({
             </React.Fragment>
           ))
         ) : currentSetting === "password" ? (
-          <ChangePassword />
+          <ChangePassword setCurrentSetting={setCurrentSetting} toast={toast} />
         ) : null}
       </ScrollArea>
     </div>
