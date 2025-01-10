@@ -13,11 +13,30 @@ import {
   UserPen,
 } from "lucide-react";
 import ChangePassword from "./settingsSection/changePassword";
+import EditProfile from "./settingsSection/editProfile";
 
 const SettingsSection = ({
+  userInformation,
+  setUserInformation,
   setCurrentSection,
   toast,
 }: {
+  userInformation: {
+    userId: string;
+    username: string;
+    email: string;
+    createdAt: Date;
+    lastActive: Date;
+  };
+  setUserInformation: React.Dispatch<
+    React.SetStateAction<{
+      userId: string;
+      username: string;
+      email: string;
+      createdAt: Date;
+      lastActive: Date;
+    }>
+  >;
   setCurrentSection: (section: string) => void;
   toast: any;
 }) => {
@@ -97,6 +116,12 @@ const SettingsSection = ({
           ))
         ) : currentSetting === "password" ? (
           <ChangePassword setCurrentSetting={setCurrentSetting} toast={toast} />
+        ) : currentSetting === "profile" ? (
+          <EditProfile
+            userInformation={userInformation}
+            setUserInformation={setUserInformation}
+            toast={toast}
+          />
         ) : null}
       </ScrollArea>
     </div>

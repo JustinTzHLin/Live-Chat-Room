@@ -88,7 +88,8 @@ const AddFriendDialog = ({
             setSearchedUser(searchUserByEmail.data.searchedUser);
           }
         } catch (error) {
-          setError("Invalid email");
+          if (error instanceof z.ZodError) setError(error.issues[0].message);
+          else console.error(error);
         } finally {
           setSearching(false);
         }
@@ -105,7 +106,8 @@ const AddFriendDialog = ({
             setSearchedUser(searchUserByJICId.data.searchedUser);
           }
         } catch (error) {
-          setError("Invalid ID");
+          if (error instanceof z.ZodError) setError(error.issues[0].message);
+          else console.error(error);
         } finally {
           setSearching(false);
         }

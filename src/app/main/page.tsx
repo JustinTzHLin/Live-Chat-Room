@@ -223,7 +223,12 @@ const Page = () => {
           socket={socket}
         />
       ) : currentSection === "settings" ? (
-        <SettingsSection setCurrentSection={setCurrentSection} toast={toast} />
+        <SettingsSection
+          userInformation={userInformation}
+          setUserInformation={setUserInformation}
+          setCurrentSection={setCurrentSection}
+          toast={toast}
+        />
       ) : null}
       <Toaster />
     </div>
