@@ -16,6 +16,7 @@ const ChatSection = ({
     userId: string;
     username: string;
     email: string;
+    twoFactor: string;
     createdAt: Date;
     lastActive: Date;
   };

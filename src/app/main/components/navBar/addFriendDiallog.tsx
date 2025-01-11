@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -24,7 +25,6 @@ const AddFriendDialog = ({
   setAddFriendDialogOpen,
   userInformation,
   friendsList,
-  toast,
   socket,
 }: {
   addFriendDialogOpen: boolean;
@@ -33,11 +33,11 @@ const AddFriendDialog = ({
     userId: string;
     username: string;
     email: string;
+    twoFactor: string;
     createdAt: Date;
     lastActive: Date;
   };
   friendsList: any[];
-  toast: any;
   socket: any;
 }) => {
   const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL;
@@ -54,6 +54,7 @@ const AddFriendDialog = ({
   });
   const [error, setError] = useState<string | null>(null);
   const [searching, setSearching] = useState<boolean>(false);
+  const { toast } = useToast();
 
   useEffect(() => {
     if (addFriendDialogOpen) {

@@ -25,19 +25,18 @@ const NavBar = ({
   userInformation,
   friendsList,
   setCurrentSection,
-  toast,
   socket,
 }: {
   userInformation: {
     userId: string;
     username: string;
     email: string;
+    twoFactor: string;
     createdAt: Date;
     lastActive: Date;
   };
   friendsList: any[];
   setCurrentSection: (section: string) => void;
-  toast: any;
   socket: any;
 }) => {
   const [addFriendDialogOpen, setAddFriendDialogOpen] = useState(false);
@@ -123,7 +122,6 @@ const NavBar = ({
           setAddFriendDialogOpen={setAddFriendDialogOpen}
           userInformation={userInformation}
           friendsList={friendsList}
-          toast={toast}
           socket={socket}
         />
       )}
@@ -138,7 +136,6 @@ const NavBar = ({
       <LogoutDialog
         logoutDialogOpen={logoutDialogOpen}
         setLogoutDialogOpen={setLogoutDialogOpen}
-        toast={toast}
       />
     </div>
   );

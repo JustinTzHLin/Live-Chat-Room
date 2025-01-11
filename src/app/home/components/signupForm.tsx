@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useToast } from "@/hooks/use-toast";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Mail, X, LoaderCircle } from "lucide-react";
@@ -19,9 +20,10 @@ const formSchema = z.object({
   email: z.string().email(),
 });
 
-const SignupForm = ({ toast }: { toast: any }) => {
+const SignupForm = () => {
   const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL;
   const [isLoading, setIsLoading] = useState(false);
+  const { toast } = useToast();
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),

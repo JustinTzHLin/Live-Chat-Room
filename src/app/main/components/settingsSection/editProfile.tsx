@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useToast } from "@/hooks/use-toast";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -15,12 +16,12 @@ const usernameSchema = z
 const EditProfile = ({
   userInformation,
   setUserInformation,
-  toast,
 }: {
   userInformation: {
     userId: string;
     username: string;
     email: string;
+    twoFactor: string;
     createdAt: Date;
     lastActive: Date;
   };
@@ -29,11 +30,11 @@ const EditProfile = ({
       userId: string;
       username: string;
       email: string;
+      twoFactor: string;
       createdAt: Date;
       lastActive: Date;
     }>
   >;
-  toast: any;
 }) => {
   const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL;
   const [editUsername, setEditUsername] = useState<boolean>(false);
@@ -41,6 +42,7 @@ const EditProfile = ({
     userInformation.username
   );
   const [error, setError] = useState<string | null>(null);
+  const { toast } = useToast();
 
   useEffect(() => {
     setError(null);

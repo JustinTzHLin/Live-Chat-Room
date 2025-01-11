@@ -3,7 +3,6 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useToast } from "@/hooks/use-toast";
-import { Toaster } from "@/components/ui/toaster";
 import NavBar from "./components/navBar";
 import TabsSection from "./components/tabsSection";
 import ChatSection from "./components/chatSection";
@@ -21,12 +20,14 @@ const Page = () => {
     userId: string;
     username: string;
     email: string;
+    twoFactor: string;
     createdAt: Date;
     lastActive: Date;
   }>({
     userId: "",
     username: "",
     email: "",
+    twoFactor: "none",
     createdAt: new Date(),
     lastActive: new Date(),
   });
@@ -204,7 +205,6 @@ const Page = () => {
         userInformation={userInformation}
         friendsList={userChatData?.friends}
         setCurrentSection={setCurrentSection}
-        toast={toast}
         socket={socket}
       />
       {currentSection === "tabs" ? (
@@ -227,10 +227,8 @@ const Page = () => {
           userInformation={userInformation}
           setUserInformation={setUserInformation}
           setCurrentSection={setCurrentSection}
-          toast={toast}
         />
       ) : null}
-      <Toaster />
     </div>
   );
 };

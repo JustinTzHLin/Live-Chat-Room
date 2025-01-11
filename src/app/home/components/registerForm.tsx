@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { useToast } from "@/hooks/use-toast";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
@@ -37,18 +38,13 @@ const formSchema = z.object({
     .max(32, { message: "Password must be at most 32 characters" }),
 });
 
-const RegisterForm = ({
-  toast,
-  registerEmail,
-}: {
-  toast: any;
-  registerEmail: string;
-}) => {
+const RegisterForm = ({ registerEmail }: { registerEmail: string }) => {
   const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL;
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const { updatePreviousURL } = useAuthStore((state) => state);
   const router = useRouter();
+  const { toast } = useToast();
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),

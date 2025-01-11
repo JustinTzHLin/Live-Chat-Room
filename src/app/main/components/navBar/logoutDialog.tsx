@@ -1,4 +1,5 @@
 import { useRouter } from "next/navigation";
+import { useToast } from "@/hooks/use-toast";
 import {
   Dialog,
   DialogContent,
@@ -13,14 +14,13 @@ import axios from "axios";
 const LogoutDialog = ({
   logoutDialogOpen,
   setLogoutDialogOpen,
-  toast,
 }: {
   logoutDialogOpen: boolean;
   setLogoutDialogOpen: (open: boolean) => void;
-  toast: any;
 }) => {
   const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL;
   const router = useRouter();
+  const { toast } = useToast();
   const handleLogout = async () => {
     try {
       const logoutResponse = await axios(`${BACKEND_URL}/token/logout`, {

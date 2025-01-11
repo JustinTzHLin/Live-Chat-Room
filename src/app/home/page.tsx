@@ -2,7 +2,6 @@
 
 import { useEffect, useState, Suspense } from "react";
 import { useToast } from "@/hooks/use-toast";
-import { Toaster } from "@/components/ui/toaster";
 import LoginForm from "./components/loginForm";
 import SignupForm from "./components/signupForm";
 import RegisterForm from "./components/registerForm";
@@ -14,8 +13,8 @@ const Home = () => {
   const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL;
   const { authAction, updateAuthAction } = useAuthStore((state) => state);
   const searchParams = useSearchParams();
-  const { toast } = useToast();
   const [registerEmail, setRegisterEmail] = useState("");
+  const { toast } = useToast();
 
   useEffect(() => {
     const verifyRegisterToken = async () => {
@@ -74,11 +73,11 @@ const Home = () => {
         <span className="font-semibold">Private</span> Live Chat Space
       </p>
       {authAction === "login" ? (
-        <LoginForm toast={toast} />
+        <LoginForm />
       ) : authAction === "signup" ? (
-        <SignupForm toast={toast} />
+        <SignupForm />
       ) : (
-        <RegisterForm toast={toast} registerEmail={registerEmail} />
+        <RegisterForm registerEmail={registerEmail} />
       )}
       <p className="text-slate-600">
         {authAction === "login"
@@ -94,7 +93,6 @@ const Home = () => {
           {authAction === "login" ? "Sign Up" : "Login"}
         </span>
       </p>
-      <Toaster />
     </div>
   );
 };

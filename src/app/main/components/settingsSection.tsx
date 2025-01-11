@@ -19,12 +19,12 @@ const SettingsSection = ({
   userInformation,
   setUserInformation,
   setCurrentSection,
-  toast,
 }: {
   userInformation: {
     userId: string;
     username: string;
     email: string;
+    twoFactor: string;
     createdAt: Date;
     lastActive: Date;
   };
@@ -33,12 +33,12 @@ const SettingsSection = ({
       userId: string;
       username: string;
       email: string;
+      twoFactor: string;
       createdAt: Date;
       lastActive: Date;
     }>
   >;
   setCurrentSection: (section: string) => void;
-  toast: any;
 }) => {
   const settingItems = {
     password: {
@@ -115,12 +115,11 @@ const SettingsSection = ({
             </React.Fragment>
           ))
         ) : currentSetting === "password" ? (
-          <ChangePassword setCurrentSetting={setCurrentSetting} toast={toast} />
+          <ChangePassword setCurrentSetting={setCurrentSetting} />
         ) : currentSetting === "profile" ? (
           <EditProfile
             userInformation={userInformation}
             setUserInformation={setUserInformation}
-            toast={toast}
           />
         ) : null}
       </ScrollArea>
