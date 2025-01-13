@@ -121,7 +121,7 @@ const RegisterForm = ({ registerEmail }: { registerEmail: string }) => {
                   <Input
                     type="text"
                     placeholder="New Chatter"
-                    className="focus-visible:ring-slate-400 pl-8 pr-8"
+                    className="pl-8 pr-8"
                     autoFocus
                     {...field}
                   />
@@ -154,7 +154,7 @@ const RegisterForm = ({ registerEmail }: { registerEmail: string }) => {
                   <Input
                     type={showPassword ? "text" : "password"}
                     placeholder="Secure Password"
-                    className="focus-visible:ring-slate-400 pl-8 pr-8"
+                    className="pl-8 pr-8"
                     {...field}
                   />
                 </FormControl>

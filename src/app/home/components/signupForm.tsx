@@ -83,7 +83,7 @@ const SignupForm = () => {
                   <Input
                     type="text"
                     placeholder="JustInChat@example.com"
-                    className="focus-visible:ring-slate-400 pl-8 pr-8"
+                    className="pl-8 pr-8"
                     autoFocus
                     {...field}
                   />

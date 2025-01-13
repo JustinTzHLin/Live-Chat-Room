@@ -108,7 +108,7 @@ const EditProfile = ({
                 setError(null);
               }}
               placeholder="New Username"
-              className="focus-visible:ring-slate-400 pl-8 pr-8"
+              className="pl-8 pr-8"
               autoFocus
             />
             <Button

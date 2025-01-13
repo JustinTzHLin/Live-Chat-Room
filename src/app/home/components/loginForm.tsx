@@ -30,7 +30,9 @@ const LoginForm = () => {
   const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL;
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const { updatePreviousURL } = useAuthStore((state) => state);
+  const { updatePreviousURL, updateAuthAction } = useAuthStore(
+    (state) => state
+  );
   const router = useRouter();
   const { toast } = useToast();
 
@@ -59,13 +61,28 @@ const LoginForm = () => {
           duration: 3000,
         });
       else if (loginResult.data.userVerified) {
-        updatePreviousURL("/home");
-        router.push("/main");
-        toast({
-          title: "User logged in",
-          description: "Welcome back!",
-          duration: 3000,
-        });
+        if (loginResult.data.authenticatedUser.twoFactor === "none") {
+          updatePreviousURL("/home");
+          router.push("/main");
+          toast({
+            title: "User logged in",
+            description: "Welcome back!",
+            duration: 3000,
+          });
+        } else {
+          updateAuthAction("2fa");
+          toast({
+            title: "2FA required",
+            description: (
+              <>
+                We have sent a 2FA code to your email.
+                <br />
+                Please enter your 2FA code.
+              </>
+            ),
+            duration: 3000,
+          });
+        }
       } else
         toast({
           title: "Email or password incorrect",
@@ -103,7 +120,7 @@ const LoginForm = () => {
                   <Input
                     type="text"
                     placeholder="JustInChat@example.com"
-                    className="focus-visible:ring-slate-400 pl-8 pr-8"
+                    className="pl-8 pr-8"
                     autoFocus
                     {...field}
                   />
@@ -136,7 +153,7 @@ const LoginForm = () => {
                   <Input
                     type={showPassword ? "text" : "password"}
                     placeholder="Secure Password"
-                    className="focus-visible:ring-slate-400 pl-8 pr-8"
+                    className="pl-8 pr-8"
                     {...field}
                   />
                 </FormControl>

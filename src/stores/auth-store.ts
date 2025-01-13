@@ -1,7 +1,7 @@
 import { createStore } from "zustand/vanilla";
 
 export type AuthState = {
-  authAction: string; // login, signup, register
+  authAction: string; // login, signup, register, 2fa
   previousURL: string; // NONE, /home
 };
 

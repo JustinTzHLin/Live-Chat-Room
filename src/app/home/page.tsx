@@ -5,6 +5,7 @@ import { useToast } from "@/hooks/use-toast";
 import LoginForm from "./components/loginForm";
 import SignupForm from "./components/signupForm";
 import RegisterForm from "./components/registerForm";
+import OtpForm from "./components/otpForm";
 import { useAuthStore } from "@/providers/auth-store-provider";
 import { useSearchParams } from "next/navigation";
 import axios from "axios";
@@ -76,8 +77,10 @@ const Home = () => {
         <LoginForm />
       ) : authAction === "signup" ? (
         <SignupForm />
-      ) : (
+      ) : authAction === "register" ? (
         <RegisterForm registerEmail={registerEmail} />
+      ) : (
+        <OtpForm />
       )}
       <p className="text-slate-600">
         {authAction === "login"
@@ -90,7 +93,7 @@ const Home = () => {
             else updateAuthAction("login");
           }}
         >
-          {authAction === "login" ? "Sign Up" : "Login"}
+          {authAction === "login" || authAction === "2fa" ? "Sign Up" : "Login"}
         </span>
       </p>
     </div>

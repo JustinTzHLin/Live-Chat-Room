@@ -144,7 +144,7 @@ const ChangePassword = ({
                       <Input
                         type={inputItem.showPassword ? "text" : "password"}
                         placeholder={inputItem.placeholder}
-                        className="focus-visible:ring-slate-400 pl-8 pr-8"
+                        className="pl-8 pr-8"
                         {...field}
                       />
                     </FormControl>
