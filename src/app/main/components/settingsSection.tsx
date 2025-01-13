@@ -13,6 +13,7 @@ import {
   UserPen,
 } from "lucide-react";
 import ChangePassword from "./settingsSection/changePassword";
+import TwoStepVerification from "./settingsSection/twoStepVerification";
 import EditProfile from "./settingsSection/editProfile";
 
 const SettingsSection = ({
@@ -119,6 +120,11 @@ const SettingsSection = ({
         ) : currentSetting === "profile" ? (
           <EditProfile
             userInformation={userInformation}
+            setUserInformation={setUserInformation}
+          />
+        ) : currentSetting === "2fa" ? (
+          <TwoStepVerification
+            twoFactor={userInformation.twoFactor}
             setUserInformation={setUserInformation}
           />
         ) : null}

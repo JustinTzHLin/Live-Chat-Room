@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Input } from "@/components/ui/input";
@@ -82,38 +83,38 @@ const ChatSection = ({
           return (
             <div
               key={`message_${index}`}
-              className={
-                "w-full flex mb-2 " +
-                (message.senderId === userInformation.userId
+              className={cn(
+                "w-full flex mb-2",
+                message.senderId === userInformation.userId
                   ? "justify-end"
-                  : "justify-start")
-              }
+                  : "justify-start"
+              )}
             >
               <div
-                className={
-                  "flex flex-col p-2 hover:cursor-pointer rounded-xl " +
-                  (message.senderId === userInformation.userId
+                className={cn(
+                  "flex flex-col p-2 hover:cursor-pointer rounded-xl",
+                  message.senderId === userInformation.userId
                     ? "items-end rounded-br-none bg-slate-800"
-                    : "items-end rounded-bl-none bg-slate-100")
-                }
+                    : "items-end rounded-bl-none bg-slate-100"
+                )}
               >
                 <div
-                  className={
-                    "px-2 pt-1 text-lg " +
-                    (message.senderId === userInformation.userId
+                  className={cn(
+                    "px-2 pt-1 text-lg",
+                    message.senderId === userInformation.userId
                       ? "text-white"
-                      : "")
-                  }
+                      : ""
+                  )}
                 >
                   {message.content}
                 </div>
                 <div
-                  className={
-                    "text-sm " +
-                    (message.senderId === userInformation.userId
+                  className={cn(
+                    "text-sm",
+                    message.senderId === userInformation.userId
                       ? "text-white"
-                      : "")
-                  }
+                      : ""
+                  )}
                 >
                   {timestampToFormattedTime(message.timestamp)}
                 </div>
