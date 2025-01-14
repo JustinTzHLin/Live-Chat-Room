@@ -7,7 +7,8 @@ import NavBar from "./components/navBar";
 import TabsSection from "./components/tabsSection";
 import ChatSection from "./components/chatSection";
 import SettingsSection from "./components/settingsSection";
-import { useAuthStore } from "@/providers/auth-store-provider";
+import { useAuthStore } from "@/stores/authStore";
+import { useUserStore } from "@/stores/userStore";
 import { io } from "socket.io-client";
 import axios from "axios";
 
@@ -16,21 +17,9 @@ const Page = () => {
   const { previousURL, updatePreviousURL } = useAuthStore((state) => state);
   const router = useRouter();
   const { toast } = useToast();
-  const [userInformation, setUserInformation] = useState<{
-    userId: string;
-    username: string;
-    email: string;
-    twoFactor: string;
-    createdAt: Date;
-    lastActive: Date;
-  }>({
-    userId: "",
-    username: "",
-    email: "",
-    twoFactor: "none",
-    createdAt: new Date(),
-    lastActive: new Date(),
-  });
+  const { userInformation, setUserInformation } = useUserStore(
+    (state) => state
+  );
   const [userChatData, setUserChatData] = useState<{
     conversations: {
       [key: string]: {
@@ -202,7 +191,6 @@ const Page = () => {
   return (
     <div className="flex flex-col h-screen items-center min-h-[500px] min-w-[320px]">
       <NavBar
-        userInformation={userInformation}
         friendsList={userChatData?.friends}
         setCurrentSection={setCurrentSection}
         socket={socket}
@@ -217,17 +205,12 @@ const Page = () => {
         />
       ) : currentSection === "chat" ? (
         <ChatSection
-          userInformation={userInformation}
           currentChatInfo={currentChatInfo}
           setCurrentSection={setCurrentSection}
           socket={socket}
         />
       ) : currentSection === "settings" ? (
-        <SettingsSection
-          userInformation={userInformation}
-          setUserInformation={setUserInformation}
-          setCurrentSection={setCurrentSection}
-        />
+        <SettingsSection setCurrentSection={setCurrentSection} />
       ) : null}
     </div>
   );

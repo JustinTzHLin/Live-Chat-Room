@@ -13,7 +13,7 @@ import {
   UserRound,
   LoaderCircle,
 } from "lucide-react";
-import { useAuthStore } from "@/providers/auth-store-provider";
+import { useAuthStore } from "@/stores/authStore";
 import axios from "axios";
 import {
   Form,

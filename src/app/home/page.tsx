@@ -6,7 +6,7 @@ import LoginForm from "./components/loginForm";
 import SignupForm from "./components/signupForm";
 import RegisterForm from "./components/registerForm";
 import OtpForm from "./components/otpForm";
-import { useAuthStore } from "@/providers/auth-store-provider";
+import { useAuthStore } from "@/stores/authStore";
 import { useSearchParams } from "next/navigation";
 import axios from "axios";
 

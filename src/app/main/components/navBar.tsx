@@ -20,25 +20,18 @@ import {
 import AddFriendDialog from "./navBar/addFriendDiallog";
 import FriendRequestsDialog from "./navBar/friendRequestsDialog";
 import LogoutDialog from "./navBar/logoutDialog";
+import { useUserStore } from "@/stores/userStore";
 
 const NavBar = ({
-  userInformation,
   friendsList,
   setCurrentSection,
   socket,
 }: {
-  userInformation: {
-    userId: string;
-    username: string;
-    email: string;
-    twoFactor: string;
-    createdAt: Date;
-    lastActive: Date;
-  };
   friendsList: any[];
   setCurrentSection: (section: string) => void;
   socket: any;
 }) => {
+  const userInformation = useUserStore((state) => state.userInformation);
   const [addFriendDialogOpen, setAddFriendDialogOpen] = useState(false);
   const [friendRequestsDialogOpen, setFriendRequestsDialogOpen] =
     useState(false);
@@ -120,19 +113,15 @@ const NavBar = ({
         <AddFriendDialog
           addFriendDialogOpen={addFriendDialogOpen}
           setAddFriendDialogOpen={setAddFriendDialogOpen}
-          userInformation={userInformation}
           friendsList={friendsList}
           socket={socket}
         />
       )}
-      {friendRequestsDialogOpen && (
-        <FriendRequestsDialog
-          friendRequestsDialogOpen={friendRequestsDialogOpen}
-          setFriendRequestsDialogOpen={setFriendRequestsDialogOpen}
-          userId={userInformation.userId}
-          socket={socket}
-        />
-      )}
+      <FriendRequestsDialog
+        friendRequestsDialogOpen={friendRequestsDialogOpen}
+        setFriendRequestsDialogOpen={setFriendRequestsDialogOpen}
+        socket={socket}
+      />
       <LogoutDialog
         logoutDialogOpen={logoutDialogOpen}
         setLogoutDialogOpen={setLogoutDialogOpen}

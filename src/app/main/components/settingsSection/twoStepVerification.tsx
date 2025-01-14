@@ -10,25 +10,13 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { useUserStore } from "@/stores/userStore";
 import axios from "axios";
 
-const TwoStepVerification = ({
-  twoFactor,
-  setUserInformation,
-}: {
-  twoFactor: string;
-  setUserInformation: React.Dispatch<
-    React.SetStateAction<{
-      userId: string;
-      username: string;
-      email: string;
-      twoFactor: string;
-      createdAt: Date;
-      lastActive: Date;
-    }>
-  >;
-}) => {
+const TwoStepVerification = () => {
   const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL;
+  const twoFactor = useUserStore((state) => state.userInformation.twoFactor);
+  const setTwoFactor = useUserStore((state) => state.setTwoFactor);
   const [current2FA, setCurrent2FA] = useState(twoFactor);
   const router = useRouter();
   const { toast } = useToast();
@@ -46,10 +34,7 @@ const TwoStepVerification = ({
           description: "Your 2FA has been updated.",
           duration: 3000,
         });
-        setUserInformation((prev) => ({
-          ...prev,
-          twoFactor: current2FA,
-        }));
+        setTwoFactor(current2FA);
       } else {
         if (change2FAResponse.data.errorMessage === "no token found")
           toast({

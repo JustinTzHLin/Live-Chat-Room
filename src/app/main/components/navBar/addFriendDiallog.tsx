@@ -13,6 +13,7 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Input } from "@/components/ui/input";
 import * as VisuallyHidden from "@radix-ui/react-visually-hidden";
 import { UserSearch, UserRoundPlus } from "lucide-react";
+import { useUserStore } from "@/stores/userStore";
 import getNameInitials from "@/utils/getNameInitials";
 import axios from "axios";
 import { z } from "zod";
@@ -23,24 +24,16 @@ const jicIdSchema = z.string().min(8).max(16);
 const AddFriendDialog = ({
   addFriendDialogOpen,
   setAddFriendDialogOpen,
-  userInformation,
   friendsList,
   socket,
 }: {
   addFriendDialogOpen: boolean;
   setAddFriendDialogOpen: (open: boolean) => void;
-  userInformation: {
-    userId: string;
-    username: string;
-    email: string;
-    twoFactor: string;
-    createdAt: Date;
-    lastActive: Date;
-  };
   friendsList: any[];
   socket: any;
 }) => {
   const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL;
+  const userInformation = useUserStore((state) => state.userInformation);
   const [radioValue, setRadioValue] = useState<string>("email");
   const [searchInput, setSearchInput] = useState<string>("");
   const [searchedUser, setSearchedUser] = useState<{

@@ -1,14 +1,14 @@
 import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { useRouter } from "next/navigation";
-import { useAuthStore } from "@/providers/auth-store-provider";
+import { useAuthStore } from "@/stores/authStore";
 import {
   InputOTP,
   InputOTPGroup,
   InputOTPSlot,
 } from "@/components/ui/input-otp";
 import { Button } from "@/components/ui/button";
-import { RectangleEllipsis, LoaderCircle } from "lucide-react";
+import { LoaderCircle } from "lucide-react";
 import {
   Form,
   FormControl,
@@ -30,7 +30,9 @@ const formSchema = z.object({
 const OTPForm = () => {
   const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL;
   const [isLoading, setIsLoading] = useState(false);
-  const { updatePreviousURL } = useAuthStore((state) => state);
+  const { updatePreviousURL, updateAuthAction } = useAuthStore(
+    (state) => state
+  );
   const { toast } = useToast();
   const router = useRouter();
 
@@ -57,6 +59,7 @@ const OTPForm = () => {
           description: "Welcome back!",
           duration: 3000,
         });
+        updateAuthAction("login");
       } else if (otpVerified.data.errorMessage === "incorrect otp code")
         toast({
           title: "Incorrect OTP code",

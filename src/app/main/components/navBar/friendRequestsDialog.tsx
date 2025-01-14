@@ -8,21 +8,21 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { X, Check, Trash2 } from "lucide-react";
+import { useUserStore } from "@/stores/userStore";
 import getNameInitials from "@/utils/getNameInitials";
 import axios from "axios";
 
 const FriendRequestsDialog = ({
   friendRequestsDialogOpen,
   setFriendRequestsDialogOpen,
-  userId,
   socket,
 }: {
   friendRequestsDialogOpen: boolean;
   setFriendRequestsDialogOpen: (open: boolean) => void;
-  userId: string;
   socket: any;
 }) => {
   const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL;
+  const userId = useUserStore((state) => state.userInformation.userId);
   const [fetchingFriendRequests, setFetchingFriendRequests] =
     useState<boolean>(false);
   const [friendRequests, setFriendRequests] = useState<{

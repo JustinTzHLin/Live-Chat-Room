@@ -17,28 +17,8 @@ import TwoStepVerification from "./settingsSection/twoStepVerification";
 import EditProfile from "./settingsSection/editProfile";
 
 const SettingsSection = ({
-  userInformation,
-  setUserInformation,
   setCurrentSection,
 }: {
-  userInformation: {
-    userId: string;
-    username: string;
-    email: string;
-    twoFactor: string;
-    createdAt: Date;
-    lastActive: Date;
-  };
-  setUserInformation: React.Dispatch<
-    React.SetStateAction<{
-      userId: string;
-      username: string;
-      email: string;
-      twoFactor: string;
-      createdAt: Date;
-      lastActive: Date;
-    }>
-  >;
   setCurrentSection: (section: string) => void;
 }) => {
   const settingItems = {
@@ -118,15 +98,9 @@ const SettingsSection = ({
         ) : currentSetting === "password" ? (
           <ChangePassword setCurrentSetting={setCurrentSetting} />
         ) : currentSetting === "profile" ? (
-          <EditProfile
-            userInformation={userInformation}
-            setUserInformation={setUserInformation}
-          />
+          <EditProfile />
         ) : currentSetting === "2fa" ? (
-          <TwoStepVerification
-            twoFactor={userInformation.twoFactor}
-            setUserInformation={setUserInformation}
-          />
+          <TwoStepVerification />
         ) : null}
       </ScrollArea>
     </div>
