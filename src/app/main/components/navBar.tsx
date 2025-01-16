@@ -18,21 +18,21 @@ import {
   LogOut,
 } from "lucide-react";
 import AddFriendDialog from "./navBar/addFriendDiallog";
+import NewGroupDialog from "./navBar/newGroupDialog";
 import FriendRequestsDialog from "./navBar/friendRequestsDialog";
 import LogoutDialog from "./navBar/logoutDialog";
 import { useUserStore } from "@/stores/userStore";
 
 const NavBar = ({
-  friendsList,
   setCurrentSection,
   socket,
 }: {
-  friendsList: any[];
   setCurrentSection: (section: string) => void;
   socket: any;
 }) => {
   const userInformation = useUserStore((state) => state.userInformation);
   const [addFriendDialogOpen, setAddFriendDialogOpen] = useState(false);
+  const [newGroupDialogOpen, setNewGroupDialogOpen] = useState(false);
   const [friendRequestsDialogOpen, setFriendRequestsDialogOpen] =
     useState(false);
   const [logoutDialogOpen, setLogoutDialogOpen] = useState(false);
@@ -79,9 +79,12 @@ const NavBar = ({
               <UserPlus style={{ width: "18px", height: "18px" }} />
               Add Friend
             </DropdownMenuItem>
-            <DropdownMenuItem className="hover:cursor-pointer">
+            <DropdownMenuItem
+              className="hover:cursor-pointer"
+              onClick={() => setNewGroupDialogOpen(true)}
+            >
               <Users style={{ width: "18px", height: "18px" }} />
-              Add Group
+              New Group
             </DropdownMenuItem>
             <DropdownMenuItem
               className="hover:cursor-pointer"
@@ -109,14 +112,16 @@ const NavBar = ({
           <Bolt style={{ width: "28px", height: "28px" }} />
         </Button>
       </div>
-      {addFriendDialogOpen && (
-        <AddFriendDialog
-          addFriendDialogOpen={addFriendDialogOpen}
-          setAddFriendDialogOpen={setAddFriendDialogOpen}
-          friendsList={friendsList}
-          socket={socket}
-        />
-      )}
+      <AddFriendDialog
+        addFriendDialogOpen={addFriendDialogOpen}
+        setAddFriendDialogOpen={setAddFriendDialogOpen}
+        socket={socket}
+      />
+      <NewGroupDialog
+        newGroupDialogOpen={newGroupDialogOpen}
+        setNewGroupDialogOpen={setNewGroupDialogOpen}
+        // socket={socket}
+      />
       <FriendRequestsDialog
         friendRequestsDialogOpen={friendRequestsDialogOpen}
         setFriendRequestsDialogOpen={setFriendRequestsDialogOpen}

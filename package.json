@@ -40,14 +40,14 @@
     "@radix-ui/react-toggle": "^1.1.1",
     "@radix-ui/react-toggle-group": "^1.1.1",
     "@radix-ui/react-tooltip": "^1.1.6",
-    "axios": "^1.7.7",
+    "axios": "^1.7.9",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "cmdk": "^1.0.0",
     "date-fns": "^3.6.0",
     "embla-carousel-react": "^8.5.1",
     "input-otp": "^1.4.2",
-    "lucide-react": "^0.460.0",
+    "lucide-react": "^0.471.1",
     "next": "14.2.18",
     "next-themes": "^0.4.4",
     "react": "^18",
@@ -62,7 +62,7 @@
     "tailwindcss-animate": "^1.0.7",
     "vaul": "^1.1.2",
     "zod": "^3.24.1",
-    "zustand": "^5.0.1"
+    "zustand": "^5.0.3"
   },
   "devDependencies": {
     "@types/node": "^20",
@@ -72,7 +72,7 @@
     "eslint": "^8",
     "eslint-config-next": "14.2.18",
     "postcss": "^8",
-    "tailwindcss": "^3.4.1",
+    "tailwindcss": "^3.4.17",
     "typescript": "^5"
   }
 }

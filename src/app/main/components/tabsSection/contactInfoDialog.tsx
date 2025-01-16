@@ -9,15 +9,14 @@ import {
 import * as VisuallyHidden from "@radix-ui/react-visually-hidden";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { MessageSquareMore } from "lucide-react";
+import { useUserStore } from "@/stores/userStore";
 import getNameInitials from "@/utils/getNameInitials";
 
 const ContactInfoDialog = ({
   contactInfoDialogOpen,
   setContactInfoDialogOpen,
   contactInfo,
-  userConversationsData,
   setCurrentSection,
-  setCurrentChatInfo,
 }: {
   contactInfoDialogOpen: boolean;
   setContactInfoDialogOpen: (open: boolean) => void;
@@ -26,10 +25,13 @@ const ContactInfoDialog = ({
     email: string;
     id: string;
   };
-  userConversationsData: any[];
   setCurrentSection: (section: string) => void;
-  setCurrentChatInfo: (chatInfo: any) => void;
 }) => {
+  const userConversationsData = Object.values(
+    useUserStore((state) => state.userChatData.conversations)
+  );
+  const setCurrentChatInfo = useUserStore((state) => state.setCurrentChatInfo);
+
   return (
     <Dialog
       open={contactInfoDialogOpen}
@@ -54,7 +56,6 @@ const ContactInfoDialog = ({
               className="text-muted-foreground w-10 h-10"
               onClick={() => {
                 setContactInfoDialogOpen(false);
-                setCurrentSection("chat");
                 setCurrentChatInfo(
                   (prev: any) =>
                     userConversationsData.find(
@@ -63,6 +64,7 @@ const ContactInfoDialog = ({
                         conversation.participantIDs.includes(contactInfo.id)
                     ) || prev
                 );
+                setCurrentSection("chat");
               }}
             >
               <MessageSquareMore style={{ width: "26px", height: "26px" }} />

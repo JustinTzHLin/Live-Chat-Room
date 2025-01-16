@@ -24,16 +24,15 @@ const jicIdSchema = z.string().min(8).max(16);
 const AddFriendDialog = ({
   addFriendDialogOpen,
   setAddFriendDialogOpen,
-  friendsList,
   socket,
 }: {
   addFriendDialogOpen: boolean;
   setAddFriendDialogOpen: (open: boolean) => void;
-  friendsList: any[];
   socket: any;
 }) => {
   const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL;
   const userInformation = useUserStore((state) => state.userInformation);
+  const friendsList = useUserStore((state) => state.userChatData.friends);
   const [radioValue, setRadioValue] = useState<string>("email");
   const [searchInput, setSearchInput] = useState<string>("");
   const [searchedUser, setSearchedUser] = useState<{

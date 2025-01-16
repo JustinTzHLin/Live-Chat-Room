@@ -2,32 +2,19 @@ import { useState } from "react";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import ContactInfoDialog from "./tabsSection/contactInfoDialog";
+import { useUserStore } from "@/stores/userStore";
 import getNameInitials from "@/utils/getNameInitials";
 
 const TabsSection = ({
   currentTab,
   setCurrentTab,
-  userChatData,
   setCurrentSection,
-  setCurrentChatInfo,
 }: {
   currentTab: string;
   setCurrentTab: (tab: string) => void;
-  userChatData: {
-    conversations: {
-      [key: string]: {
-        messages: any[];
-        participantIDs: string[];
-        roomName: string;
-        type: string;
-        conversationId: string;
-      };
-    };
-    friends: any[];
-  };
   setCurrentSection: (section: string) => void;
-  setCurrentChatInfo: (chatInfo: any) => void;
 }) => {
+  const { userChatData, setCurrentChatInfo } = useUserStore((state) => state);
   const [contactInfoDialogOpen, setContactInfoDialogOpen] = useState(false);
   const [contactInfo, setContactInfo] = useState<{
     username: string;
@@ -49,7 +36,7 @@ const TabsSection = ({
       <TabsList className="grid w-full grid-cols-3">
         <TabsTrigger value="chatroom">All Chats</TabsTrigger>
         <TabsTrigger value="group">Groups</TabsTrigger>
-        <TabsTrigger value="contact">Contacts</TabsTrigger>
+        <TabsTrigger value="friend">Friends</TabsTrigger>
       </TabsList>
       <TabsContent value="chatroom" className="h-[calc(100%-44px)]">
         <div className="flex flex-col justify-center gap-2">
@@ -91,7 +78,7 @@ const TabsSection = ({
             ))}
         </div>
       </TabsContent>
-      <TabsContent value="contact" className="h-[calc(100%-44px)]">
+      <TabsContent value="friend" className="h-[calc(100%-44px)]">
         <div className="flex flex-col justify-center gap-1">
           {userChatData.friends.map((friendInfo, index) => (
             <div
@@ -117,9 +104,7 @@ const TabsSection = ({
         contactInfoDialogOpen={contactInfoDialogOpen}
         setContactInfoDialogOpen={setContactInfoDialogOpen}
         contactInfo={contactInfo}
-        userConversationsData={Object.values(userChatData.conversations)}
         setCurrentSection={setCurrentSection}
-        setCurrentChatInfo={setCurrentChatInfo}
       />
     </Tabs>
   );

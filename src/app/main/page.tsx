@@ -14,42 +14,17 @@ import axios from "axios";
 
 const Page = () => {
   const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL;
-  const { previousURL, updatePreviousURL } = useAuthStore((state) => state);
+  const { previousURL } = useAuthStore((state) => state);
   const router = useRouter();
   const { toast } = useToast();
-  const { userInformation, setUserInformation } = useUserStore(
-    (state) => state
-  );
-  const [userChatData, setUserChatData] = useState<{
-    conversations: {
-      [key: string]: {
-        messages: any[];
-        participantIDs: string[];
-        roomName: string;
-        type: string;
-        conversationId: string;
-      };
-    };
-    friends: any[];
-  }>({
-    conversations: {},
-    friends: [],
-  });
-  const [currentTab, setCurrentTab] = useState("chatroom"); // chatroom, group, contact
+  const {
+    userInformation,
+    setUserInformation,
+    setUserChatData,
+    setCurrentChatInfo,
+  } = useUserStore((state) => state);
+  const [currentTab, setCurrentTab] = useState("chatroom"); // chatroom, group, friend
   const [currentSection, setCurrentSection] = useState("tabs"); // tabs, chat, settings
-  const [currentChatInfo, setCurrentChatInfo] = useState<{
-    messages: any[];
-    participantIDs: string[];
-    roomName: string;
-    type: string;
-    conversationId: string;
-  }>({
-    messages: [],
-    participantIDs: [],
-    roomName: "",
-    type: "",
-    conversationId: "",
-  });
   const [socket, setSocket] = useState<any>(null);
 
   const verifyLoggedInToken = async () => {
@@ -190,25 +165,15 @@ const Page = () => {
 
   return (
     <div className="flex flex-col h-screen items-center min-h-[500px] min-w-[320px]">
-      <NavBar
-        friendsList={userChatData?.friends}
-        setCurrentSection={setCurrentSection}
-        socket={socket}
-      />
+      <NavBar setCurrentSection={setCurrentSection} socket={socket} />
       {currentSection === "tabs" ? (
         <TabsSection
           currentTab={currentTab}
           setCurrentTab={setCurrentTab}
-          userChatData={userChatData}
           setCurrentSection={setCurrentSection}
-          setCurrentChatInfo={setCurrentChatInfo}
         />
       ) : currentSection === "chat" ? (
-        <ChatSection
-          currentChatInfo={currentChatInfo}
-          setCurrentSection={setCurrentSection}
-          socket={socket}
-        />
+        <ChatSection setCurrentSection={setCurrentSection} socket={socket} />
       ) : currentSection === "settings" ? (
         <SettingsSection setCurrentSection={setCurrentSection} />
       ) : null}

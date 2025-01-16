@@ -62,13 +62,13 @@ const LoginForm = () => {
         });
       else if (loginResult.data.userVerified) {
         if (loginResult.data.authenticatedUser.twoFactor === "none") {
-          updatePreviousURL("/home");
           router.push("/main");
           toast({
             title: "User logged in",
             description: "Welcome back!",
             duration: 3000,
           });
+          updatePreviousURL("/home");
         } else {
           updateAuthAction("2fa");
           toast({
@@ -89,7 +89,6 @@ const LoginForm = () => {
           description: "Please try again.",
           duration: 3000,
         });
-      setIsLoading(false);
     } catch (err) {
       console.log(err);
       toast({
@@ -98,6 +97,7 @@ const LoginForm = () => {
         description: "Something went wrong. Please try again.",
         duration: 3000,
       });
+    } finally {
       setIsLoading(false);
     }
   };

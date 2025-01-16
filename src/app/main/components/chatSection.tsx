@@ -9,22 +9,14 @@ import timestampToFormattedTime from "@/utils/timestampToFormattedTime";
 import axios from "axios";
 
 const ChatSection = ({
-  currentChatInfo,
   setCurrentSection,
   socket,
 }: {
-  currentChatInfo: {
-    messages: any[];
-    participantIDs: string[];
-    roomName: string;
-    type: string;
-    conversationId: string;
-  };
   setCurrentSection: (section: string) => void;
   socket: any;
 }) => {
   const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL;
-  const userInformation = useUserStore((state) => state.userInformation);
+  const { userInformation, currentChatInfo } = useUserStore((state) => state);
   const [inputMessage, setInputMessage] = useState<string>("");
 
   const sendMessage = async (e: React.SyntheticEvent) => {

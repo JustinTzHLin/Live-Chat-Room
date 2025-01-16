@@ -75,10 +75,7 @@ const TwoStepVerification = () => {
       <div className="flex flex-col justify-center items-center gap-4 p-4">
         <RadioGroup
           value={current2FA}
-          onValueChange={(new2FA) => {
-            setCurrent2FA(new2FA);
-            console.log(new2FA);
-          }}
+          onValueChange={(new2FA) => setCurrent2FA(new2FA)}
           className={cn("flex flex-wrap gap-4")}
         >
           <Card

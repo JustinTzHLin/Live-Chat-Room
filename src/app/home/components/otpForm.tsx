@@ -52,13 +52,13 @@ const OTPForm = () => {
         { withCredentials: true }
       );
       if (otpVerified.data.otpVerified) {
-        updatePreviousURL("/home");
         router.push("/main");
         toast({
           title: "User logged in",
           description: "Welcome back!",
           duration: 3000,
         });
+        updatePreviousURL("/home");
         updateAuthAction("login");
       } else if (otpVerified.data.errorMessage === "incorrect otp code")
         toast({

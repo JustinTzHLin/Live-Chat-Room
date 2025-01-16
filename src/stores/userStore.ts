@@ -10,6 +10,36 @@ interface UserInformation {
   lastActive: Date;
 }
 
+interface Message {
+  conversationId: string;
+  senderId: string;
+  content: string;
+  timestamp: string;
+  readBy: string[];
+  status: string;
+}
+
+interface Conversation {
+  conversationId: string;
+  participantIDs: string[];
+  messages: Message[];
+  roomName: string;
+  type: string;
+}
+
+interface Friend {
+  id: string;
+  username: string;
+  email: string;
+}
+
+interface UserChatData {
+  conversations: {
+    [key: string]: Conversation;
+  };
+  friends: Friend[];
+}
+
 interface userState {
   userInformation: UserInformation;
   setUsername: (username: string) => void;
@@ -19,6 +49,18 @@ interface userState {
     userInformation:
       | UserInformation
       | ((userInformation: UserInformation) => UserInformation)
+  ) => void;
+
+  userChatData: UserChatData;
+  setUserChatData: (
+    userChatData: UserChatData | ((userChatData: UserChatData) => UserChatData)
+  ) => void;
+
+  currentChatInfo: Conversation;
+  setCurrentChatInfo: (
+    currentChatInfo:
+      | Conversation
+      | ((currentChatInfo: Conversation) => Conversation)
   ) => void;
 }
 
@@ -50,6 +92,37 @@ export const useUserStore = create<userState>((set) => ({
         typeof update === "function"
           ? (update as (userInformation: UserInformation) => UserInformation)(
               state.userInformation
+            )
+          : update,
+    })),
+
+  userChatData: {
+    conversations: {},
+    friends: [],
+  },
+  setUserChatData: (update) =>
+    set((state) => ({
+      userChatData:
+        typeof update === "function"
+          ? (update as (userChatData: UserChatData) => UserChatData)(
+              state.userChatData
+            )
+          : update,
+    })),
+
+  currentChatInfo: {
+    messages: [],
+    participantIDs: [],
+    roomName: "",
+    type: "",
+    conversationId: "",
+  },
+  setCurrentChatInfo: (update) =>
+    set((state) => ({
+      currentChatInfo:
+        typeof update === "function"
+          ? (update as (currentChatInfo: Conversation) => Conversation)(
+              state.currentChatInfo
             )
           : update,
     })),

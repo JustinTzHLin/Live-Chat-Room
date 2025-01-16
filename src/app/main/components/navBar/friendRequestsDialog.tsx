@@ -153,7 +153,7 @@ const FriendRequestsDialog = ({
             friendRequests.received.map((request) => (
               <div
                 key={request.id}
-                className="flex items-center justify-between gap-2 rounded-lg bg-slate-100"
+                className="flex items-center justify-between rounded-lg bg-slate-100"
               >
                 <p className="ml-3 text-lg font-semibold">
                   {getNameInitials(request.sender.username)}
@@ -193,7 +193,7 @@ const FriendRequestsDialog = ({
             friendRequests.sent.map((request) => (
               <div
                 key={request.id}
-                className="flex items-center justify-between gap-2 rounded-lg bg-slate-100"
+                className="flex items-center justify-between rounded-lg bg-slate-100"
               >
                 <p className="ml-3 text-lg font-semibold">
                   {getNameInitials(request.receiver.username)}

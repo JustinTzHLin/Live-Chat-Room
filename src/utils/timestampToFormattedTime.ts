@@ -1,4 +1,4 @@
-const timestampToFormattedTime = (timestamp: Date) => {
+const timestampToFormattedTime = (timestamp: string) => {
   const date = new Date(timestamp);
   const options = {
     hour: "numeric" as const,
