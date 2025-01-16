@@ -41,8 +41,8 @@ const FriendRequestsDialog = ({
           `${BACKEND_URL}/user/fetchFriendRequests`,
           { withCredentials: true }
         );
-        if (fetchFriendRequestsResponse.data.friendRequestSent)
-          setFriendRequests(fetchFriendRequestsResponse.data);
+        if (fetchFriendRequestsResponse.data.friendRequestsFetched)
+          setFriendRequests(fetchFriendRequestsResponse.data.friendRequests);
       } catch (error) {
         console.error(error);
       } finally {
