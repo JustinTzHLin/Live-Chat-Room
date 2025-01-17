@@ -1,8 +1,9 @@
 import { useState, useEffect } from "react";
-import { Socket } from "socket.io-client";
 import axios from "axios";
+import useSocketStore from "@/stores/socketStore";
 
-const ChatRoom = ({ socket }: { socket: Socket }) => {
+const ChatRoom = () => {
+  const socket = useSocketStore((state) => state.socket);
   const [message, setMessage] = useState<string>("");
   const [messages, setMessages] = useState<
     Array<{ text: string; createdAt: Date }>
@@ -10,19 +11,23 @@ const ChatRoom = ({ socket }: { socket: Socket }) => {
   const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL;
 
   useEffect(() => {
-    socket.on(
-      "receive_message",
-      (message: { text: string; createdAt: Date }) => {
-        console.log("Received message:", message);
-        setMessages((prevMessages) => [...prevMessages, message]);
-      }
-    );
+    if (socket) {
+      socket.emit("join_conversation", "global");
+      socket.on(
+        "receive_message",
+        (message: { text: string; createdAt: Date }) => {
+          console.log("Received message:", message);
+          setMessages((prevMessages) => [...prevMessages, message]);
+        }
+      );
+    }
   }, [socket]);
 
   const sendMessage = async (e: React.SyntheticEvent) => {
     e.preventDefault();
     if (message) {
       socket.emit("send_message", {
+        conversationId: "global",
         text: message,
         createdAt: new Date(),
       });

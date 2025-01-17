@@ -19,6 +19,7 @@ import {
   LoaderCircle,
 } from "lucide-react";
 import { useUserStore } from "@/stores/userStore";
+import { useSocketStore } from "@/stores/socketStore";
 import getNameInitials from "@/utils/getNameInitials";
 import { useToast } from "@/hooks/use-toast";
 import { z } from "zod";
@@ -39,6 +40,7 @@ const NewGroupDialog = ({
   const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL;
   const friendsList = useUserStore((state) => state.userChatData.friends);
   const userId = useUserStore((state) => state.userInformation.userId);
+  const socket = useSocketStore((state) => state.socket);
   const [groupName, setGroupName] = useState<string>("");
   const [groupMembers, setGroupMembers] = useState<{
     [key: string]: {
@@ -85,7 +87,7 @@ const NewGroupDialog = ({
           duration: 3000,
         });
         setNewGroupDialogOpen(false);
-        // socket
+        socket.emit("create_group", createGroupResponse.data.createdGroup);
       }
     } catch (error) {
       if (error instanceof z.ZodError)

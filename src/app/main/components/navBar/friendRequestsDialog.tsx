@@ -9,20 +9,20 @@ import {
 import { Button } from "@/components/ui/button";
 import { X, Check, Trash2 } from "lucide-react";
 import { useUserStore } from "@/stores/userStore";
+import { useSocketStore } from "@/stores/socketStore";
 import getNameInitials from "@/utils/getNameInitials";
 import axios from "axios";
 
 const FriendRequestsDialog = ({
   friendRequestsDialogOpen,
   setFriendRequestsDialogOpen,
-  socket,
 }: {
   friendRequestsDialogOpen: boolean;
   setFriendRequestsDialogOpen: (open: boolean) => void;
-  socket: any;
 }) => {
   const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL;
   const userId = useUserStore((state) => state.userInformation.userId);
+  const socket = useSocketStore((state) => state.socket);
   const [fetchingFriendRequests, setFetchingFriendRequests] =
     useState<boolean>(false);
   const [friendRequests, setFriendRequests] = useState<{
@@ -52,39 +52,39 @@ const FriendRequestsDialog = ({
     fetchFriendRequests();
   }, [BACKEND_URL]);
 
-  const handleSocketSentFriendRequest = (request: any) => {
-    if (request.sender.senderId === userId) {
-      delete request.sender;
-      setFriendRequests((prev) => ({
-        ...prev,
-        sent: [...prev.sent, request],
-      }));
-    } else if (request.receiver.receiverId === userId) {
-      delete request.receiver;
-      setFriendRequests((prev) => ({
-        ...prev,
-        received: [...prev.received, request],
-      }));
-    }
-  };
-
-  const handleSocketFriendRequestAction = (request: any) => {
-    if (request.senderId === userId) {
-      setFriendRequests((prev) => ({
-        ...prev,
-        sent: prev.sent.filter((sentRequest) => sentRequest.id !== request.id),
-      }));
-    } else if (request.receiverId === userId) {
-      setFriendRequests((prev) => ({
-        ...prev,
-        received: prev.received.filter(
-          (receivedRequest) => receivedRequest.id !== request.id
-        ),
-      }));
-    }
-  };
-
   useEffect(() => {
+    const handleSocketSentFriendRequest = (request: any) => {
+      if (request.sender.senderId === userId) {
+        delete request.sender;
+        setFriendRequests((prev) => ({
+          ...prev,
+          sent: [...prev.sent, request],
+        }));
+      } else if (request.receiver.receiverId === userId) {
+        delete request.receiver;
+        setFriendRequests((prev) => ({
+          ...prev,
+          received: [...prev.received, request],
+        }));
+      }
+    };
+    const handleSocketFriendRequestAction = (request: any) => {
+      if (request.senderId === userId) {
+        setFriendRequests((prev) => ({
+          ...prev,
+          sent: prev.sent.filter(
+            (sentRequest) => sentRequest.id !== request.id
+          ),
+        }));
+      } else if (request.receiverId === userId) {
+        setFriendRequests((prev) => ({
+          ...prev,
+          received: prev.received.filter(
+            (receivedRequest) => receivedRequest.id !== request.id
+          ),
+        }));
+      }
+    };
     if (socket) {
       socket.on("receive_friend_request", handleSocketSentFriendRequest);
       socket.on(
@@ -101,7 +101,7 @@ const FriendRequestsDialog = ({
         socket.off("accepted_friend_request", handleSocketFriendRequestAction);
       };
     }
-  }, [socket]);
+  }, [socket, userId]);
 
   const handleRequestAction = async (action: string, requestId: string) => {
     try {

@@ -9,6 +9,7 @@ import {
   DialogFooter,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
+import { useSocketStore } from "@/stores/socketStore";
 import axios from "axios";
 
 const LogoutDialog = ({
@@ -19,6 +20,7 @@ const LogoutDialog = ({
   setLogoutDialogOpen: (open: boolean) => void;
 }) => {
   const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL;
+  const disconnect = useSocketStore((state) => state.disconnect);
   const router = useRouter();
   const { toast } = useToast();
   const handleLogout = async () => {
@@ -27,12 +29,13 @@ const LogoutDialog = ({
         withCredentials: true,
       });
       if (logoutResponse.data.success) {
+        router.push("/");
+        disconnect();
         toast({
           title: "Logout successful",
           description: "You have been logged out.",
           duration: 3000,
         });
-        return router.push("/");
       }
     } catch (error) {
       console.error(error);

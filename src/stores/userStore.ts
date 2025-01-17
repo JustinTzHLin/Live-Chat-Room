@@ -35,12 +35,13 @@ interface Friend {
 
 interface UserChatData {
   conversations: {
-    [key: string]: Conversation;
+    [conversationId: string]: Conversation;
   };
   friends: Friend[];
 }
 
 interface userState {
+  // user information
   userInformation: UserInformation;
   setUsername: (username: string) => void;
   setJicId: (jicId: string) => void;
@@ -51,11 +52,13 @@ interface userState {
       | ((userInformation: UserInformation) => UserInformation)
   ) => void;
 
+  // user chat data
   userChatData: UserChatData;
   setUserChatData: (
     userChatData: UserChatData | ((userChatData: UserChatData) => UserChatData)
   ) => void;
 
+  // current chat info
   currentChatInfo: Conversation;
   setCurrentChatInfo: (
     currentChatInfo:
@@ -65,6 +68,7 @@ interface userState {
 }
 
 export const useUserStore = create<userState>((set) => ({
+  // user information
   userInformation: {
     userId: "",
     username: "",
@@ -96,6 +100,7 @@ export const useUserStore = create<userState>((set) => ({
           : update,
     })),
 
+  // user chat data
   userChatData: {
     conversations: {},
     friends: [],
@@ -110,6 +115,7 @@ export const useUserStore = create<userState>((set) => ({
           : update,
     })),
 
+  // current chat info
   currentChatInfo: {
     messages: [],
     participantIDs: [],

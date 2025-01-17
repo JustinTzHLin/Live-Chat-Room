@@ -5,18 +5,18 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Input } from "@/components/ui/input";
 import { SendHorizontal, ChevronLeft } from "lucide-react";
 import { useUserStore } from "@/stores/userStore";
+import { useSocketStore } from "@/stores/socketStore";
 import timestampToFormattedTime from "@/utils/timestampToFormattedTime";
 import axios from "axios";
 
 const ChatSection = ({
   setCurrentSection,
-  socket,
 }: {
   setCurrentSection: (section: string) => void;
-  socket: any;
 }) => {
   const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL;
   const { userInformation, currentChatInfo } = useUserStore((state) => state);
+  const socket = useSocketStore((state) => state.socket);
   const [inputMessage, setInputMessage] = useState<string>("");
 
   const sendMessage = async (e: React.SyntheticEvent) => {

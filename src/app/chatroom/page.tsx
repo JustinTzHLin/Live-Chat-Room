@@ -1,12 +1,19 @@
 "use client";
+import { useEffect } from "react";
 import ChatRoom from "@/components/chatroom";
-import { io } from "socket.io-client";
+import { useSocketStore } from "@/stores/socketStore";
 
 const Page = () => {
-  const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL;
-  const socket = io(BACKEND_URL);
+  const connect = useSocketStore((state) => state.connect);
 
-  return <ChatRoom socket={socket} />;
+  useEffect(() => {
+    connect();
+    return () => {
+      useSocketStore.getState().disconnect();
+    };
+  }, [connect]);
+
+  return <ChatRoom />;
 };
 
 export default Page;

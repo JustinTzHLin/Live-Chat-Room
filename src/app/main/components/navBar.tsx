@@ -25,10 +25,8 @@ import { useUserStore } from "@/stores/userStore";
 
 const NavBar = ({
   setCurrentSection,
-  socket,
 }: {
   setCurrentSection: (section: string) => void;
-  socket: any;
 }) => {
   const userInformation = useUserStore((state) => state.userInformation);
   const [addFriendDialogOpen, setAddFriendDialogOpen] = useState(false);
@@ -115,17 +113,14 @@ const NavBar = ({
       <AddFriendDialog
         addFriendDialogOpen={addFriendDialogOpen}
         setAddFriendDialogOpen={setAddFriendDialogOpen}
-        socket={socket}
       />
       <NewGroupDialog
         newGroupDialogOpen={newGroupDialogOpen}
         setNewGroupDialogOpen={setNewGroupDialogOpen}
-        // socket={socket}
       />
       <FriendRequestsDialog
         friendRequestsDialogOpen={friendRequestsDialogOpen}
         setFriendRequestsDialogOpen={setFriendRequestsDialogOpen}
-        socket={socket}
       />
       <LogoutDialog
         logoutDialogOpen={logoutDialogOpen}
