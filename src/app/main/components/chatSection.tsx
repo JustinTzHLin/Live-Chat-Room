@@ -7,6 +7,7 @@ import { SendHorizontal, ChevronLeft } from "lucide-react";
 import { useUserStore } from "@/stores/userStore";
 import { useSocketStore } from "@/stores/socketStore";
 import timestampToFormattedTime from "@/utils/timestampToFormattedTime";
+import useUnexpectedErrorHandler from "@/utils/useUnexpectedErrorHandler";
 import axios from "axios";
 
 const ChatSection = ({
@@ -18,6 +19,7 @@ const ChatSection = ({
   const { userInformation, currentChatInfo } = useUserStore((state) => state);
   const socket = useSocketStore((state) => state.socket);
   const [inputMessage, setInputMessage] = useState<string>("");
+  const { handleUnexpectedError } = useUnexpectedErrorHandler();
 
   const sendMessage = async (e: React.SyntheticEvent) => {
     e.preventDefault();
@@ -41,8 +43,8 @@ const ChatSection = ({
           conversationId: currentChatInfo.conversationId,
         });
         setInputMessage("");
-      } catch (error) {
-        console.error(error);
+      } catch (err) {
+        handleUnexpectedError(err);
       }
     }
   };

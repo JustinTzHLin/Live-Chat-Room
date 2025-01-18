@@ -11,6 +11,7 @@ import { X, Check, Trash2 } from "lucide-react";
 import { useUserStore } from "@/stores/userStore";
 import { useSocketStore } from "@/stores/socketStore";
 import getNameInitials from "@/utils/getNameInitials";
+import useUnexpectedErrorHandler from "@/utils/useUnexpectedErrorHandler";
 import axios from "axios";
 
 const FriendRequestsDialog = ({
@@ -32,6 +33,7 @@ const FriendRequestsDialog = ({
     sent: [],
     received: [],
   });
+  const { handleUnexpectedError } = useUnexpectedErrorHandler();
 
   useEffect(() => {
     const fetchFriendRequests = async () => {
@@ -43,8 +45,8 @@ const FriendRequestsDialog = ({
         );
         if (fetchFriendRequestsResponse.data.friendRequestsFetched)
           setFriendRequests(fetchFriendRequestsResponse.data.friendRequests);
-      } catch (error) {
-        console.error(error);
+      } catch (err) {
+        handleUnexpectedError(err);
       } finally {
         setFetchingFriendRequests(false);
       }
@@ -127,8 +129,8 @@ const FriendRequestsDialog = ({
           receiver: requestActionResponse.data.updatedFriendRequest.receiver,
         });
       }
-    } catch (error) {
-      console.error(error);
+    } catch (err) {
+      handleUnexpectedError(err);
     }
   };
 

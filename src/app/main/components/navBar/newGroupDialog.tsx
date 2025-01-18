@@ -21,6 +21,7 @@ import {
 import { useUserStore } from "@/stores/userStore";
 import { useSocketStore } from "@/stores/socketStore";
 import getNameInitials from "@/utils/getNameInitials";
+import useUnexpectedErrorHandler from "@/utils/useUnexpectedErrorHandler";
 import { useToast } from "@/hooks/use-toast";
 import { z } from "zod";
 import axios from "axios";
@@ -53,6 +54,7 @@ const NewGroupDialog = ({
   const [noGroupMembers, setNoGroupMembers] = useState<boolean>(false);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const { toast } = useToast();
+  const { handleUnexpectedError } = useUnexpectedErrorHandler();
 
   useEffect(() => {
     if (newGroupDialogOpen) {
@@ -69,7 +71,6 @@ const NewGroupDialog = ({
       groupNameSchema.parse(groupName);
       if (Object.keys(groupMembers).length === 0)
         throw new Error("No members added");
-      setGroupNameError(null);
       const newGroup = {
         type: "group",
         roomName: groupName,
@@ -89,12 +90,11 @@ const NewGroupDialog = ({
         setNewGroupDialogOpen(false);
         socket.emit("create_group", createGroupResponse.data.createdGroup);
       }
-    } catch (error) {
-      if (error instanceof z.ZodError)
-        setGroupNameError(error.issues[0].message);
-      else if (error instanceof Error && error.message === "No members added")
+    } catch (err) {
+      if (err instanceof z.ZodError) setGroupNameError(err.issues[0].message);
+      else if (err instanceof Error && err.message === "No members added")
         setNoGroupMembers(true);
-      else console.error(error);
+      else handleUnexpectedError(err);
     } finally {
       setIsLoading(false);
     }

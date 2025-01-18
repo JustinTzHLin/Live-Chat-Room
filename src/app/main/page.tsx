@@ -1,6 +1,6 @@
 "use client";
 
-import { use, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useToast } from "@/hooks/use-toast";
 import NavBar from "./components/navBar";
@@ -10,6 +10,7 @@ import SettingsSection from "./components/settingsSection";
 import { useAuthStore } from "@/stores/authStore";
 import { useUserStore } from "@/stores/userStore";
 import { useSocketStore } from "@/stores/socketStore";
+import useUnexpectedErrorHandler from "@/utils/useUnexpectedErrorHandler";
 import axios from "axios";
 
 const Page = () => {
@@ -27,6 +28,7 @@ const Page = () => {
   const [currentSection, setCurrentSection] = useState("tabs"); // tabs, chat, settings
   const router = useRouter();
   const { toast } = useToast();
+  const { handleUnexpectedError } = useUnexpectedErrorHandler();
 
   useEffect(() => {
     if (socket) {
@@ -48,7 +50,7 @@ const Page = () => {
         setUserChatData(chatData.data);
         connect();
       } catch (err) {
-        console.log(err);
+        handleUnexpectedError(err);
       }
     };
     const verifyLoggedInToken = async () => {
@@ -91,13 +93,7 @@ const Page = () => {
           return router.push("/home");
         }
       } catch (err) {
-        console.log(err);
-        toast({
-          variant: "destructive",
-          title: "Error occurred",
-          description: "Something went wrong. Please login instead.",
-          duration: 3000,
-        });
+        handleUnexpectedError(err, "Please login instead.");
         return router.push("/home");
       }
     };

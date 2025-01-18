@@ -23,6 +23,7 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
+import useUnexpectedErrorHandler from "@/utils/useUnexpectedErrorHandler";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
@@ -45,6 +46,7 @@ const RegisterForm = ({ registerEmail }: { registerEmail: string }) => {
   const { updatePreviousURL } = useAuthStore((state) => state);
   const router = useRouter();
   const { toast } = useToast();
+  const { handleUnexpectedError } = useUnexpectedErrorHandler();
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -80,13 +82,7 @@ const RegisterForm = ({ registerEmail }: { registerEmail: string }) => {
       } else throw new Error("User not created");
       setIsLoading(false);
     } catch (err) {
-      console.log(err);
-      toast({
-        variant: "destructive",
-        title: "Error occurred",
-        description: "Something went wrong. Please try again.",
-        duration: 3000,
-      });
+      handleUnexpectedError(err);
       setIsLoading(false);
     }
   };

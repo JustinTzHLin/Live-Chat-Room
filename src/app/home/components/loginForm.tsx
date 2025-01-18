@@ -3,8 +3,6 @@ import { useRouter } from "next/navigation";
 import { useToast } from "@/hooks/use-toast";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Mail, Lock, X, Eye, EyeOff, LoaderCircle } from "lucide-react";
-import { useAuthStore } from "@/stores/authStore";
 import {
   Form,
   FormControl,
@@ -13,6 +11,9 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
+import { Mail, Lock, X, Eye, EyeOff, LoaderCircle } from "lucide-react";
+import { useAuthStore } from "@/stores/authStore";
+import useUnexpectedErrorHandler from "@/utils/useUnexpectedErrorHandler";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
@@ -35,6 +36,7 @@ const LoginForm = () => {
   );
   const router = useRouter();
   const { toast } = useToast();
+  const { handleUnexpectedError } = useUnexpectedErrorHandler();
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -46,7 +48,6 @@ const LoginForm = () => {
 
   const handleSubmit = async (values: z.infer<typeof formSchema>) => {
     setIsLoading(true);
-    console.log(values);
     const { email, password } = values;
     try {
       const loginResult = await axios.post(
@@ -90,13 +91,7 @@ const LoginForm = () => {
           duration: 3000,
         });
     } catch (err) {
-      console.log(err);
-      toast({
-        variant: "destructive",
-        title: "Error occurred",
-        description: "Something went wrong. Please try again.",
-        duration: 3000,
-      });
+      handleUnexpectedError(err);
     } finally {
       setIsLoading(false);
     }

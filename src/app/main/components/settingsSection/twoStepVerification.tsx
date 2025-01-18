@@ -11,6 +11,7 @@ import {
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useUserStore } from "@/stores/userStore";
+import useUnexpectedErrorHandler from "@/utils/useUnexpectedErrorHandler";
 import axios from "axios";
 
 const TwoStepVerification = () => {
@@ -20,6 +21,7 @@ const TwoStepVerification = () => {
   const [current2FA, setCurrent2FA] = useState(twoFactor);
   const router = useRouter();
   const { toast } = useToast();
+  const { handleUnexpectedError } = useUnexpectedErrorHandler();
 
   const handleChange2FA = async () => {
     try {
@@ -59,14 +61,8 @@ const TwoStepVerification = () => {
         else throw new Error("Token not verified");
         return router.push("/home");
       }
-    } catch (error) {
-      console.error(error);
-      toast({
-        variant: "destructive",
-        title: "Error occurred",
-        description: "Something went wrong. Please try again.",
-        duration: 3000,
-      });
+    } catch (err) {
+      handleUnexpectedError(err);
     }
   };
 

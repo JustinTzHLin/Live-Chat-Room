@@ -11,6 +11,7 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
+import useUnexpectedErrorHandler from "@/utils/useUnexpectedErrorHandler";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
@@ -47,6 +48,7 @@ const ChangePassword = ({
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
+  const { handleUnexpectedError } = useUnexpectedErrorHandler();
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -58,7 +60,6 @@ const ChangePassword = ({
   });
 
   const handleSubmit = async (values: z.infer<typeof formSchema>) => {
-    console.log(values);
     if (values.oldPassword === values.newPassword) {
       toast({
         title: "Old password cannot be the same as new password",
@@ -88,7 +89,7 @@ const ChangePassword = ({
           duration: 3000,
         });
     } catch (err) {
-      console.log(err);
+      handleUnexpectedError(err);
     } finally {
       setIsLoading(false);
     }

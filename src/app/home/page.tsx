@@ -7,6 +7,7 @@ import SignupForm from "./components/signupForm";
 import RegisterForm from "./components/registerForm";
 import OtpForm from "./components/otpForm";
 import { useAuthStore } from "@/stores/authStore";
+import useUnexpectedErrorHandler from "@/utils/useUnexpectedErrorHandler";
 import { useSearchParams } from "next/navigation";
 import axios from "axios";
 
@@ -16,6 +17,7 @@ const Home = () => {
   const searchParams = useSearchParams();
   const [registerEmail, setRegisterEmail] = useState("");
   const { toast } = useToast();
+  const { handleUnexpectedError } = useUnexpectedErrorHandler();
 
   useEffect(() => {
     const verifyRegisterToken = async () => {
@@ -51,13 +53,7 @@ const Home = () => {
             });
           else throw new Error("Token not verified");
         } catch (err) {
-          console.log(err);
-          toast({
-            variant: "destructive",
-            title: "Error occurred",
-            description: "Something went wrong. Please try again.",
-            duration: 3000,
-          });
+          handleUnexpectedError(err);
           updateAuthAction("login");
         }
       }

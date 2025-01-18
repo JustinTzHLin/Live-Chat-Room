@@ -11,6 +11,7 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
+import useUnexpectedErrorHandler from "@/utils/useUnexpectedErrorHandler";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
@@ -24,6 +25,7 @@ const SignupForm = () => {
   const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL;
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
+  const { handleUnexpectedError } = useUnexpectedErrorHandler();
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -53,13 +55,7 @@ const SignupForm = () => {
           duration: 3000,
         });
     } catch (err) {
-      console.log(err);
-      toast({
-        variant: "destructive",
-        title: "Error occurred",
-        description: "Something went wrong. Please try again.",
-        duration: 3000,
-      });
+      handleUnexpectedError(err);
     } finally {
       setIsLoading(false);
     }

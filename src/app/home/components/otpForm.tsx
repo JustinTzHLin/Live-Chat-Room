@@ -18,6 +18,7 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { REGEXP_ONLY_DIGITS } from "input-otp";
+import useUnexpectedErrorHandler from "@/utils/useUnexpectedErrorHandler";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
@@ -35,6 +36,7 @@ const OTPForm = () => {
   );
   const { toast } = useToast();
   const router = useRouter();
+  const { handleUnexpectedError } = useUnexpectedErrorHandler();
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -82,13 +84,7 @@ const OTPForm = () => {
         });
       else throw new Error("Token not verified");
     } catch (err) {
-      console.log(err);
-      toast({
-        variant: "destructive",
-        title: "Error occurred",
-        description: "Something went wrong. Please try again.",
-        duration: 3000,
-      });
+      handleUnexpectedError(err);
     } finally {
       setIsLoading(false);
     }

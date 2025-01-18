@@ -10,6 +10,7 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { useSocketStore } from "@/stores/socketStore";
+import useUnexpectedErrorHandler from "@/utils/useUnexpectedErrorHandler";
 import axios from "axios";
 
 const LogoutDialog = ({
@@ -23,6 +24,8 @@ const LogoutDialog = ({
   const disconnect = useSocketStore((state) => state.disconnect);
   const router = useRouter();
   const { toast } = useToast();
+  const { handleUnexpectedError } = useUnexpectedErrorHandler();
+
   const handleLogout = async () => {
     try {
       const logoutResponse = await axios(`${BACKEND_URL}/token/logout`, {
@@ -37,8 +40,8 @@ const LogoutDialog = ({
           duration: 3000,
         });
       }
-    } catch (error) {
-      console.error(error);
+    } catch (err) {
+      handleUnexpectedError(err);
     }
   };
 

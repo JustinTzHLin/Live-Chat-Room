@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useUserStore } from "@/stores/userStore";
 import getNameInitials from "@/utils/getNameInitials";
+import useUnexpectedErrorHandler from "@/utils/useUnexpectedErrorHandler";
 import { PencilLine, UserRound, X } from "lucide-react";
 import axios from "axios";
 import { z } from "zod";
@@ -32,16 +33,21 @@ const EditProfile = () => {
   const [usernameError, setUsernameError] = useState<string | null>(null);
   const [jicIdError, setJicIdError] = useState<string | null>(null);
   const { toast } = useToast();
+  const { handleUnexpectedError } = useUnexpectedErrorHandler();
 
   useEffect(() => {
     setUsernameError(null);
     setNewUsername(userInformation.username);
   }, [userInformation.username, editUsername]);
 
+  useEffect(() => {
+    setJicIdError(null);
+    setNewJicId(userInformation.jicId || "");
+  }, [userInformation.jicId, editJicId]);
+
   const updateUsername = async () => {
     try {
       usernameSchema.parse(newUsername);
-      setUsernameError(null);
       const updateUsernameResponse = await axios.post(
         `${BACKEND_URL}/user/updateUsername`,
         { newUsername: newUsername },
@@ -56,17 +62,15 @@ const EditProfile = () => {
         setUsername(newUsername);
       }
       setEditUsername(false);
-    } catch (error) {
-      if (error instanceof z.ZodError)
-        setUsernameError(error.issues[0].message);
-      else console.error(error);
+    } catch (err) {
+      if (err instanceof z.ZodError) setUsernameError(err.issues[0].message);
+      else handleUnexpectedError(err);
     }
   };
 
   const updateJicId = async () => {
     try {
       jicIdSchema.parse(newJicId);
-      setJicIdError(null);
       const updateJicIdResponse = await axios.post(
         `${BACKEND_URL}/user/updateJicId`,
         { newJicId: newJicId },
@@ -81,9 +85,9 @@ const EditProfile = () => {
         setJicId(newJicId);
       }
       setEditJicId(false);
-    } catch (error) {
-      if (error instanceof z.ZodError) setJicIdError(error.issues[0].message);
-      else console.error(error);
+    } catch (err) {
+      if (err instanceof z.ZodError) setJicIdError(err.issues[0].message);
+      else handleUnexpectedError(err);
     }
   };
 

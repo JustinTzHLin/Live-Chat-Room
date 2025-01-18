@@ -16,6 +16,7 @@ import { UserSearch, UserRoundPlus } from "lucide-react";
 import { useUserStore } from "@/stores/userStore";
 import { useSocketStore } from "@/stores/socketStore";
 import getNameInitials from "@/utils/getNameInitials";
+import useUnexpectedErrorHandler from "@/utils/useUnexpectedErrorHandler";
 import axios from "axios";
 import { z } from "zod";
 
@@ -47,6 +48,7 @@ const AddFriendDialog = ({
   const [error, setError] = useState<string | null>(null);
   const [searching, setSearching] = useState<boolean>(false);
   const { toast } = useToast();
+  const { handleUnexpectedError } = useUnexpectedErrorHandler();
 
   useEffect(() => {
     if (addFriendDialogOpen) {
@@ -68,42 +70,28 @@ const AddFriendDialog = ({
     if (searchInput) {
       setSearchedUser(null);
       setSearching(true);
-      if (radioValue === "email") {
-        try {
-          emailSchema.parse(searchInput);
-          setError(null);
-          const searchUserByEmail = await axios.post(
-            `${BACKEND_URL}/user/searchUser`,
-            { email: searchInput },
-            { withCredentials: true }
-          );
-          if (searchUserByEmail.data.userExists) {
-            setSearchedUser(searchUserByEmail.data.searchedUser);
-          }
-        } catch (error) {
-          if (error instanceof z.ZodError) setError(error.issues[0].message);
-          else console.error(error);
-        } finally {
-          setSearching(false);
+      try {
+        const schema =
+          radioValue === "email"
+            ? emailSchema
+            : radioValue === "jicId"
+            ? jicIdSchema
+            : null;
+        if (schema) schema.parse(searchInput);
+        else throw new Error("Invalid radio input");
+        const searchUserResponse = await axios.post(
+          `${BACKEND_URL}/user/searchUser`,
+          { [radioValue]: searchInput },
+          { withCredentials: true }
+        );
+        if (searchUserResponse.data.userExists) {
+          setSearchedUser(searchUserResponse.data.searchedUser);
         }
-      } else if (radioValue === "jicId") {
-        try {
-          jicIdSchema.parse(searchInput);
-          setError(null);
-          const searchUserByJICId = await axios.post(
-            `${BACKEND_URL}/user/searchUser`,
-            { jicId: searchInput },
-            { withCredentials: true }
-          );
-          if (searchUserByJICId.data.userExists) {
-            setSearchedUser(searchUserByJICId.data.searchedUser);
-          }
-        } catch (error) {
-          if (error instanceof z.ZodError) setError(error.issues[0].message);
-          else console.error(error);
-        } finally {
-          setSearching(false);
-        }
+      } catch (err) {
+        if (err instanceof z.ZodError) setError(err.issues[0].message);
+        else handleUnexpectedError(err);
+      } finally {
+        setSearching(false);
       }
     }
   };
@@ -164,14 +152,8 @@ const AddFriendDialog = ({
             duration: 3000,
           });
         }
-      } catch (error) {
-        console.log(error);
-        toast({
-          variant: "destructive",
-          title: "Error occurred",
-          description: "Something went wrong. Please try again.",
-          duration: 3000,
-        });
+      } catch (err) {
+        handleUnexpectedError(err);
       }
     }
   };
