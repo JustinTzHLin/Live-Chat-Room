@@ -40,6 +40,12 @@ interface UserChatData {
   friends: Friend[];
 }
 
+interface SearchResult {
+  messages: Conversation[];
+  friends: Friend[];
+  rooms: Conversation[];
+}
+
 interface userState {
   // user information
   userInformation: UserInformation;
@@ -65,6 +71,14 @@ interface userState {
       | Conversation
       | ((currentChatInfo: Conversation) => Conversation)
   ) => void;
+
+  // search result
+  searchResult: SearchResult;
+  setSearchResult: (
+    searchResult: SearchResult | ((searchResult: SearchResult) => SearchResult)
+  ) => void;
+  debounceSearchTimeout: NodeJS.Timeout | null;
+  setDebounceSearchTimeout: (timeout: NodeJS.Timeout | null) => void;
 }
 
 export const useUserStore = create<userState>((set) => ({
@@ -132,4 +146,23 @@ export const useUserStore = create<userState>((set) => ({
             )
           : update,
     })),
+
+  // search result
+  searchResult: {
+    messages: [],
+    friends: [],
+    rooms: [],
+  },
+  setSearchResult: (update) =>
+    set((state) => ({
+      searchResult:
+        typeof update === "function"
+          ? (update as (searchResult: SearchResult) => SearchResult)(
+              state.searchResult
+            )
+          : update,
+    })),
+  debounceSearchTimeout: null,
+  setDebounceSearchTimeout: (timeout: NodeJS.Timeout | null) =>
+    set({ debounceSearchTimeout: timeout }),
 }));

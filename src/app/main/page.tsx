@@ -6,6 +6,7 @@ import { useToast } from "@/hooks/use-toast";
 import NavBar from "./components/navBar";
 import TabsSection from "./components/tabsSection";
 import ChatSection from "./components/chatSection";
+import SearchSection from "./components/searchSection";
 import SettingsSection from "./components/settingsSection";
 import { useAuthStore } from "@/stores/authStore";
 import { useUserStore } from "@/stores/userStore";
@@ -25,7 +26,7 @@ const Page = () => {
   } = useUserStore((state) => state);
   const { socket, connect } = useSocketStore((state) => state);
   const [currentTab, setCurrentTab] = useState("chatroom"); // chatroom, group, friend
-  const [currentSection, setCurrentSection] = useState("tabs"); // tabs, chat, settings
+  const [currentSection, setCurrentSection] = useState("tabs"); // tabs, chat, settings, search
   const router = useRouter();
   const { toast } = useToast();
   const { handleUnexpectedError } = useUnexpectedErrorHandler();
@@ -192,6 +193,8 @@ const Page = () => {
         <ChatSection setCurrentSection={setCurrentSection} />
       ) : currentSection === "settings" ? (
         <SettingsSection setCurrentSection={setCurrentSection} />
+      ) : currentSection === "search" ? (
+        <SearchSection setCurrentSection={setCurrentSection} />
       ) : null}
     </div>
   );

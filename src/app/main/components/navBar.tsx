@@ -50,9 +50,7 @@ const NavBar = ({
           size="icon"
           type="button"
           className="text-muted-foreground w-10 h-10 hover:bg-transparent"
-          onClick={() => {
-            alert("search");
-          }}
+          onClick={() => setCurrentSection("search")}
         >
           <Search style={{ width: "28px", height: "28px" }} />
         </Button>
