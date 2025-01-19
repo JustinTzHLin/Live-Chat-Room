@@ -17,6 +17,8 @@ import TwoStepVerification from "./settingsSection/twoStepVerification";
 import EditProfile from "./settingsSection/editProfile";
 import { useUserStore } from "@/stores/userStore";
 
+import ComingSoon from "@/components/comingSoon";
+
 const SettingsSection = ({
   setCurrentSection,
 }: {
@@ -106,7 +108,9 @@ const SettingsSection = ({
           <EditProfile />
         ) : currentSetting === "2fa" ? (
           <TwoStepVerification />
-        ) : null}
+        ) : (
+          <ComingSoon />
+        )}
       </ScrollArea>
     </div>
   );

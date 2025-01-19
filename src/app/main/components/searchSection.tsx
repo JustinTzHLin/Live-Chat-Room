@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { ChevronLeft, X } from "lucide-react";
+import { ChevronLeft, X, TextSearch } from "lucide-react";
 import { useUserStore } from "@/stores/userStore";
 import { Message } from "@/stores/userStore";
 import ContactInfoDialog from "./tabsSection/contactInfoDialog";
@@ -89,12 +89,13 @@ const SearchSection = ({
         </Button>
         <div className="text-xl font-semibold">Search</div>
       </div>
-      <div className=" mt-2 flex  w-full px-4">
+      <div className=" mt-2 flex w-full px-4">
         <div className="relative w-full">
+          <TextSearch className="absolute left-2 top-2 h-5 w-5 text-muted-foreground" />
           <Input
             type="text"
             placeholder="Anything..."
-            className="w-full"
+            className="w-full pr-8 pl-9"
             value={searchInput}
             onChange={(e) => {
               setSearching(true);
