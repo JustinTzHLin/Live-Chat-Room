@@ -14,7 +14,8 @@ const TabsSection = ({
   setCurrentTab: (tab: string) => void;
   setCurrentSection: (section: string) => void;
 }) => {
-  const { userChatData, setCurrentChatInfo } = useUserStore((state) => state);
+  const { userChatData, setCurrentChatInfo, setMainPageSectionFlow } =
+    useUserStore((state) => state);
   const [contactInfoDialogOpen, setContactInfoDialogOpen] = useState(false);
   const [contactInfo, setContactInfo] = useState<{
     username: string;
@@ -47,6 +48,7 @@ const TabsSection = ({
               onClick={() => {
                 setCurrentSection("chat");
                 setCurrentChatInfo(chatInfo);
+                setMainPageSectionFlow((prev) => [...prev, "chat"]);
               }}
             >
               <div>{chatInfo.roomName}</div>
@@ -68,6 +70,7 @@ const TabsSection = ({
                 onClick={() => {
                   setCurrentSection("chat");
                   setCurrentChatInfo(groupInfo);
+                  setMainPageSectionFlow((prev) => [...prev, "chat"]);
                 }}
               >
                 <div>{groupInfo.roomName}</div>

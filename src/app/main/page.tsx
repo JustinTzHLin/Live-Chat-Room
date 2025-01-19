@@ -23,6 +23,7 @@ const Page = () => {
     userChatData,
     setUserChatData,
     setCurrentChatInfo,
+    setMainPageSectionFlow,
   } = useUserStore((state) => state);
   const { socket, connect } = useSocketStore((state) => state);
   const [currentTab, setCurrentTab] = useState("chatroom"); // chatroom, group, friend
@@ -49,6 +50,7 @@ const Page = () => {
           { withCredentials: true }
         );
         setUserChatData(chatData.data);
+        setMainPageSectionFlow(["tabs"]);
         connect();
       } catch (err) {
         handleUnexpectedError(err);
@@ -102,15 +104,7 @@ const Page = () => {
     return () => {
       useSocketStore.getState().disconnect();
     };
-  }, [
-    BACKEND_URL,
-    connect,
-    previousURL,
-    router,
-    setUserChatData,
-    setUserInformation,
-    toast,
-  ]);
+  }, [previousURL]);
 
   useEffect(() => {
     const handleSocketSentMessage = (message: any) => {
@@ -178,7 +172,7 @@ const Page = () => {
         socket.off("group_created", handleSocketCreatedGroup);
       };
     }
-  }, [setCurrentChatInfo, setUserChatData, socket, userInformation.userId]);
+  }, [socket, userInformation.userId]);
 
   return (
     <div className="flex flex-col h-screen items-center min-h-[500px] min-w-[320px]">

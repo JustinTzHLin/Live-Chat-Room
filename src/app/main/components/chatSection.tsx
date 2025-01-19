@@ -16,7 +16,12 @@ const ChatSection = ({
   setCurrentSection: (section: string) => void;
 }) => {
   const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL;
-  const { userInformation, currentChatInfo } = useUserStore((state) => state);
+  const {
+    userInformation,
+    currentChatInfo,
+    mainPageSectionFlow,
+    setMainPageSectionFlow,
+  } = useUserStore((state) => state);
   const socket = useSocketStore((state) => state.socket);
   const [inputMessage, setInputMessage] = useState<string>("");
   const { handleUnexpectedError } = useUnexpectedErrorHandler();
@@ -58,7 +63,8 @@ const ChatSection = ({
           type="button"
           className="text-muted-foreground rounded-full w-10 h-10 absolute left-2"
           onClick={() => {
-            setCurrentSection("tabs");
+            setCurrentSection(mainPageSectionFlow.at(-2) || "tabs");
+            setMainPageSectionFlow(mainPageSectionFlow.slice(0, -1));
           }}
         >
           <ChevronLeft style={{ width: "26px", height: "26px" }} />

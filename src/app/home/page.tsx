@@ -59,7 +59,7 @@ const Home = () => {
       }
     };
     verifyRegisterToken();
-  }, [BACKEND_URL, searchParams, toast, updateAuthAction]);
+  }, []);
 
   return (
     <div className="flex flex-col h-screen items-center justify-center gap-4 min-h-[500px] min-w-[320px]">

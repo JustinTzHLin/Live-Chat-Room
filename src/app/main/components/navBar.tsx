@@ -28,7 +28,12 @@ const NavBar = ({
 }: {
   setCurrentSection: (section: string) => void;
 }) => {
-  const userInformation = useUserStore((state) => state.userInformation);
+  const {
+    userInformation,
+    setSearchInput,
+    setSearchResult,
+    setMainPageSectionFlow,
+  } = useUserStore((state) => state);
   const [addFriendDialogOpen, setAddFriendDialogOpen] = useState(false);
   const [newGroupDialogOpen, setNewGroupDialogOpen] = useState(false);
   const [friendRequestsDialogOpen, setFriendRequestsDialogOpen] =
@@ -39,7 +44,10 @@ const NavBar = ({
     <div className="flex w-full justify-between">
       <div
         className="p-4 hover:cursor-pointer"
-        onClick={() => setCurrentSection("tabs")}
+        onClick={() => {
+          setCurrentSection("tabs");
+          setMainPageSectionFlow(["tabs"]);
+        }}
       >
         <div className="text-sm text-muted-foreground">Welcome,</div>
         <div className="text-xl font-semibold">{userInformation.username}</div>
@@ -50,7 +58,17 @@ const NavBar = ({
           size="icon"
           type="button"
           className="text-muted-foreground w-10 h-10 hover:bg-transparent"
-          onClick={() => setCurrentSection("search")}
+          onClick={() => {
+            setCurrentSection("search");
+            setMainPageSectionFlow((prev) => {
+              if (prev.at(-1) === "search") {
+                return prev;
+              }
+              setSearchInput("");
+              setSearchResult({ friends: [], messages: [], rooms: [] });
+              return [...prev, "search"];
+            });
+          }}
         >
           <Search style={{ width: "28px", height: "28px" }} />
         </Button>
@@ -103,7 +121,13 @@ const NavBar = ({
           size="icon"
           type="button"
           className="text-muted-foreground w-10 h-10 hover:bg-transparent"
-          onClick={() => setCurrentSection("settings")}
+          onClick={() => {
+            setCurrentSection("settings");
+            setMainPageSectionFlow((prev) => {
+              if (prev.at(-1) === "settings") return prev;
+              return [...prev, "settings"];
+            });
+          }}
         >
           <Bolt style={{ width: "28px", height: "28px" }} />
         </Button>

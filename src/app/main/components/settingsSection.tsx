@@ -15,12 +15,16 @@ import {
 import ChangePassword from "./settingsSection/changePassword";
 import TwoStepVerification from "./settingsSection/twoStepVerification";
 import EditProfile from "./settingsSection/editProfile";
+import { useUserStore } from "@/stores/userStore";
 
 const SettingsSection = ({
   setCurrentSection,
 }: {
   setCurrentSection: (section: string) => void;
 }) => {
+  const { mainPageSectionFlow, setMainPageSectionFlow } = useUserStore(
+    (state) => state
+  );
   const settingItems = {
     password: {
       icon: <LockKeyhole />,
@@ -63,11 +67,12 @@ const SettingsSection = ({
           size="icon"
           type="button"
           className="text-muted-foreground w-10 h-10 absolute left-2 hover:bg-transparent"
-          onClick={() =>
-            currentSetting === "settings"
-              ? setCurrentSection("tabs")
-              : setCurrentSetting("settings")
-          }
+          onClick={() => {
+            if (currentSetting === "settings") {
+              setCurrentSection(mainPageSectionFlow.at(-2) as string);
+              setMainPageSectionFlow((prev) => prev.slice(0, -1));
+            } else setCurrentSetting("settings");
+          }}
         >
           <ChevronLeft style={{ width: "26px", height: "26px" }} />
         </Button>

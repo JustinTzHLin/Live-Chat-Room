@@ -10,9 +10,10 @@ interface UserInformation {
   lastActive: Date;
 }
 
-interface Message {
+export interface Message {
   conversationId: string;
   senderId: string;
+  senderName: string;
   content: string;
   timestamp: string;
   readBy: string[];
@@ -41,9 +42,9 @@ interface UserChatData {
 }
 
 interface SearchResult {
-  messages: Conversation[];
+  messages: (Message & { messageIndex: number })[];
   friends: Friend[];
-  rooms: Conversation[];
+  rooms: string[];
 }
 
 interface userState {
@@ -73,12 +74,24 @@ interface userState {
   ) => void;
 
   // search result
+  searchInput: string;
+  setSearchInput: (
+    searchInput: string | ((searchInput: string) => string)
+  ) => void;
   searchResult: SearchResult;
   setSearchResult: (
     searchResult: SearchResult | ((searchResult: SearchResult) => SearchResult)
   ) => void;
   debounceSearchTimeout: NodeJS.Timeout | null;
   setDebounceSearchTimeout: (timeout: NodeJS.Timeout | null) => void;
+
+  // main page section flow
+  mainPageSectionFlow: string[];
+  setMainPageSectionFlow: (
+    mainPageSectionFlow:
+      | string[]
+      | ((mainPageSectionFlow: string[]) => string[])
+  ) => void;
 }
 
 export const useUserStore = create<userState>((set) => ({
@@ -148,6 +161,14 @@ export const useUserStore = create<userState>((set) => ({
     })),
 
   // search result
+  searchInput: "",
+  setSearchInput: (update) =>
+    set((state) => ({
+      searchInput:
+        typeof update === "function"
+          ? (update as (searchInput: string) => string)(state.searchInput)
+          : update,
+    })),
   searchResult: {
     messages: [],
     friends: [],
@@ -165,4 +186,16 @@ export const useUserStore = create<userState>((set) => ({
   debounceSearchTimeout: null,
   setDebounceSearchTimeout: (timeout: NodeJS.Timeout | null) =>
     set({ debounceSearchTimeout: timeout }),
+
+  // main page section flow
+  mainPageSectionFlow: [],
+  setMainPageSectionFlow: (update) =>
+    set((state) => ({
+      mainPageSectionFlow:
+        typeof update === "function"
+          ? (update as (mainPageSectionFlow: string[]) => string[])(
+              state.mainPageSectionFlow
+            )
+          : update,
+    })),
 }));

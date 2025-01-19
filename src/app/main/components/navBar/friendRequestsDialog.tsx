@@ -52,7 +52,7 @@ const FriendRequestsDialog = ({
       }
     };
     fetchFriendRequests();
-  }, [BACKEND_URL]);
+  }, []);
 
   useEffect(() => {
     const handleSocketSentFriendRequest = (request: any) => {
@@ -143,7 +143,7 @@ const FriendRequestsDialog = ({
         <DialogHeader>
           <DialogTitle className="text-xl">Friend Requests</DialogTitle>
           <DialogDescription></DialogDescription>
-          <p className="flex text-lg font-medium">Received</p>
+          <p className="text-left text-lg font-medium">Received</p>
           {fetchingFriendRequests ? (
             <div className="h-10 flex justify-center items-center text-slate-600">
               Loading...
@@ -183,7 +183,7 @@ const FriendRequestsDialog = ({
               </div>
             ))
           )}
-          <p className="flex text-lg !mt-4 font-medium">Sent</p>
+          <p className="text-left text-lg !mt-4 font-medium">Sent</p>
           {fetchingFriendRequests ? (
             <div className="h-10 flex justify-center items-center text-slate-600">
               Loading...

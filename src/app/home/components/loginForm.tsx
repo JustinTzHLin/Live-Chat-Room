@@ -63,13 +63,13 @@ const LoginForm = () => {
         });
       else if (loginResult.data.userVerified) {
         if (loginResult.data.authenticatedUser.twoFactor === "none") {
+          updatePreviousURL("/home");
           router.push("/main");
           toast({
             title: "User logged in",
             description: "Welcome back!",
             duration: 3000,
           });
-          updatePreviousURL("/home");
         } else {
           updateAuthAction("2fa");
           toast({

@@ -30,7 +30,9 @@ const ContactInfoDialog = ({
   const userConversationsData = Object.values(
     useUserStore((state) => state.userChatData.conversations)
   );
-  const setCurrentChatInfo = useUserStore((state) => state.setCurrentChatInfo);
+  const { setCurrentChatInfo, setMainPageSectionFlow } = useUserStore(
+    (state) => state
+  );
 
   return (
     <Dialog
@@ -65,6 +67,7 @@ const ContactInfoDialog = ({
                     ) || prev
                 );
                 setCurrentSection("chat");
+                setMainPageSectionFlow((prev) => [...prev, "chat"]);
               }}
             >
               <MessageSquareMore style={{ width: "26px", height: "26px" }} />
