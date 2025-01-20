@@ -10,6 +10,7 @@ const Theme = () => {
   const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL;
   const theme = useUserStore((state) => state.userInformation.theme);
   const [currentTheme, setCurrentTheme] = useState(theme);
+  const { handleUnexpectedError } = useUnexpectedErrorHandler();
   const { setTheme } = useTheme();
 
   const handleChangeTheme = async () => {
@@ -20,8 +21,7 @@ const Theme = () => {
       //   newTheme: currentTheme,
       // });
     } catch (err) {
-      console.error(err);
-      useUnexpectedErrorHandler();
+      handleUnexpectedError(err);
     }
   };
 
