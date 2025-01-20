@@ -145,18 +145,18 @@ const FriendRequestsDialog = ({
           <DialogDescription></DialogDescription>
           <p className="text-left text-lg font-medium">Received</p>
           {fetchingFriendRequests ? (
-            <div className="h-10 flex justify-center items-center text-slate-600">
+            <div className="h-10 flex justify-center items-center text-slate-600 dark:text-slate-400">
               Loading...
             </div>
           ) : friendRequests.received.length === 0 ? (
-            <div className="h-10 flex justify-center items-center text-slate-600">
+            <div className="h-10 flex justify-center items-center text-slate-600 dark:text-slate-400">
               None Pending
             </div>
           ) : (
             friendRequests.received.map((request) => (
               <div
                 key={request.id}
-                className="flex items-center justify-between rounded-lg bg-slate-100"
+                className="flex items-center justify-between rounded-lg bg-slate-100 dark:bg-slate-800"
               >
                 <p className="ml-3 text-lg font-semibold">
                   {getNameInitials(request.sender.username)}
@@ -185,18 +185,18 @@ const FriendRequestsDialog = ({
           )}
           <p className="text-left text-lg !mt-4 font-medium">Sent</p>
           {fetchingFriendRequests ? (
-            <div className="h-10 flex justify-center items-center text-slate-600">
+            <div className="h-10 flex justify-center items-center text-slate-600 dark:text-slate-400">
               Loading...
             </div>
           ) : friendRequests.sent.length === 0 ? (
-            <div className="h-10 flex justify-center items-center text-slate-600">
+            <div className="h-10 flex justify-center items-center text-slate-600 dark:text-slate-400">
               None Pending
             </div>
           ) : (
             friendRequests.sent.map((request) => (
               <div
                 key={request.id}
-                className="flex items-center justify-between rounded-lg bg-slate-100"
+                className="flex items-center justify-between rounded-lg bg-slate-100 dark:bg-slate-800"
               >
                 <p className="ml-3 text-lg font-semibold">
                   {getNameInitials(request.receiver.username)}

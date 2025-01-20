@@ -87,8 +87,8 @@ const ChatSection = ({
                 className={cn(
                   "flex flex-col p-2 hover:cursor-pointer rounded-xl",
                   message.senderId === userInformation.userId
-                    ? "items-end rounded-br-none bg-slate-800"
-                    : "items-end rounded-bl-none bg-slate-100"
+                    ? "items-end rounded-br-none bg-slate-800 dark:bg-slate-700"
+                    : "items-end rounded-bl-none bg-slate-100 dark:bg-slate-800"
                 )}
               >
                 <div
@@ -129,9 +129,10 @@ const ChatSection = ({
           <Input
             type="text"
             placeholder="Type a message"
-            className="w-full h-10 bg-slate-50 rounded-lg"
+            className="w-full h-10 rounded-lg bg-slate-50 dark:bg-slate-800"
             value={inputMessage}
             onChange={(e) => setInputMessage(e.target.value)}
+            autoFocus
           />
           <Button
             variant="ghost"

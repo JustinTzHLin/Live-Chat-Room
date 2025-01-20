@@ -14,6 +14,7 @@ import {
 } from "lucide-react";
 import ChangePassword from "./settingsSection/changePassword";
 import TwoStepVerification from "./settingsSection/twoStepVerification";
+import Theme from "./settingsSection/theme";
 import EditProfile from "./settingsSection/editProfile";
 import { useUserStore } from "@/stores/userStore";
 
@@ -84,13 +85,13 @@ const SettingsSection = ({
             : settingItems[currentSetting as keyof typeof settingItems].name}
         </div>
       </div>
-      <div className="w-full h-2 bg-slate-100"></div>
+      <div className="w-full h-2 bg-slate-100 dark:bg-slate-800"></div>
       <ScrollArea className="flex flex-col w-full h-[calc(100%-48px)] p-2">
         {currentSetting === "settings" ? (
           Object.entries(settingItems).map(([key, item]) => (
             <React.Fragment key={`setting_item_${key}`}>
               <div
-                className="w-full flex gap-2 h-10 items-center justify-between px-4 rounded-md hover:bg-slate-100 hover:cursor-pointer"
+                className="w-full flex gap-2 h-10 items-center justify-between px-4 rounded-md hover:cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-800"
                 onClick={item.onClick}
               >
                 <div className="flex items-center gap-4">
@@ -108,6 +109,8 @@ const SettingsSection = ({
           <EditProfile />
         ) : currentSetting === "2fa" ? (
           <TwoStepVerification />
+        ) : currentSetting === "theme" ? (
+          <Theme />
         ) : (
           <ComingSoon />
         )}

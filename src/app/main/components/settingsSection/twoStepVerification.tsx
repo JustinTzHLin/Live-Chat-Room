@@ -11,6 +11,7 @@ import {
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useUserStore } from "@/stores/userStore";
+import { useTheme } from "next-themes";
 import useUnexpectedErrorHandler from "@/utils/useUnexpectedErrorHandler";
 import axios from "axios";
 
@@ -18,10 +19,11 @@ const TwoStepVerification = () => {
   const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL;
   const twoFactor = useUserStore((state) => state.userInformation.twoFactor);
   const setTwoFactor = useUserStore((state) => state.setTwoFactor);
+  const { handleUnexpectedError } = useUnexpectedErrorHandler();
   const [current2FA, setCurrent2FA] = useState(twoFactor);
+  const { resolvedTheme } = useTheme();
   const router = useRouter();
   const { toast } = useToast();
-  const { handleUnexpectedError } = useUnexpectedErrorHandler();
 
   const handleChange2FA = async () => {
     try {
@@ -85,7 +87,9 @@ const TwoStepVerification = () => {
               onClick={() => setCurrent2FA("none")}
             >
               <div className="flex w-full justify-between items-center">
-                <CardTitle>None</CardTitle>
+                <CardTitle>
+                  None{twoFactor === "none" ? " (current)" : ""}
+                </CardTitle>
                 <RadioGroupItem value="none" />
               </div>
               <CardDescription>
@@ -105,8 +109,14 @@ const TwoStepVerification = () => {
               onClick={() => setCurrent2FA("email")}
             >
               <div className="flex w-full justify-between items-center">
-                <CardTitle>Email Authentication</CardTitle>
-                <RadioGroupItem value="email" />
+                <CardTitle>
+                  Email Authentication
+                  {twoFactor === "email" ? " (current)" : ""}
+                </CardTitle>
+                <RadioGroupItem
+                  value="email"
+                  className={current2FA !== "email" ? "hidden" : ""}
+                />
               </div>
               <CardDescription>
                 Enhance your account&apos;s security by requiring a verification
@@ -118,6 +128,7 @@ const TwoStepVerification = () => {
         <div className="flex w-full justify-end">
           <Button
             className="w-full sm:w-1/2 md:w-1/4"
+            variant={resolvedTheme === "dark" ? "outline" : "default"}
             disabled={current2FA === twoFactor}
             onClick={handleChange2FA}
           >

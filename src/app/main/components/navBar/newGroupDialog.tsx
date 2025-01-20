@@ -23,6 +23,7 @@ import { useSocketStore } from "@/stores/socketStore";
 import getNameInitials from "@/utils/getNameInitials";
 import useUnexpectedErrorHandler from "@/utils/useUnexpectedErrorHandler";
 import { useToast } from "@/hooks/use-toast";
+import { useTheme } from "next-themes";
 import { z } from "zod";
 import axios from "axios";
 
@@ -53,8 +54,9 @@ const NewGroupDialog = ({
   const [groupNameError, setGroupNameError] = useState<string | null>(null);
   const [noGroupMembers, setNoGroupMembers] = useState<boolean>(false);
   const [isLoading, setIsLoading] = useState<boolean>(false);
-  const { toast } = useToast();
   const { handleUnexpectedError } = useUnexpectedErrorHandler();
+  const { resolvedTheme } = useTheme();
+  const { toast } = useToast();
 
   useEffect(() => {
     if (newGroupDialogOpen) {
@@ -138,7 +140,7 @@ const NewGroupDialog = ({
             {friendsList.map((friend) => (
               <div
                 className={cn(
-                  "flex items-center justify-between gap-2 rounded-lg m-2 bg-slate-100",
+                  "flex items-center justify-between gap-2 rounded-lg m-2 bg-slate-100 dark:bg-slate-800",
                   friend.id in groupMembers && "ring-ring ring-2"
                 )}
                 key={`new_group_friend_${friend.id}`}
@@ -174,7 +176,7 @@ const NewGroupDialog = ({
             {Object.keys(groupMembers).length > 0 ? (
               Object.values(groupMembers).map((member) => (
                 <div
-                  className="flex items-center justify-between gap-2 rounded-lg bg-slate-100 m-2"
+                  className="flex items-center justify-between gap-2 rounded-lg m-2 bg-slate-100 dark:bg-slate-800"
                   key={`new_group_member_${member.id}`}
                 >
                   <p className="ml-3 text-lg font-semibold">
@@ -209,7 +211,11 @@ const NewGroupDialog = ({
           </ScrollArea>
         </DialogHeader>
         <DialogFooter>
-          <Button onClick={handleNewGroup} disabled={isLoading}>
+          <Button
+            onClick={handleNewGroup}
+            variant={resolvedTheme === "dark" ? "outline" : "default"}
+            disabled={isLoading}
+          >
             {isLoading && <LoaderCircle className="animate-spin" />}
             {isLoading ? "Creating..." : "Create Group"}
           </Button>

@@ -4,6 +4,7 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useUserStore } from "@/stores/userStore";
+import { useTheme } from "next-themes";
 import getNameInitials from "@/utils/getNameInitials";
 import useUnexpectedErrorHandler from "@/utils/useUnexpectedErrorHandler";
 import { PencilLine, UserRound, X } from "lucide-react";
@@ -32,8 +33,9 @@ const EditProfile = () => {
   const [newJicId, setNewJicId] = useState<string>(userInformation.jicId || "");
   const [usernameError, setUsernameError] = useState<string | null>(null);
   const [jicIdError, setJicIdError] = useState<string | null>(null);
-  const { toast } = useToast();
   const { handleUnexpectedError } = useUnexpectedErrorHandler();
+  const { resolvedTheme } = useTheme();
+  const { toast } = useToast();
 
   useEffect(() => {
     setUsernameError(null);
@@ -46,6 +48,13 @@ const EditProfile = () => {
   }, [userInformation.jicId, editJicId]);
 
   const updateUsername = async () => {
+    if (newUsername === userInformation.username) {
+      return toast({
+        title: "Same username",
+        description: "You cannot update to the same username.",
+        duration: 3000,
+      });
+    }
     try {
       usernameSchema.parse(newUsername);
       const updateUsernameResponse = await axios.post(
@@ -69,6 +78,13 @@ const EditProfile = () => {
   };
 
   const updateJicId = async () => {
+    if (newJicId === userInformation.jicId) {
+      return toast({
+        title: "Same JIC ID",
+        description: "You cannot update to the same JIC ID.",
+        duration: 3000,
+      });
+    }
     try {
       jicIdSchema.parse(newJicId);
       const updateJicIdResponse = await axios.post(
@@ -141,10 +157,18 @@ const EditProfile = () => {
             </p>
           )}
           <div className="w-full flex justify-center gap-2 mt-4">
-            <Button variant="secondary" onClick={() => setEditUsername(false)}>
+            <Button
+              variant={resolvedTheme === "dark" ? "outline" : "secondary"}
+              onClick={() => setEditUsername(false)}
+            >
               Cancel
             </Button>
-            <Button onClick={updateUsername}>Save</Button>
+            <Button
+              variant={resolvedTheme === "dark" ? "secondary" : "default"}
+              onClick={updateUsername}
+            >
+              Save
+            </Button>
           </div>
         </div>
       )}
@@ -193,10 +217,18 @@ const EditProfile = () => {
             </p>
           )}
           <div className="w-full flex justify-center gap-2 mt-4">
-            <Button variant="secondary" onClick={() => setEditJicId(false)}>
+            <Button
+              variant={resolvedTheme === "dark" ? "outline" : "secondary"}
+              onClick={() => setEditJicId(false)}
+            >
               Cancel
             </Button>
-            <Button onClick={updateJicId}>Save</Button>
+            <Button
+              variant={resolvedTheme === "dark" ? "secondary" : "default"}
+              onClick={updateJicId}
+            >
+              Save
+            </Button>
           </div>
         </div>
       )}

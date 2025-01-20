@@ -64,7 +64,7 @@ const Home = () => {
   return (
     <div className="flex flex-col h-screen items-center justify-center gap-4 min-h-[500px] min-w-[320px]">
       <h1 className="text-3xl font-bold">Just In Chat</h1>
-      <p className="text-sm text-slate-500">
+      <p className="text-sm text-muted-foreground">
         Your <span className="font-semibold">Secure</span> and{" "}
         <span className="font-semibold">Private</span> Live Chat Space
       </p>
@@ -77,7 +77,7 @@ const Home = () => {
       ) : (
         <OtpForm />
       )}
-      <p className="text-slate-600">
+      <p className="text-muted-foreground">
         {authAction === "login"
           ? "Don't have an account? "
           : "Already have an account? "}

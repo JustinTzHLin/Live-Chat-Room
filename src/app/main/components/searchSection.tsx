@@ -148,7 +148,7 @@ const SearchSection = ({
         {searchResult.friends.map((friendInfo) => (
           <div
             key={`friend_${friendInfo.id}`}
-            className="mt-2 flex h-10 items-center justify-between gap-2 rounded-lg bg-slate-50 hover:bg-slate-100 hover:cursor-pointer"
+            className="mt-2 flex h-10 items-center justify-between gap-2 rounded-lg hover:cursor-pointer bg-slate-50 hover:bg-slate-100 dark:bg-slate-800 dark:hover:bg-slate-700"
             onClick={() => {
               setContactInfoDialogOpen(true);
               setContactInfo(friendInfo);
@@ -167,7 +167,7 @@ const SearchSection = ({
         {searchResult.messages.map((message) => (
           <div
             key={`conversation_${message.conversationId}_message_${message.messageIndex}`}
-            className="mt-2 flex flex-col items-start gap-2 p-2 px-4 rounded-lg bg-slate-50 hover:bg-slate-100 hover:cursor-pointer"
+            className="mt-2 flex flex-col items-start gap-2 p-2 px-4 rounded-lg hover:cursor-pointer bg-slate-50 hover:bg-slate-100 dark:bg-slate-800 dark:hover:bg-slate-700"
             onClick={() => {
               setCurrentSection("chat");
               setCurrentChatInfo(
@@ -189,7 +189,7 @@ const SearchSection = ({
         {searchResult.rooms.map((room) => (
           <div
             key={`conversation_${room}`}
-            className="mt-2 flex h-10 items-center justify-between gap-2 p-4 rounded-lg bg-slate-50 hover:bg-slate-100 hover:cursor-pointer"
+            className="mt-2 flex h-10 items-center justify-between gap-2 p-4 rounded-lg hover:cursor-pointer bg-slate-50 hover:bg-slate-100 dark:bg-slate-800 dark:hover:bg-slate-700"
             onClick={() => {
               setCurrentSection("chat");
               setCurrentChatInfo(userChatData.conversations[room]);

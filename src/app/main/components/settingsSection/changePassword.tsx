@@ -14,6 +14,7 @@ import {
 import useUnexpectedErrorHandler from "@/utils/useUnexpectedErrorHandler";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
+import { useTheme } from "next-themes";
 import { z } from "zod";
 import axios from "axios";
 
@@ -46,9 +47,10 @@ const ChangePassword = ({
   const [showOldPassword, setShowOldPassword] = useState(false);
   const [showNewPassword, setShowNewPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
-  const { toast } = useToast();
   const { handleUnexpectedError } = useUnexpectedErrorHandler();
+  const [isLoading, setIsLoading] = useState(false);
+  const { resolvedTheme } = useTheme();
+  const { toast } = useToast();
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -166,7 +168,12 @@ const ChangePassword = ({
               )}
             />
           ))}
-          <Button className="w-full mt-3" type="submit" disabled={isLoading}>
+          <Button
+            className="w-full mt-3"
+            variant={resolvedTheme === "dark" ? "secondary" : "default"}
+            type="submit"
+            disabled={isLoading}
+          >
             {isLoading && <LoaderCircle className="animate-spin" />}
             {isLoading ? "Submitting..." : "Submit"}
           </Button>

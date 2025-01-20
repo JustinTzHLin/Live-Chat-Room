@@ -11,8 +11,10 @@ import SettingsSection from "./components/settingsSection";
 import { useAuthStore } from "@/stores/authStore";
 import { useUserStore } from "@/stores/userStore";
 import { useSocketStore } from "@/stores/socketStore";
+import { useTheme } from "next-themes";
 import useUnexpectedErrorHandler from "@/utils/useUnexpectedErrorHandler";
 import axios from "axios";
+import { set } from "date-fns";
 
 const Page = () => {
   const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL;
@@ -31,6 +33,7 @@ const Page = () => {
   const router = useRouter();
   const { toast } = useToast();
   const { handleUnexpectedError } = useUnexpectedErrorHandler();
+  const { setTheme } = useTheme();
 
   useEffect(() => {
     if (socket) {
@@ -40,6 +43,10 @@ const Page = () => {
       }
     }
   }, [socket, userChatData.conversations, userInformation.userId]);
+
+  useEffect(() => {
+    setTheme(userInformation.theme);
+  }, [userInformation.theme]);
 
   useEffect(() => {
     const fetchChatData = async (userId: string) => {

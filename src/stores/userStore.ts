@@ -6,6 +6,7 @@ interface UserInformation {
   email: string;
   jicId: string | null;
   twoFactor: string;
+  theme: string;
   createdAt: Date;
   lastActive: Date;
 }
@@ -102,6 +103,7 @@ export const useUserStore = create<userState>((set) => ({
     email: "",
     jicId: null,
     twoFactor: "none",
+    theme: "system",
     createdAt: new Date(),
     lastActive: new Date(),
   },

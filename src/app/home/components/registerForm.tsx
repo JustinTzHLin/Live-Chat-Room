@@ -26,6 +26,7 @@ import {
 import useUnexpectedErrorHandler from "@/utils/useUnexpectedErrorHandler";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
+import { useTheme } from "next-themes";
 import { z } from "zod";
 
 const formSchema = z.object({
@@ -44,9 +45,10 @@ const RegisterForm = ({ registerEmail }: { registerEmail: string }) => {
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const { updatePreviousURL } = useAuthStore((state) => state);
+  const { handleUnexpectedError } = useUnexpectedErrorHandler();
+  const { resolvedTheme } = useTheme();
   const router = useRouter();
   const { toast } = useToast();
-  const { handleUnexpectedError } = useUnexpectedErrorHandler();
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -168,7 +170,13 @@ const RegisterForm = ({ registerEmail }: { registerEmail: string }) => {
             </FormItem>
           )}
         />
-        <Button className="w-full mt-3" type="submit" disabled={isLoading}>
+        <Button
+          className="w-full mt-3"
+          variant={resolvedTheme === "dark" ? "secondary" : "default"}
+          type="submit"
+          disabled={isLoading}
+          aria-busy={isLoading}
+        >
           {isLoading && <LoaderCircle className="animate-spin" />}
           {isLoading ? "Registering..." : "Register"}
         </Button>

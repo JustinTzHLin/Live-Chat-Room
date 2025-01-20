@@ -14,6 +14,7 @@ import {
 import useUnexpectedErrorHandler from "@/utils/useUnexpectedErrorHandler";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
+import { useTheme } from "next-themes";
 import { z } from "zod";
 import axios from "axios";
 
@@ -24,8 +25,9 @@ const formSchema = z.object({
 const SignupForm = () => {
   const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL;
   const [isLoading, setIsLoading] = useState(false);
-  const { toast } = useToast();
   const { handleUnexpectedError } = useUnexpectedErrorHandler();
+  const { resolvedTheme } = useTheme();
+  const { toast } = useToast();
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -102,6 +104,7 @@ const SignupForm = () => {
         />
         <Button
           className="w-full mt-3"
+          variant={resolvedTheme === "dark" ? "secondary" : "default"}
           type="submit"
           disabled={isLoading}
           aria-busy={isLoading}

@@ -16,6 +16,7 @@ import { useAuthStore } from "@/stores/authStore";
 import useUnexpectedErrorHandler from "@/utils/useUnexpectedErrorHandler";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
+import { useTheme } from "next-themes";
 import { z } from "zod";
 import axios from "axios";
 
@@ -34,9 +35,10 @@ const LoginForm = () => {
   const { updatePreviousURL, updateAuthAction } = useAuthStore(
     (state) => state
   );
+  const { handleUnexpectedError } = useUnexpectedErrorHandler();
+  const { resolvedTheme } = useTheme();
   const router = useRouter();
   const { toast } = useToast();
-  const { handleUnexpectedError } = useUnexpectedErrorHandler();
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -166,7 +168,13 @@ const LoginForm = () => {
             </FormItem>
           )}
         />
-        <Button className="w-full mt-3" type="submit" disabled={isLoading}>
+        <Button
+          className="w-full mt-3"
+          variant={resolvedTheme === "dark" ? "secondary" : "default"}
+          type="submit"
+          disabled={isLoading}
+          aria-busy={isLoading}
+        >
           {isLoading && <LoaderCircle className="animate-spin" />}
           {isLoading ? "Logging in..." : "Login"}
         </Button>

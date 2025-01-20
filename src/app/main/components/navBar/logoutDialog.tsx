@@ -11,6 +11,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { useSocketStore } from "@/stores/socketStore";
 import useUnexpectedErrorHandler from "@/utils/useUnexpectedErrorHandler";
+import { useTheme } from "next-themes";
 import axios from "axios";
 
 const LogoutDialog = ({
@@ -22,9 +23,10 @@ const LogoutDialog = ({
 }) => {
   const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL;
   const disconnect = useSocketStore((state) => state.disconnect);
+  const { handleUnexpectedError } = useUnexpectedErrorHandler();
+  const { resolvedTheme } = useTheme();
   const router = useRouter();
   const { toast } = useToast();
-  const { handleUnexpectedError } = useUnexpectedErrorHandler();
 
   const handleLogout = async () => {
     try {
@@ -59,12 +61,17 @@ const LogoutDialog = ({
         <DialogFooter>
           <div className="flex justify-center gap-4">
             <Button
-              variant="secondary"
+              variant={resolvedTheme === "dark" ? "outline" : "secondary"}
               onClick={() => setLogoutDialogOpen(false)}
             >
               Cancel
             </Button>
-            <Button onClick={handleLogout}>Logout</Button>
+            <Button
+              variant={resolvedTheme === "dark" ? "secondary" : "default"}
+              onClick={handleLogout}
+            >
+              Logout
+            </Button>
           </div>
         </DialogFooter>
       </DialogContent>

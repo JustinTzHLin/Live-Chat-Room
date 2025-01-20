@@ -21,6 +21,7 @@ import { REGEXP_ONLY_DIGITS } from "input-otp";
 import useUnexpectedErrorHandler from "@/utils/useUnexpectedErrorHandler";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
+import { useTheme } from "next-themes";
 import { z } from "zod";
 import axios from "axios";
 
@@ -34,9 +35,10 @@ const OTPForm = () => {
   const { updatePreviousURL, updateAuthAction } = useAuthStore(
     (state) => state
   );
+  const { handleUnexpectedError } = useUnexpectedErrorHandler();
+  const { resolvedTheme } = useTheme();
   const { toast } = useToast();
   const router = useRouter();
-  const { handleUnexpectedError } = useUnexpectedErrorHandler();
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -127,6 +129,7 @@ const OTPForm = () => {
         />
         <Button
           className="w-full mt-3"
+          variant={resolvedTheme === "dark" ? "secondary" : "default"}
           type="submit"
           disabled={isLoading}
           aria-busy={isLoading}

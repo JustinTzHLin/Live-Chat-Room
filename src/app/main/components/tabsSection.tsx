@@ -1,8 +1,10 @@
 import { useState } from "react";
+import { cn } from "@/lib/utils";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import ContactInfoDialog from "./tabsSection/contactInfoDialog";
 import { useUserStore } from "@/stores/userStore";
+import { useTheme } from "next-themes";
 import getNameInitials from "@/utils/getNameInitials";
 
 const TabsSection = ({
@@ -16,6 +18,7 @@ const TabsSection = ({
 }) => {
   const { userChatData, setCurrentChatInfo, setMainPageSectionFlow } =
     useUserStore((state) => state);
+  const { resolvedTheme } = useTheme();
   const [contactInfoDialogOpen, setContactInfoDialogOpen] = useState(false);
   const [contactInfo, setContactInfo] = useState<{
     username: string;
@@ -44,7 +47,7 @@ const TabsSection = ({
           {Object.values(userChatData.conversations).map((chatInfo, index) => (
             <div
               key={`chat_${index}`}
-              className="flex items-center justify-between gap-2 p-2 hover:bg-slate-100 hover:cursor-pointer rounded-lg"
+              className="flex items-center justify-between gap-2 p-2 hover:cursor-pointer rounded-lg dark:hover:bg-slate-800 hover:bg-slate-100"
               onClick={() => {
                 setCurrentSection("chat");
                 setCurrentChatInfo(chatInfo);
@@ -66,7 +69,7 @@ const TabsSection = ({
             .map((groupInfo, index) => (
               <div
                 key={`group_${index}`}
-                className="flex items-center justify-between gap-2 p-2 hover:bg-slate-100 hover:cursor-pointer rounded-lg"
+                className="flex items-center justify-between gap-2 p-2 hover:cursor-pointer rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800"
                 onClick={() => {
                   setCurrentSection("chat");
                   setCurrentChatInfo(groupInfo);
@@ -86,14 +89,14 @@ const TabsSection = ({
           {userChatData.friends.map((friendInfo, index) => (
             <div
               key={`friend_${index}`}
-              className="flex items-center justify-between gap-2 p-1 hover:bg-slate-100 hover:cursor-pointer rounded-lg"
+              className="flex items-center justify-between gap-2 p-1 hover:cursor-pointer rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800"
               onClick={() => {
                 setContactInfoDialogOpen(true);
                 setContactInfo(friendInfo);
               }}
             >
               <Avatar>
-                <AvatarFallback className="bg-slate-200 font-semibold text-lg">
+                <AvatarFallback className="font-semibold text-lg bg-slate-200 dark:bg-slate-700">
                   {getNameInitials(friendInfo.username)}
                 </AvatarFallback>
               </Avatar>

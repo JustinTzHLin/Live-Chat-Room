@@ -216,7 +216,7 @@ const AddFriendDialog = ({
           </form>
         </div>
         {searchedUser ? (
-          <div className="flex items-center justify-between gap-2 rounded-lg bg-slate-100">
+          <div className="flex items-center justify-between gap-2 rounded-lg bg-slate-100 dark:bg-slate-800">
             <p className="ml-3 text-lg font-semibold">
               {getNameInitials(searchedUser.username)}
             </p>
@@ -231,7 +231,7 @@ const AddFriendDialog = ({
             </Button>
           </div>
         ) : (
-          <div className="h-10 flex justify-center items-center text-slate-600">
+          <div className="h-10 flex justify-center items-center text-slate-600 dark:text-slate-400">
             {searching ? "Loading..." : "No User Found"}
           </div>
         )}
