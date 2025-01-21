@@ -1,6 +1,5 @@
 import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
 import {
   ChevronLeft,
@@ -14,6 +13,7 @@ import {
 } from "lucide-react";
 import ChangePassword from "./settingsSection/changePassword";
 import TwoStepVerification from "./settingsSection/twoStepVerification";
+import TimeZone from "./settingsSection/timeZone";
 import Theme from "./settingsSection/theme";
 import EditProfile from "./settingsSection/editProfile";
 import { useUserStore } from "@/stores/userStore";
@@ -86,7 +86,7 @@ const SettingsSection = ({
         </div>
       </div>
       <div className="w-full h-2 bg-slate-100 dark:bg-slate-800"></div>
-      <ScrollArea className="flex flex-col w-full h-[calc(100%-48px)] p-2">
+      <div className="flex flex-col w-full h-[calc(100%-48px)] p-2">
         {currentSetting === "settings" ? (
           Object.entries(settingItems).map(([key, item]) => (
             <React.Fragment key={`setting_item_${key}`}>
@@ -105,16 +105,18 @@ const SettingsSection = ({
           ))
         ) : currentSetting === "password" ? (
           <ChangePassword setCurrentSetting={setCurrentSetting} />
-        ) : currentSetting === "profile" ? (
-          <EditProfile />
         ) : currentSetting === "2fa" ? (
           <TwoStepVerification />
+        ) : currentSetting === "timezone" ? (
+          <TimeZone />
         ) : currentSetting === "theme" ? (
           <Theme />
+        ) : currentSetting === "profile" ? (
+          <EditProfile />
         ) : (
           <ComingSoon />
         )}
-      </ScrollArea>
+      </div>
     </div>
   );
 };

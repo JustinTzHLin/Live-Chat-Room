@@ -10,6 +10,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { LoaderCircle } from "lucide-react";
 import { useUserStore } from "@/stores/userStore";
 import { useTheme } from "next-themes";
 import useUnexpectedErrorHandler from "@/utils/useUnexpectedErrorHandler";
@@ -21,11 +22,13 @@ const TwoStepVerification = () => {
   const setTwoFactor = useUserStore((state) => state.setTwoFactor);
   const { handleUnexpectedError } = useUnexpectedErrorHandler();
   const [current2FA, setCurrent2FA] = useState(twoFactor);
+  const [isLoading, setIsLoading] = useState(false);
   const { resolvedTheme } = useTheme();
   const router = useRouter();
   const { toast } = useToast();
 
   const handleChange2FA = async () => {
+    setIsLoading(true);
     try {
       const change2FAResponse = await axios.post(
         `${BACKEND_URL}/user/change2FA`,
@@ -65,6 +68,8 @@ const TwoStepVerification = () => {
       }
     } catch (err) {
       handleUnexpectedError(err);
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -129,10 +134,11 @@ const TwoStepVerification = () => {
           <Button
             className="w-full sm:w-1/2 md:w-1/4"
             variant={resolvedTheme === "dark" ? "outline" : "default"}
-            disabled={current2FA === twoFactor}
+            disabled={current2FA === twoFactor || isLoading}
             onClick={handleChange2FA}
           >
-            Save
+            {isLoading && <LoaderCircle className="animate-spin" />}
+            {isLoading ? "Saving..." : "Save"}
           </Button>
         </div>
       </div>
