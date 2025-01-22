@@ -48,6 +48,15 @@ const Page = () => {
   }, [userInformation.theme]);
 
   useEffect(() => {
+    const onMaxRetries = () => {
+      toast({
+        variant: "destructive",
+        title: "Connection failed",
+        description: "Please refresh the page and try again later.",
+        duration: 3000,
+      });
+      router.push("/home");
+    };
     const fetchChatData = async (userId: string) => {
       try {
         const chatData = await axios.post(
@@ -57,7 +66,7 @@ const Page = () => {
         );
         setUserChatData(chatData.data);
         setMainPageSectionFlow(["tabs"]);
-        connect();
+        connect(onMaxRetries);
       } catch (err) {
         handleUnexpectedError(err);
       }
