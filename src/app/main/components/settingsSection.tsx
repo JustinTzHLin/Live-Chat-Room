@@ -44,10 +44,10 @@ const SettingsSection = ({
       name: "Language",
       onClick: () => setCurrentSetting("language"),
     },
-    timezone: {
+    timeZone: {
       icon: <Globe />,
       name: "Time Zone",
-      onClick: () => setCurrentSetting("timezone"),
+      onClick: () => setCurrentSetting("timeZone"),
     },
     theme: {
       icon: <SunMoon />,
@@ -60,7 +60,7 @@ const SettingsSection = ({
       onClick: () => setCurrentSetting("profile"),
     },
   };
-  const [currentSetting, setCurrentSetting] = useState<string>("settings"); // settings, password, 2fa, language, timezone, theme, profile
+  const [currentSetting, setCurrentSetting] = useState<string>("settings"); // settings, password, 2fa, language, timeZone, theme, profile
 
   return (
     <div className="w-full h-[calc(100%-80px)] flex flex-col items-center">
@@ -107,7 +107,7 @@ const SettingsSection = ({
           <ChangePassword setCurrentSetting={setCurrentSetting} />
         ) : currentSetting === "2fa" ? (
           <TwoStepVerification />
-        ) : currentSetting === "timezone" ? (
+        ) : currentSetting === "timeZone" ? (
           <TimeZone />
         ) : currentSetting === "theme" ? (
           <Theme />

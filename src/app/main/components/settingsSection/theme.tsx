@@ -15,10 +15,10 @@ const Theme = () => {
     userInformation: { theme: preferenceTheme },
     setUserInformation,
   } = useUserStore((state) => state);
-  const [currentTheme, setCurrentTheme] = useState(preferenceTheme);
   const [isLoading, setIsLoading] = useState(false);
   const { handleUnexpectedError } = useUnexpectedErrorHandler();
-  const { resolvedTheme, setTheme } = useTheme();
+  const { theme, resolvedTheme, setTheme } = useTheme();
+  const [currentTheme, setCurrentTheme] = useState(theme);
   const { toast } = useToast();
 
   const handleChangeTheme = async () => {
@@ -40,7 +40,7 @@ const Theme = () => {
         });
         setUserInformation((prev) => ({
           ...prev,
-          theme: currentTheme,
+          theme: currentTheme || "system",
         }));
       } else throw new Error("Theme not changed");
     } catch (err) {
@@ -51,7 +51,7 @@ const Theme = () => {
   };
 
   useEffect(() => {
-    setTheme(currentTheme);
+    setTheme(currentTheme || "system");
   }, [currentTheme]);
 
   return (

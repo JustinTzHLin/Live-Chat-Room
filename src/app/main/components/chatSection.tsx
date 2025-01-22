@@ -109,7 +109,10 @@ const ChatSection = ({
                       : ""
                   )}
                 >
-                  {timestampToFormattedTime(message.timestamp)}
+                  {timestampToFormattedTime(
+                    message.timestamp,
+                    userInformation.timeZone
+                  )}
                 </div>
                 {/* <div className="text-xs text-muted-foreground">
                     {userChatData.friends.find(

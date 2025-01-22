@@ -14,7 +14,6 @@ import { useSocketStore } from "@/stores/socketStore";
 import { useTheme } from "next-themes";
 import useUnexpectedErrorHandler from "@/utils/useUnexpectedErrorHandler";
 import axios from "axios";
-import { set } from "date-fns";
 
 const Page = () => {
   const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL;
@@ -79,6 +78,7 @@ const Page = () => {
           setUserInformation(tokenVerified.data.user);
           fetchChatData(tokenVerified.data.user.userId);
         } else {
+          router.push("/home");
           if (tokenVerified.data.errorMessage === "no token found")
             toast({
               title: "No token found",
@@ -100,11 +100,10 @@ const Page = () => {
               duration: 3000,
             });
           else throw new Error("Token not verified");
-          return router.push("/home");
         }
       } catch (err) {
+        router.push("/home");
         handleUnexpectedError(err, "Please login instead.");
-        return router.push("/home");
       }
     };
     verifyLoggedInToken();
