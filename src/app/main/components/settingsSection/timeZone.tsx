@@ -3,7 +3,7 @@ import { cn } from "@/lib/utils";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { X } from "lucide-react";
+import { X, LoaderCircle } from "lucide-react";
 import moment from "moment-timezone";
 import { useUserStore } from "@/stores/userStore";
 import useUnexpectedErrorHandler from "@/utils/useUnexpectedErrorHandler";
@@ -12,14 +12,17 @@ import { useToast } from "@/hooks/use-toast";
 import axios from "axios";
 
 // Example array with UTC offsets
-const timeZones = moment.tz.names().map((tz) => {
-  const offset = moment.tz(tz).utcOffset() / 60;
-  const sign = offset >= 0 ? "+" : "-";
-  return {
-    value: tz,
-    label: `${tz} (UTC${sign}${Math.abs(offset)})`,
-  };
-});
+const timeZones = [
+  ...moment.tz.names().map((tz) => {
+    const offset = moment.tz(tz).utcOffset() / 60;
+    const sign = offset >= 0 ? "+" : "-";
+    return {
+      value: tz,
+      label: `${tz} (UTC${sign}${Math.abs(offset)})`,
+    };
+  }),
+  { value: null, label: "Your Local Time Zone" },
+];
 
 export default function TimeZoneEditor() {
   const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL;
@@ -29,7 +32,9 @@ export default function TimeZoneEditor() {
     (state) => state
   );
   const [search, setSearch] = useState("");
-  const [selectedTimeZone, setSelectedTimeZone] = useState("");
+  const [selectedTimeZone, setSelectedTimeZone] = useState(
+    userInformation.timeZone
+  );
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
 
@@ -84,6 +89,36 @@ export default function TimeZoneEditor() {
         </Button>
       </div>
 
+      {/* Current Time Preview */}
+      <div className="flex mx-4 items-center justify-center gap-2">
+        <div className="flex-1">
+          {selectedTimeZone ? (
+            <div
+              className="p-2 rounded-md border shadow"
+              onClick={() => setSelectedTimeZone(userInformation.timeZone)}
+            >
+              Current Time in <b>{selectedTimeZone}</b>:{" "}
+              {new Date().toLocaleString("en-US", {
+                timeZone: selectedTimeZone,
+              })}
+            </div>
+          ) : (
+            <div className="p-2 rounded-md border shadow">
+              Current Time in your local time zone:{" "}
+              {new Date().toLocaleString("en-US")}
+            </div>
+          )}
+        </div>
+        <Button
+          variant={resolvedTheme === "dark" ? "secondary" : "default"}
+          className="h-full w-16"
+          onClick={handleChangeTimeZone}
+          disabled={selectedTimeZone === userInformation.timeZone || isLoading}
+        >
+          {isLoading ? <LoaderCircle className="animate-spin" /> : "Save"}
+        </Button>
+      </div>
+
       {/* Time Zone List */}
       <ScrollArea className="flex-1 mx-4 rounded-md border">
         {filteredZones.map((tz) => (
@@ -94,7 +129,8 @@ export default function TimeZoneEditor() {
               selectedTimeZone === tz.value && "ring-ring ring-2"
             )}
             onClick={() => {
-              if (selectedTimeZone === tz.value) setSelectedTimeZone("");
+              if (selectedTimeZone === tz.value)
+                setSelectedTimeZone(userInformation.timeZone);
               else setSelectedTimeZone(tz.value);
             }}
           >
@@ -104,35 +140,6 @@ export default function TimeZoneEditor() {
           </div>
         ))}
       </ScrollArea>
-
-      {/* Current Time Preview */}
-      <div className="flex mx-4 items-center justify-center gap-2">
-        <div className="flex-1">
-          {selectedTimeZone ? (
-            <div
-              className="p-2 rounded-md border shadow"
-              onClick={() => setSelectedTimeZone("")}
-            >
-              Current Time in <b>{selectedTimeZone}</b>:{" "}
-              {new Date().toLocaleString("en-US", {
-                timeZone: selectedTimeZone,
-              })}
-            </div>
-          ) : (
-            <div className="p-2 rounded-md border shadow">
-              Select a time zone to see the current time and save it.
-            </div>
-          )}
-        </div>
-        <Button
-          variant={resolvedTheme === "dark" ? "secondary" : "default"}
-          className="h-full"
-          onClick={handleChangeTimeZone}
-          disabled={selectedTimeZone === "" || isLoading}
-        >
-          Save
-        </Button>
-      </div>
     </div>
   );
 }
