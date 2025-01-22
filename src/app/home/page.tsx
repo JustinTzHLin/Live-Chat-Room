@@ -20,6 +20,23 @@ const Home = () => {
   const { handleUnexpectedError } = useUnexpectedErrorHandler();
 
   useEffect(() => {
+    const verifyServerConnection = async () => {
+      try {
+        console.log(
+          (
+            await axios(`${BACKEND_URL}`, {
+              withCredentials: true,
+            })
+          ).data
+        );
+      } catch (err) {
+        handleUnexpectedError(err);
+      }
+    };
+    verifyServerConnection();
+  }, []);
+
+  useEffect(() => {
     const verifyRegisterToken = async () => {
       const registerToken = searchParams.get("registerToken");
       if (registerToken) {

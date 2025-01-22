@@ -3,7 +3,7 @@ import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Input } from "@/components/ui/input";
-import { SendHorizontal, ChevronLeft } from "lucide-react";
+import { Send, ChevronLeft } from "lucide-react";
 import { useUserStore } from "@/stores/userStore";
 import { useSocketStore } from "@/stores/socketStore";
 import timestampToFormattedTime from "@/utils/timestampToFormattedTime";
@@ -18,7 +18,9 @@ const ChatSection = ({
   const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL;
   const {
     userInformation,
+    setUserChatData,
     currentChatInfo,
+    setCurrentChatInfo,
     mainPageSectionFlow,
     setMainPageSectionFlow,
   } = useUserStore((state) => state);
@@ -30,24 +32,47 @@ const ChatSection = ({
     e.preventDefault();
     if (inputMessage) {
       try {
-        await axios.post(
+        const timestampNow = new Date().toISOString().replace("Z", "+00:00");
+        const newMessage = {
+          senderId: userInformation.userId,
+          senderName: userInformation.username,
+          content: inputMessage,
+          timestamp: timestampNow,
+          readBy: [],
+          status: "sent",
+          conversationId: currentChatInfo.conversationId,
+        };
+        setCurrentChatInfo({
+          ...currentChatInfo,
+          messages: [...currentChatInfo.messages, newMessage],
+        });
+        setUserChatData((prev) => ({
+          ...prev,
+          conversations: {
+            ...prev.conversations,
+            [currentChatInfo.conversationId]: {
+              ...prev.conversations[currentChatInfo.conversationId],
+              messages:
+                prev.conversations[
+                  currentChatInfo.conversationId
+                ].messages.concat(newMessage),
+            },
+          },
+        }));
+        const sendMessageResponse = await axios.post(
           `${BACKEND_URL}/chat/sendMessage`,
           {
             senderId: userInformation.userId,
             content: inputMessage,
             conversationId: currentChatInfo.conversationId,
+            timestamp: timestampNow,
           },
           { withCredentials: true }
         );
-        socket.emit("send_message", {
-          senderId: userInformation.userId,
-          content: inputMessage,
-          timestamp: new Date().toISOString().replace("Z", "+00:00"),
-          readBy: [],
-          status: "sent",
-          conversationId: currentChatInfo.conversationId,
-        });
-        setInputMessage("");
+        if (sendMessageResponse.data.success) {
+          socket.emit("send_message", newMessage);
+          setInputMessage("");
+        } else throw new Error("Message not sent");
       } catch (err) {
         handleUnexpectedError(err);
       }
@@ -71,16 +96,16 @@ const ChatSection = ({
         </Button>
         <div className="text-xl font-semibold">{currentChatInfo.roomName}</div>
       </div>
-      <ScrollArea className="w-full h-[calc(100%-120px)] flex flex-col px-4">
+      <ScrollArea className="w-full h-[calc(100%-120px)] flex flex-col px-4 pt-2">
         {currentChatInfo.messages.map((message, index) => {
           return (
             <div
               key={`message_${index}`}
               className={cn(
-                "w-full flex mb-2",
+                "w-full flex flex-col mb-2",
                 message.senderId === userInformation.userId
-                  ? "justify-end"
-                  : "justify-start"
+                  ? "items-end"
+                  : "items-start"
               )}
             >
               <div
@@ -114,21 +139,18 @@ const ChatSection = ({
                     userInformation.timeZone
                   )}
                 </div>
-                {/* <div className="text-xs text-muted-foreground">
-                    {userChatData.friends.find(
-                      (friend) => friend.id === message.senderId
-                    )?.username ||
-                      (userInformation.userId === message.senderId
-                        ? "You"
-                        : "Unknown")}
-                  </div> */}
+              </div>
+              <div className="text-xs text-muted-foreground mx-1 my-0.5">
+                {userInformation.userId === message.senderId
+                  ? "You"
+                  : message.senderName}
               </div>
             </div>
           );
         })}
       </ScrollArea>
       <div className="flex w-full h-[80px] px-4 items-center">
-        <form onSubmit={sendMessage} className="w-full flex gap-2">
+        <form onSubmit={sendMessage} className="w-full flex gap-1.5">
           <Input
             type="text"
             placeholder="Type a message"
@@ -143,7 +165,7 @@ const ChatSection = ({
             type="submit"
             className="text-muted-foreground w-10 h-10"
           >
-            <SendHorizontal style={{ width: "26px", height: "26px" }} />
+            <Send style={{ width: "26px", height: "26px" }} />
           </Button>
         </form>
       </div>

@@ -91,23 +91,25 @@ export default function TimeZoneEditor() {
 
       {/* Current Time Preview */}
       <div className="flex mx-4 items-center justify-center gap-2">
-        <div className="flex-1">
-          {selectedTimeZone ? (
-            <div
-              className="p-2 rounded-md border shadow"
-              onClick={() => setSelectedTimeZone(userInformation.timeZone)}
-            >
-              Current Time in <b>{selectedTimeZone}</b>:{" "}
-              {new Date().toLocaleString("en-US", {
-                timeZone: selectedTimeZone,
-              })}
-            </div>
+        <div
+          className="flex-1 p-2 rounded-md border shadow hover:cursor-pointer"
+          onClick={() => setSelectedTimeZone(userInformation.timeZone)}
+        >
+          {selectedTimeZone === userInformation.timeZone ? (
+            <span>Your Current Time in </span>
+          ) : selectedTimeZone ? (
+            <span>Current Time in </span>
           ) : (
-            <div className="p-2 rounded-md border shadow">
-              Current Time in your local time zone:{" "}
-              {new Date().toLocaleString("en-US")}
-            </div>
+            <span>Current Time in your </span>
           )}
+          <p className="inline-block font-semibold">
+            {selectedTimeZone || "local time zone"}:
+          </p>{" "}
+          <p className="inline-block">
+            {new Date().toLocaleString("en-US", {
+              timeZone: selectedTimeZone || undefined,
+            })}
+          </p>
         </div>
         <Button
           variant={resolvedTheme === "dark" ? "secondary" : "default"}
@@ -125,7 +127,7 @@ export default function TimeZoneEditor() {
           <div
             key={`timeZone_${tz.value}`}
             className={cn(
-              "flex items-center justify-between p-2 m-2 gap-2 rounded-lg bg-slate-100 dark:bg-slate-800",
+              "flex items-center justify-between p-2 m-2 gap-2 rounded-lg bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 cursor-pointer",
               selectedTimeZone === tz.value && "ring-ring ring-2"
             )}
             onClick={() => {

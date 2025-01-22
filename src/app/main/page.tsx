@@ -9,7 +9,7 @@ import ChatSection from "./components/chatSection";
 import SearchSection from "./components/searchSection";
 import SettingsSection from "./components/settingsSection";
 import { useAuthStore } from "@/stores/authStore";
-import { useUserStore } from "@/stores/userStore";
+import { useUserStore, Message } from "@/stores/userStore";
 import { useSocketStore } from "@/stores/socketStore";
 import { useTheme } from "next-themes";
 import useUnexpectedErrorHandler from "@/utils/useUnexpectedErrorHandler";
@@ -33,6 +33,23 @@ const Page = () => {
   const { toast } = useToast();
   const { handleUnexpectedError } = useUnexpectedErrorHandler();
   const { setTheme } = useTheme();
+
+  useEffect(() => {
+    const verifyServerConnection = async () => {
+      try {
+        console.log(
+          (
+            await axios(`${BACKEND_URL}`, {
+              withCredentials: true,
+            })
+          ).data
+        );
+      } catch (err) {
+        handleUnexpectedError(err);
+      }
+    };
+    verifyServerConnection();
+  }, []);
 
   useEffect(() => {
     if (socket) {
@@ -122,40 +139,37 @@ const Page = () => {
   }, [previousURL]);
 
   useEffect(() => {
-    const handleSocketSentMessage = (message: any) => {
-      setUserChatData((prev) => {
-        return {
-          ...prev,
-          conversations: {
-            ...prev.conversations,
-            [message.conversationId]: {
-              ...prev.conversations[message.conversationId],
-              messages: [
-                ...prev.conversations[message.conversationId].messages,
-                message,
-              ],
-            },
+    const handleSocketSentMessage = (message: Message) => {
+      setCurrentChatInfo((prev) =>
+        prev.conversationId === message.conversationId
+          ? {
+              ...prev,
+              messages: prev.messages.concat(message),
+            }
+          : prev
+      );
+      setUserChatData((prev) => ({
+        ...prev,
+        conversations: {
+          ...prev.conversations,
+          [message.conversationId]: {
+            ...prev.conversations[message.conversationId],
+            messages:
+              prev.conversations[message.conversationId].messages.concat(
+                message
+              ),
           },
-        };
-      });
-      setCurrentChatInfo((prev) => {
-        if (prev.conversationId === message.conversationId) {
-          return {
-            ...prev,
-            messages: [...prev.messages, message],
-          };
-        } else return prev;
-      });
+        },
+      }));
     };
     const handleSocketAcceptedFriendRequest = (request: any) => {
       setUserChatData((prev) => ({
         ...prev,
-        friends: [
-          ...prev.friends,
+        friends: prev.friends.concat(
           request.senderId === userInformation.userId
             ? request.receiver
-            : request.sender,
-        ],
+            : request.sender
+        ),
       }));
     };
     const handleSocketCreatedGroup = (group: any) => {
