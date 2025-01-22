@@ -9,7 +9,6 @@ const timestampToFormattedTime = (
     minute: "numeric" as const,
     hour12: true,
   };
-  console.log(timeZone);
   return date.toLocaleTimeString("en-US", options);
 };
 

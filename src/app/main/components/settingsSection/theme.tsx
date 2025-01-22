@@ -24,7 +24,6 @@ const Theme = () => {
   const handleChangeTheme = async () => {
     setIsLoading(true);
     try {
-      console.log(currentTheme);
       const changeThemeResponse = await axios.post(
         `${BACKEND_URL}/user/changeTheme`,
         {
