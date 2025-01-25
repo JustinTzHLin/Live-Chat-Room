@@ -11,8 +11,9 @@ import useUnexpectedErrorHandler from "@/utils/useUnexpectedErrorHandler";
 import { useSearchParams } from "next/navigation";
 import axios from "axios";
 
+const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL;
+
 const Home = () => {
-  const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL;
   const { authAction, updateAuthAction } = useAuthStore((state) => state);
   const searchParams = useSearchParams();
   const [registerEmail, setRegisterEmail] = useState("");
@@ -116,11 +117,12 @@ const App = () => {
   return (
     <Suspense
       fallback={
-        <div
-          className="flex flex-col h-screen items-center justify-center gap-4 min-h-[500px] min-w-[320px]"
-          aria-busy="true"
-        >
-          <h1 className="text-4xl font-bold text-slate-300">Loading</h1>
+        <div className="flex flex-col h-screen items-center justify-center gap-4 min-h-[500px] min-w-[320px]">
+          <h1 className="text-3xl font-bold">Just In Chat</h1>
+          <p className="text-sm text-muted-foreground">
+            Your <span className="font-semibold">Secure</span> and{" "}
+            <span className="font-semibold">Private</span> Live Chat Space
+          </p>
         </div>
       }
     >

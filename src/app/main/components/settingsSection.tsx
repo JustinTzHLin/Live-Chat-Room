@@ -20,6 +20,33 @@ import { useUserStore } from "@/stores/userStore";
 
 import ComingSoon from "@/components/comingSoon";
 
+const settingItems = {
+  password: {
+    icon: <LockKeyhole />,
+    name: "Change Password",
+  },
+  "2fa": {
+    icon: <KeyRound />,
+    name: "2-Step Verification",
+  },
+  language: {
+    icon: <Languages />,
+    name: "Language",
+  },
+  timeZone: {
+    icon: <Globe />,
+    name: "Time Zone",
+  },
+  theme: {
+    icon: <SunMoon />,
+    name: "Theme",
+  },
+  profile: {
+    icon: <UserPen />,
+    name: "Edit Profile",
+  },
+};
+
 const SettingsSection = ({
   setCurrentSection,
 }: {
@@ -28,38 +55,6 @@ const SettingsSection = ({
   const { mainPageSectionFlow, setMainPageSectionFlow } = useUserStore(
     (state) => state
   );
-  const settingItems = {
-    password: {
-      icon: <LockKeyhole />,
-      name: "Change Password",
-      onClick: () => setCurrentSetting("password"),
-    },
-    "2fa": {
-      icon: <KeyRound />,
-      name: "2-Step Verification",
-      onClick: () => setCurrentSetting("2fa"),
-    },
-    language: {
-      icon: <Languages />,
-      name: "Language",
-      onClick: () => setCurrentSetting("language"),
-    },
-    timeZone: {
-      icon: <Globe />,
-      name: "Time Zone",
-      onClick: () => setCurrentSetting("timeZone"),
-    },
-    theme: {
-      icon: <SunMoon />,
-      name: "Theme",
-      onClick: () => setCurrentSetting("theme"),
-    },
-    profile: {
-      icon: <UserPen />,
-      name: "Edit Profile",
-      onClick: () => setCurrentSetting("profile"),
-    },
-  };
   const [currentSetting, setCurrentSetting] = useState<string>("settings"); // settings, password, 2fa, language, timeZone, theme, profile
 
   return (
@@ -92,7 +87,7 @@ const SettingsSection = ({
             <React.Fragment key={`setting_item_${key}`}>
               <div
                 className="w-full flex gap-2 h-10 items-center justify-between px-4 rounded-md hover:cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-800"
-                onClick={item.onClick}
+                onClick={() => setCurrentSetting(key)}
               >
                 <div className="flex items-center gap-4">
                   {item.icon}

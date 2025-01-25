@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { cn } from "@/lib/utils";
 import {
   Dialog,
@@ -27,6 +27,7 @@ import { useTheme } from "next-themes";
 import { z } from "zod";
 import axios from "axios";
 
+const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL;
 const groupNameSchema = z
   .string({ message: "Invalid group name" })
   .min(1, { message: "Group name cannot be empty" })
@@ -39,7 +40,6 @@ const NewGroupDialog = ({
   newGroupDialogOpen: boolean;
   setNewGroupDialogOpen: (open: boolean) => void;
 }) => {
-  const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL;
   const friendsList = useUserStore((state) => state.userChatData.friends);
   const userId = useUserStore((state) => state.userInformation.userId);
   const socket = useSocketStore((state) => state.socket);
@@ -67,7 +67,7 @@ const NewGroupDialog = ({
     }
   }, [newGroupDialogOpen]);
 
-  const handleNewGroup = async () => {
+  const handleNewGroup = useCallback(async () => {
     setIsLoading(true);
     try {
       groupNameSchema.parse(groupName);
@@ -100,7 +100,7 @@ const NewGroupDialog = ({
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [groupName, groupMembers, userId]);
 
   return (
     <Dialog open={newGroupDialogOpen} onOpenChange={setNewGroupDialogOpen}>

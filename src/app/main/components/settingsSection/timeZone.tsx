@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { cn } from "@/lib/utils";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -11,7 +11,7 @@ import { useTheme } from "next-themes";
 import { useToast } from "@/hooks/use-toast";
 import axios from "axios";
 
-// Example array with UTC offsets
+const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL;
 const timeZones = [
   ...moment.tz.names().map((tz) => {
     const offset = moment.tz(tz).utcOffset() / 60;
@@ -25,7 +25,6 @@ const timeZones = [
 ];
 
 export default function TimeZoneEditor() {
-  const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL;
   const { handleUnexpectedError } = useUnexpectedErrorHandler();
   const { resolvedTheme } = useTheme();
   const { userInformation, setUserInformation } = useUserStore(
@@ -38,8 +37,12 @@ export default function TimeZoneEditor() {
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
 
-  const filteredZones = timeZones.filter((tz) =>
-    tz.label.toLowerCase().includes(search.toLowerCase())
+  const filteredZones = useMemo(
+    () =>
+      timeZones.filter((tz) =>
+        tz.label.toLowerCase().includes(search.toLowerCase())
+      ),
+    [search]
   );
 
   const handleChangeTimeZone = async () => {

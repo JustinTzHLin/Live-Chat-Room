@@ -1,10 +1,8 @@
 import { useState } from "react";
-import { cn } from "@/lib/utils";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import ContactInfoDialog from "./tabsSection/contactInfoDialog";
 import { useUserStore } from "@/stores/userStore";
-import { useTheme } from "next-themes";
 import getNameInitials from "@/utils/getNameInitials";
 
 const TabsSection = ({
@@ -18,7 +16,6 @@ const TabsSection = ({
 }) => {
   const { userChatData, setCurrentChatInfo, setMainPageSectionFlow } =
     useUserStore((state) => state);
-  const { resolvedTheme } = useTheme();
   const [contactInfoDialogOpen, setContactInfoDialogOpen] = useState(false);
   const [contactInfo, setContactInfo] = useState<{
     username: string;

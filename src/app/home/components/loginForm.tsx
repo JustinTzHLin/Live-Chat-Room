@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { useToast } from "@/hooks/use-toast";
 import { Input } from "@/components/ui/input";
@@ -20,6 +20,7 @@ import { useTheme } from "next-themes";
 import { z } from "zod";
 import axios from "axios";
 
+const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL;
 const formSchema = z.object({
   email: z.string().email(),
   password: z
@@ -29,7 +30,6 @@ const formSchema = z.object({
 });
 
 const LoginForm = () => {
-  const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL;
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const { updatePreviousURL, updateAuthAction } = useAuthStore(
@@ -48,56 +48,59 @@ const LoginForm = () => {
     },
   });
 
-  const handleSubmit = async (values: z.infer<typeof formSchema>) => {
-    setIsLoading(true);
-    const { email, password } = values;
-    try {
-      const loginResult = await axios.post(
-        `${BACKEND_URL}/user/signIn`,
-        { email, password },
-        { withCredentials: true }
-      );
-      if (!loginResult.data.userExists)
-        toast({
-          title: "User not found",
-          description: "Please signup instead.",
-          duration: 3000,
-        });
-      else if (loginResult.data.userVerified) {
-        if (loginResult.data.authenticatedUser.twoFactor === "none") {
-          updatePreviousURL("/home");
-          router.push("/main");
+  const handleSubmit = useCallback(
+    async (values: z.infer<typeof formSchema>) => {
+      setIsLoading(true);
+      const { email, password } = values;
+      try {
+        const loginResult = await axios.post(
+          `${BACKEND_URL}/user/signIn`,
+          { email, password },
+          { withCredentials: true }
+        );
+        if (!loginResult.data.userExists)
           toast({
-            title: "User logged in",
-            description: "Welcome back!",
+            title: "User not found",
+            description: "Please signup instead.",
             duration: 3000,
           });
-        } else {
-          updateAuthAction("2fa");
+        else if (loginResult.data.userVerified) {
+          if (loginResult.data.authenticatedUser.twoFactor === "none") {
+            updatePreviousURL("/home");
+            router.push("/main");
+            toast({
+              title: "User logged in",
+              description: "Welcome back!",
+              duration: 3000,
+            });
+          } else {
+            updateAuthAction("2fa");
+            toast({
+              title: "2FA required",
+              description: (
+                <>
+                  We have sent a 2FA code to your email.
+                  <br />
+                  Please enter your 2FA code.
+                </>
+              ),
+              duration: 3000,
+            });
+          }
+        } else
           toast({
-            title: "2FA required",
-            description: (
-              <>
-                We have sent a 2FA code to your email.
-                <br />
-                Please enter your 2FA code.
-              </>
-            ),
+            title: "Email or password incorrect",
+            description: "Please try again.",
             duration: 3000,
           });
-        }
-      } else
-        toast({
-          title: "Email or password incorrect",
-          description: "Please try again.",
-          duration: 3000,
-        });
-    } catch (err) {
-      handleUnexpectedError(err);
-    } finally {
-      setIsLoading(false);
-    }
-  };
+      } catch (err) {
+        handleUnexpectedError(err);
+      } finally {
+        setIsLoading(false);
+      }
+    },
+    []
+  );
 
   return (
     <Form {...form}>

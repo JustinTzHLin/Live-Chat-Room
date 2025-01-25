@@ -15,8 +15,9 @@ import { useTheme } from "next-themes";
 import useUnexpectedErrorHandler from "@/utils/useUnexpectedErrorHandler";
 import axios from "axios";
 
+const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL;
+
 const Page = () => {
-  const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL;
   const { previousURL } = useAuthStore((state) => state);
   const {
     userInformation,

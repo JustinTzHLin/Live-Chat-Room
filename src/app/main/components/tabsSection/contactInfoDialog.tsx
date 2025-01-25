@@ -1,3 +1,4 @@
+import { useMemo } from "react";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -27,8 +28,12 @@ const ContactInfoDialog = ({
   };
   setCurrentSection: (section: string) => void;
 }) => {
-  const userConversationsData = Object.values(
-    useUserStore((state) => state.userChatData.conversations)
+  const conversations = useUserStore(
+    (state) => state.userChatData.conversations
+  );
+  const userConversationsData = useMemo(
+    () => Object.values(conversations),
+    [conversations]
   );
   const { setCurrentChatInfo, setMainPageSectionFlow } = useUserStore(
     (state) => state

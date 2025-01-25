@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import {
   Dialog,
   DialogContent,
@@ -14,6 +14,8 @@ import getNameInitials from "@/utils/getNameInitials";
 import useUnexpectedErrorHandler from "@/utils/useUnexpectedErrorHandler";
 import axios from "axios";
 
+const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL;
+
 const FriendRequestsDialog = ({
   friendRequestsDialogOpen,
   setFriendRequestsDialogOpen,
@@ -21,7 +23,6 @@ const FriendRequestsDialog = ({
   friendRequestsDialogOpen: boolean;
   setFriendRequestsDialogOpen: (open: boolean) => void;
 }) => {
-  const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL;
   const userId = useUserStore((state) => state.userInformation.userId);
   const socket = useSocketStore((state) => state.socket);
   const [fetchingFriendRequests, setFetchingFriendRequests] =
@@ -105,34 +106,37 @@ const FriendRequestsDialog = ({
     }
   }, [socket, userId]);
 
-  const handleRequestAction = async (action: string, requestId: string) => {
-    try {
-      const requestActionResponse = await axios.post(
-        `${BACKEND_URL}/user/friendRequestAction`,
-        { action, requestId },
-        { withCredentials: true }
-      );
-      if (action === "cancel" || action === "reject") {
-        socket.emit("cancel_reject_friend_request", {
-          id: requestActionResponse.data.updatedFriendRequest._id,
-          senderId: requestActionResponse.data.updatedFriendRequest.senderId,
-          receiverId:
-            requestActionResponse.data.updatedFriendRequest.receiverId,
-        });
-      } else if (action === "accept") {
-        socket.emit("accept_friend_request", {
-          id: requestActionResponse.data.updatedFriendRequest._id,
-          senderId: requestActionResponse.data.updatedFriendRequest.senderId,
-          sender: requestActionResponse.data.updatedFriendRequest.sender,
-          receiverId:
-            requestActionResponse.data.updatedFriendRequest.receiverId,
-          receiver: requestActionResponse.data.updatedFriendRequest.receiver,
-        });
+  const handleRequestAction = useCallback(
+    async (action: string, requestId: string) => {
+      try {
+        const requestActionResponse = await axios.post(
+          `${BACKEND_URL}/user/friendRequestAction`,
+          { action, requestId },
+          { withCredentials: true }
+        );
+        if (action === "cancel" || action === "reject") {
+          socket.emit("cancel_reject_friend_request", {
+            id: requestActionResponse.data.updatedFriendRequest._id,
+            senderId: requestActionResponse.data.updatedFriendRequest.senderId,
+            receiverId:
+              requestActionResponse.data.updatedFriendRequest.receiverId,
+          });
+        } else if (action === "accept") {
+          socket.emit("accept_friend_request", {
+            id: requestActionResponse.data.updatedFriendRequest._id,
+            senderId: requestActionResponse.data.updatedFriendRequest.senderId,
+            sender: requestActionResponse.data.updatedFriendRequest.sender,
+            receiverId:
+              requestActionResponse.data.updatedFriendRequest.receiverId,
+            receiver: requestActionResponse.data.updatedFriendRequest.receiver,
+          });
+        }
+      } catch (err) {
+        handleUnexpectedError(err);
       }
-    } catch (err) {
-      handleUnexpectedError(err);
-    }
-  };
+    },
+    []
+  );
 
   return (
     <Dialog

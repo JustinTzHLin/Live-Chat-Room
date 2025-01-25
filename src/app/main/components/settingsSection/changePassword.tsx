@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -18,6 +18,7 @@ import { useTheme } from "next-themes";
 import { z } from "zod";
 import axios from "axios";
 
+const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL;
 const formSchema = z
   .object({
     oldPassword: z
@@ -43,7 +44,6 @@ const ChangePassword = ({
 }: {
   setCurrentSetting: (section: string) => void;
 }) => {
-  const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL;
   const [showOldPassword, setShowOldPassword] = useState(false);
   const [showNewPassword, setShowNewPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
@@ -61,41 +61,44 @@ const ChangePassword = ({
     },
   });
 
-  const handleSubmit = async (values: z.infer<typeof formSchema>) => {
-    if (values.oldPassword === values.newPassword) {
-      toast({
-        title: "Old password cannot be the same as new password",
-        description: "Please try again.",
-        duration: 3000,
-      });
-      return;
-    }
-    setIsLoading(true);
-    try {
-      const changePassword = await axios.post(
-        `${BACKEND_URL}/user/changePassword`,
-        values,
-        { withCredentials: true }
-      );
-      if (changePassword.data.passwordChanged) {
-        setCurrentSetting("settings");
+  const handleSubmit = useCallback(
+    async (values: z.infer<typeof formSchema>) => {
+      if (values.oldPassword === values.newPassword) {
         toast({
-          title: "Password changed",
-          description: "Your password has been changed.",
-          duration: 3000,
-        });
-      } else if (changePassword.data.errorMessage === "incorrect password")
-        toast({
-          title: "Password incorrect",
+          title: "Old password cannot be the same as new password",
           description: "Please try again.",
           duration: 3000,
         });
-    } catch (err) {
-      handleUnexpectedError(err);
-    } finally {
-      setIsLoading(false);
-    }
-  };
+        return;
+      }
+      setIsLoading(true);
+      try {
+        const changePassword = await axios.post(
+          `${BACKEND_URL}/user/changePassword`,
+          values,
+          { withCredentials: true }
+        );
+        if (changePassword.data.passwordChanged) {
+          setCurrentSetting("settings");
+          toast({
+            title: "Password changed",
+            description: "Your password has been changed.",
+            duration: 3000,
+          });
+        } else if (changePassword.data.errorMessage === "incorrect password")
+          toast({
+            title: "Password incorrect",
+            description: "Please try again.",
+            duration: 3000,
+          });
+      } catch (err) {
+        handleUnexpectedError(err);
+      } finally {
+        setIsLoading(false);
+      }
+    },
+    []
+  );
 
   const formInputItems = [
     {

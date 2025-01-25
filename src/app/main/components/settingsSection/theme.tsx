@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { cn } from "@/lib/utils";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Button } from "@/components/ui/button";
@@ -9,8 +9,9 @@ import { useToast } from "@/hooks/use-toast";
 import useUnexpectedErrorHandler from "@/utils/useUnexpectedErrorHandler";
 import axios from "axios";
 
+const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL;
+
 const Theme = () => {
-  const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL;
   const {
     userInformation: { theme: preferenceTheme },
     setUserInformation,
@@ -21,7 +22,7 @@ const Theme = () => {
   const [currentTheme, setCurrentTheme] = useState(theme);
   const { toast } = useToast();
 
-  const handleChangeTheme = async () => {
+  const handleChangeTheme = useCallback(async () => {
     setIsLoading(true);
     try {
       const changeThemeResponse = await axios.post(
@@ -47,7 +48,7 @@ const Theme = () => {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [currentTheme]);
 
   useEffect(() => {
     setTheme(currentTheme || "system");

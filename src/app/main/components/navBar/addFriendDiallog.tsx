@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
 import {
@@ -20,6 +20,7 @@ import useUnexpectedErrorHandler from "@/utils/useUnexpectedErrorHandler";
 import axios from "axios";
 import { z } from "zod";
 
+const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL;
 const emailSchema = z.string().email();
 const jicIdSchema = z.string().min(8).max(16);
 
@@ -30,7 +31,6 @@ const AddFriendDialog = ({
   addFriendDialogOpen: boolean;
   setAddFriendDialogOpen: (open: boolean) => void;
 }) => {
-  const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL;
   const userInformation = useUserStore((state) => state.userInformation);
   const friendsList = useUserStore((state) => state.userChatData.friends);
   const socket = useSocketStore((state) => state.socket);
@@ -65,38 +65,41 @@ const AddFriendDialog = ({
     setSearchedUser(null);
   }, [radioValue]);
 
-  const searchUser = async (e: React.SyntheticEvent) => {
-    e.preventDefault();
-    if (searchInput) {
-      setSearchedUser(null);
-      setSearching(true);
-      try {
-        const schema =
-          radioValue === "email"
-            ? emailSchema
-            : radioValue === "jicId"
-            ? jicIdSchema
-            : null;
-        if (schema) schema.parse(searchInput);
-        else throw new Error("Invalid radio input");
-        const searchUserResponse = await axios.post(
-          `${BACKEND_URL}/user/searchUser`,
-          { [radioValue]: searchInput },
-          { withCredentials: true }
-        );
-        if (searchUserResponse.data.userExists) {
-          setSearchedUser(searchUserResponse.data.searchedUser);
+  const searchUser = useCallback(
+    async (e: React.SyntheticEvent) => {
+      e.preventDefault();
+      if (searchInput) {
+        setSearchedUser(null);
+        setSearching(true);
+        try {
+          const schema =
+            radioValue === "email"
+              ? emailSchema
+              : radioValue === "jicId"
+              ? jicIdSchema
+              : null;
+          if (schema) schema.parse(searchInput);
+          else throw new Error("Invalid radio input");
+          const searchUserResponse = await axios.post(
+            `${BACKEND_URL}/user/searchUser`,
+            { [radioValue]: searchInput },
+            { withCredentials: true }
+          );
+          if (searchUserResponse.data.userExists) {
+            setSearchedUser(searchUserResponse.data.searchedUser);
+          }
+        } catch (err) {
+          if (err instanceof z.ZodError) setError(err.issues[0].message);
+          else handleUnexpectedError(err);
+        } finally {
+          setSearching(false);
         }
-      } catch (err) {
-        if (err instanceof z.ZodError) setError(err.issues[0].message);
-        else handleUnexpectedError(err);
-      } finally {
-        setSearching(false);
       }
-    }
-  };
+    },
+    [radioValue, searchInput]
+  );
 
-  const sendFriendRequest = async () => {
+  const sendFriendRequest = useCallback(async () => {
     if (userInformation.userId === searchedUser?.id) {
       toast({
         title: "Cannot add yourself",
@@ -156,7 +159,7 @@ const AddFriendDialog = ({
         handleUnexpectedError(err);
       }
     }
-  };
+  }, [userInformation, searchedUser, friendsList]);
 
   return (
     <Dialog open={addFriendDialogOpen} onOpenChange={setAddFriendDialogOpen}>

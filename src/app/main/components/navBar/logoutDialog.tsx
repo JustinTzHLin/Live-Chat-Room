@@ -1,3 +1,4 @@
+import { useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { useToast } from "@/hooks/use-toast";
 import {
@@ -14,6 +15,8 @@ import useUnexpectedErrorHandler from "@/utils/useUnexpectedErrorHandler";
 import { useTheme } from "next-themes";
 import axios from "axios";
 
+const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL;
+
 const LogoutDialog = ({
   logoutDialogOpen,
   setLogoutDialogOpen,
@@ -21,14 +24,13 @@ const LogoutDialog = ({
   logoutDialogOpen: boolean;
   setLogoutDialogOpen: (open: boolean) => void;
 }) => {
-  const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL;
   const disconnect = useSocketStore((state) => state.disconnect);
   const { handleUnexpectedError } = useUnexpectedErrorHandler();
   const { resolvedTheme } = useTheme();
   const router = useRouter();
   const { toast } = useToast();
 
-  const handleLogout = async () => {
+  const handleLogout = useCallback(async () => {
     try {
       const logoutResponse = await axios(`${BACKEND_URL}/token/logout`, {
         withCredentials: true,
@@ -45,7 +47,7 @@ const LogoutDialog = ({
     } catch (err) {
       handleUnexpectedError(err);
     }
-  };
+  }, []);
 
   return (
     <Dialog open={logoutDialogOpen} onOpenChange={setLogoutDialogOpen}>

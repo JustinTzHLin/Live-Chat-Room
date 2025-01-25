@@ -3,7 +3,7 @@ import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Input } from "@/components/ui/input";
-import { Send, ChevronLeft } from "lucide-react";
+import { Send, ChevronLeft, Phone } from "lucide-react";
 import { useUserStore } from "@/stores/userStore";
 import { useSocketStore } from "@/stores/socketStore";
 import timestampToFormattedTime from "@/utils/timestampToFormattedTime";
@@ -95,6 +95,21 @@ const ChatSection = ({
           <ChevronLeft style={{ width: "26px", height: "26px" }} />
         </Button>
         <div className="text-xl font-semibold">{currentChatInfo.roomName}</div>
+        <Button
+          variant="ghost"
+          size="icon"
+          type="button"
+          className="text-muted-foreground rounded-lg w-10 h-10 absolute right-2"
+          onClick={() => {
+            const url = "/stream"; // Replace with your route or external link
+            const windowFeatures = "width=400,height=600,fullscreen=yes"; // Customize as needed
+
+            // Open the new window
+            window.open(url, "_blank", windowFeatures);
+          }}
+        >
+          <Phone style={{ width: "26px", height: "26px" }} />
+        </Button>
       </div>
       <ScrollArea className="w-full h-[calc(100%-120px)] flex flex-col px-4 pt-2">
         {currentChatInfo.messages.map((message, index) => {

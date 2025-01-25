@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
@@ -11,6 +11,7 @@ import { PencilLine, UserRound, X } from "lucide-react";
 import axios from "axios";
 import { z } from "zod";
 
+const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL;
 const usernameSchema = z
   .string({ message: "Invalid username" })
   .min(3, { message: "Username must be at least 3 characters" })
@@ -21,7 +22,6 @@ const jicIdSchema = z
   .max(32, { message: "JIC ID must be at most 32 characters" });
 
 const EditProfile = () => {
-  const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL;
   const { userInformation, setUsername, setJicId } = useUserStore(
     (state) => state
   );
@@ -47,7 +47,7 @@ const EditProfile = () => {
     setNewJicId(userInformation.jicId || "");
   }, [userInformation.jicId, editJicId]);
 
-  const updateUsername = async () => {
+  const updateUsername = useCallback(async () => {
     if (newUsername === userInformation.username) {
       return toast({
         title: "Same username",
@@ -75,9 +75,9 @@ const EditProfile = () => {
       if (err instanceof z.ZodError) setUsernameError(err.issues[0].message);
       else handleUnexpectedError(err);
     }
-  };
+  }, [newUsername, userInformation.username]);
 
-  const updateJicId = async () => {
+  const updateJicId = useCallback(async () => {
     if (newJicId === userInformation.jicId) {
       return toast({
         title: "Same JIC ID",
@@ -105,7 +105,7 @@ const EditProfile = () => {
       if (err instanceof z.ZodError) setJicIdError(err.issues[0].message);
       else handleUnexpectedError(err);
     }
-  };
+  }, [newJicId, userInformation.jicId]);
 
   return (
     <div className="flex flex-col justify-center items-center w-full gap-4 p-4">

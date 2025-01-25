@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -37,40 +37,37 @@ const SearchSection = ({
     setMainPageSectionFlow,
   } = useUserStore((state) => state);
 
-  const handleSearch = (searchInput: string) => {
-    if (!searchInput)
-      return setSearchResult({ friends: [], messages: [], rooms: [] });
-    const searchInputLower = searchInput.toLowerCase();
-    const newSearchFriends = userChatData.friends.filter(
-      (friend) =>
-        friend.username.toLowerCase().includes(searchInputLower) ||
-        friend.email.toLowerCase().includes(searchInputLower)
-    );
-    const newSearchMessages = Object.values(userChatData.conversations).reduce<
-      (Message & { messageIndex: number })[]
-    >((acc, conversation) => {
-      conversation.messages.forEach((message, messageIndex) => {
-        if (message.content.toLowerCase().includes(searchInputLower)) {
-          acc.push({ ...message, messageIndex });
+  const handleSearch = useCallback(
+    (searchInput: string) => {
+      if (!searchInput)
+        return setSearchResult({ friends: [], messages: [], rooms: [] });
+      const searchInputLower = searchInput.toLowerCase();
+      const newSearchFriends = userChatData.friends.filter(
+        (friend) =>
+          friend.username.toLowerCase().includes(searchInputLower) ||
+          friend.email.toLowerCase().includes(searchInputLower)
+      );
+      const newSearchMessages: (Message & { messageIndex: number })[] = [];
+      const newSearchRooms: string[] = [];
+      for (const conversation of Object.values(userChatData.conversations)) {
+        conversation.messages.forEach((message, messageIndex) => {
+          if (message.content.toLowerCase().includes(searchInputLower)) {
+            newSearchMessages.push({ ...message, messageIndex });
+          }
+        });
+        if (conversation.roomName.toLowerCase().includes(searchInputLower)) {
+          newSearchRooms.push(conversation.conversationId);
         }
-      });
-      return acc;
-    }, []);
-    const newSearchRooms = Object.values(userChatData.conversations).reduce<
-      string[]
-    >((acc, conversation) => {
-      if (conversation.roomName.toLowerCase().includes(searchInputLower)) {
-        acc.push(conversation.conversationId);
       }
-      return acc;
-    }, []);
-    setSearchResult({
-      friends: newSearchFriends,
-      messages: newSearchMessages,
-      rooms: newSearchRooms,
-    });
-    setSearching(false);
-  };
+      setSearchResult({
+        friends: newSearchFriends,
+        messages: newSearchMessages,
+        rooms: newSearchRooms,
+      });
+      setSearching(false);
+    },
+    [userChatData]
+  );
 
   return (
     <div className="w-full h-[calc(100%-80px)] flex flex-col items-center">

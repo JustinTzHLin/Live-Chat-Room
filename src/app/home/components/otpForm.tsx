@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { useRouter } from "next/navigation";
 import { useAuthStore } from "@/stores/authStore";
@@ -25,12 +25,12 @@ import { useTheme } from "next-themes";
 import { z } from "zod";
 import axios from "axios";
 
+const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL;
 const formSchema = z.object({
   otp: z.string().length(6, { message: "OTP must be 6 characters" }),
 });
 
 const OTPForm = () => {
-  const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL;
   const [isLoading, setIsLoading] = useState(false);
   const { updatePreviousURL, updateAuthAction } = useAuthStore(
     (state) => state
@@ -47,50 +47,53 @@ const OTPForm = () => {
     },
   });
 
-  const handleSubmit = async (values: z.infer<typeof formSchema>) => {
-    setIsLoading(true);
-    try {
-      const otpVerified = await axios.post(
-        `${BACKEND_URL}/user/verifyOTPCode`,
-        values,
-        { withCredentials: true }
-      );
-      if (otpVerified.data.otpVerified) {
-        router.push("/main");
-        toast({
-          title: "User logged in",
-          description: "Welcome back!",
-          duration: 3000,
-        });
-        updatePreviousURL("/home");
-        updateAuthAction("login");
-      } else if (otpVerified.data.errorMessage === "incorrect otp code")
-        toast({
-          title: "Incorrect OTP code",
-          description: "Please try again.",
-          duration: 3000,
-        });
-      else if (otpVerified.data.errorMessage === "jwt malformed")
-        toast({
-          variant: "destructive",
-          title: "Token malformed",
-          description: "The token is malformed. Please signup again.",
-          duration: 3000,
-        });
-      else if (otpVerified.data.errorMessage === "jwt expired")
-        toast({
-          variant: "destructive",
-          title: "Token expired",
-          description: "The token has expired. Please signup again.",
-          duration: 3000,
-        });
-      else throw new Error("Token not verified");
-    } catch (err) {
-      handleUnexpectedError(err);
-    } finally {
-      setIsLoading(false);
-    }
-  };
+  const handleSubmit = useCallback(
+    async (values: z.infer<typeof formSchema>) => {
+      setIsLoading(true);
+      try {
+        const otpVerified = await axios.post(
+          `${BACKEND_URL}/user/verifyOTPCode`,
+          values,
+          { withCredentials: true }
+        );
+        if (otpVerified.data.otpVerified) {
+          router.push("/main");
+          toast({
+            title: "User logged in",
+            description: "Welcome back!",
+            duration: 3000,
+          });
+          updatePreviousURL("/home");
+          updateAuthAction("login");
+        } else if (otpVerified.data.errorMessage === "incorrect otp code")
+          toast({
+            title: "Incorrect OTP code",
+            description: "Please try again.",
+            duration: 3000,
+          });
+        else if (otpVerified.data.errorMessage === "jwt malformed")
+          toast({
+            variant: "destructive",
+            title: "Token malformed",
+            description: "The token is malformed. Please signup again.",
+            duration: 3000,
+          });
+        else if (otpVerified.data.errorMessage === "jwt expired")
+          toast({
+            variant: "destructive",
+            title: "Token expired",
+            description: "The token has expired. Please signup again.",
+            duration: 3000,
+          });
+        else throw new Error("Token not verified");
+      } catch (err) {
+        handleUnexpectedError(err);
+      } finally {
+        setIsLoading(false);
+      }
+    },
+    []
+  );
 
   return (
     <Form {...form}>

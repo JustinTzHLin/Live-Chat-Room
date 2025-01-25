@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { useToast } from "@/hooks/use-toast";
 import { Input } from "@/components/ui/input";
@@ -29,6 +29,7 @@ import { useForm } from "react-hook-form";
 import { useTheme } from "next-themes";
 import { z } from "zod";
 
+const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL;
 const formSchema = z.object({
   username: z
     .string()
@@ -41,7 +42,6 @@ const formSchema = z.object({
 });
 
 const RegisterForm = ({ registerEmail }: { registerEmail: string }) => {
-  const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL;
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const { updatePreviousURL } = useAuthStore((state) => state);
@@ -58,36 +58,39 @@ const RegisterForm = ({ registerEmail }: { registerEmail: string }) => {
     },
   });
 
-  const handleSubmit = async (values: z.infer<typeof formSchema>) => {
-    setIsLoading(true);
-    const { username, password } = values;
-    try {
-      const registerResult = await axios.post(
-        `${BACKEND_URL}/user/signUp`,
-        { username, password, email: registerEmail },
-        { withCredentials: true }
-      );
-      if (registerResult.data.userExists)
-        toast({
-          title: "User already exists",
-          description: "Please login instead.",
-          duration: 3000,
-        });
-      else if (registerResult.data.userCreated) {
-        updatePreviousURL("/home");
-        router.push("/main");
-        toast({
-          title: "User created",
-          description: "Happy chatting!",
-          duration: 3000,
-        });
-      } else throw new Error("User not created");
-      setIsLoading(false);
-    } catch (err) {
-      handleUnexpectedError(err);
-      setIsLoading(false);
-    }
-  };
+  const handleSubmit = useCallback(
+    async (values: z.infer<typeof formSchema>) => {
+      setIsLoading(true);
+      const { username, password } = values;
+      try {
+        const registerResult = await axios.post(
+          `${BACKEND_URL}/user/signUp`,
+          { username, password, email: registerEmail },
+          { withCredentials: true }
+        );
+        if (registerResult.data.userExists)
+          toast({
+            title: "User already exists",
+            description: "Please login instead.",
+            duration: 3000,
+          });
+        else if (registerResult.data.userCreated) {
+          updatePreviousURL("/home");
+          router.push("/main");
+          toast({
+            title: "User created",
+            description: "Happy chatting!",
+            duration: 3000,
+          });
+        } else throw new Error("User not created");
+        setIsLoading(false);
+      } catch (err) {
+        handleUnexpectedError(err);
+        setIsLoading(false);
+      }
+    },
+    [registerEmail]
+  );
 
   return (
     <Form {...form}>

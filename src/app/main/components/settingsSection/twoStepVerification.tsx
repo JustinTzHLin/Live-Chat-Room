@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
@@ -16,8 +16,9 @@ import { useTheme } from "next-themes";
 import useUnexpectedErrorHandler from "@/utils/useUnexpectedErrorHandler";
 import axios from "axios";
 
+const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL;
+
 const TwoStepVerification = () => {
-  const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL;
   const twoFactor = useUserStore((state) => state.userInformation.twoFactor);
   const setTwoFactor = useUserStore((state) => state.setTwoFactor);
   const { handleUnexpectedError } = useUnexpectedErrorHandler();
@@ -27,7 +28,7 @@ const TwoStepVerification = () => {
   const router = useRouter();
   const { toast } = useToast();
 
-  const handleChange2FA = async () => {
+  const handleChange2FA = useCallback(async () => {
     setIsLoading(true);
     try {
       const change2FAResponse = await axios.post(
@@ -71,7 +72,7 @@ const TwoStepVerification = () => {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [current2FA]);
 
   return (
     <div className="flex justify-center items-center">

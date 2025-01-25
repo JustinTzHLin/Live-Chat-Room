@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -18,12 +18,12 @@ import { useTheme } from "next-themes";
 import { z } from "zod";
 import axios from "axios";
 
+const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL;
 const formSchema = z.object({
   email: z.string().email(),
 });
 
 const SignupForm = () => {
-  const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL;
   const [isLoading, setIsLoading] = useState(false);
   const { handleUnexpectedError } = useUnexpectedErrorHandler();
   const { resolvedTheme } = useTheme();
@@ -36,32 +36,35 @@ const SignupForm = () => {
     },
   });
 
-  const handleSubmit = async (values: z.infer<typeof formSchema>) => {
-    setIsLoading(true);
-    try {
-      const userExists = await axios.post(
-        `${BACKEND_URL}/user/registerCheck`,
-        values,
-        { withCredentials: true }
-      );
-      if (userExists.data.userExists)
-        toast({
-          title: "User already exists",
-          description: "Please login instead.",
-          duration: 3000,
-        });
-      else if (!userExists.data.userExists && userExists.data.emailSent)
-        toast({
-          title: "Email sent",
-          description: "Please check your email to complete signup.",
-          duration: 3000,
-        });
-    } catch (err) {
-      handleUnexpectedError(err);
-    } finally {
-      setIsLoading(false);
-    }
-  };
+  const handleSubmit = useCallback(
+    async (values: z.infer<typeof formSchema>) => {
+      setIsLoading(true);
+      try {
+        const userExists = await axios.post(
+          `${BACKEND_URL}/user/registerCheck`,
+          values,
+          { withCredentials: true }
+        );
+        if (userExists.data.userExists)
+          toast({
+            title: "User already exists",
+            description: "Please login instead.",
+            duration: 3000,
+          });
+        else if (!userExists.data.userExists && userExists.data.emailSent)
+          toast({
+            title: "Email sent",
+            description: "Please check your email to complete signup.",
+            duration: 3000,
+          });
+      } catch (err) {
+        handleUnexpectedError(err);
+      } finally {
+        setIsLoading(false);
+      }
+    },
+    []
+  );
 
   return (
     <Form {...form}>
