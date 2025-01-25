@@ -11,7 +11,6 @@ import {
   VolumeOff,
   Phone,
 } from "lucide-react";
-import "./style.css";
 import { useUserStore } from "@/stores/userStore";
 import { useSocketStore } from "@/stores/socketStore";
 import { useToast } from "@/hooks/use-toast";
