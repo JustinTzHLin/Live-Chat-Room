@@ -30,7 +30,7 @@ interface Conversation {
   type: string;
 }
 
-interface Friend {
+export interface Friend {
   id: string;
   username: string;
   email: string;

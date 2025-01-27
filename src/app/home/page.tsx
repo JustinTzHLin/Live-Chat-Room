@@ -44,12 +44,12 @@ const Home = () => {
         try {
           const tokenVerified = await axios.post(
             `${BACKEND_URL}/token/verifyParamToken`,
-            { registerToken },
+            { token: registerToken },
             { withCredentials: true }
           );
           if (tokenVerified.data.tokenVerified) {
             updateAuthAction("register");
-            setRegisterEmail(tokenVerified.data.useremail);
+            setRegisterEmail(tokenVerified.data.decoded.useremail);
             toast({
               title: "Token verified",
               description: "Please complete the registration form.",

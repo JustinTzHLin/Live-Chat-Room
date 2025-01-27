@@ -1,6 +1,6 @@
 "use client";
 import { useEffect } from "react";
-import ChatRoom from "@/components/chatroom";
+import ChatRoom from "./components/chatroom";
 import { useSocketStore } from "@/stores/socketStore";
 import { useToast } from "@/hooks/use-toast";
 import { useRouter } from "next/navigation";

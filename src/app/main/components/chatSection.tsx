@@ -18,6 +18,7 @@ const ChatSection = ({
   const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL;
   const {
     userInformation,
+    userChatData,
     setUserChatData,
     currentChatInfo,
     setCurrentChatInfo,
@@ -79,6 +80,36 @@ const ChatSection = ({
     }
   };
 
+  const handleCalltoFriend = async () => {
+    const callee = userChatData.friends.find(
+      (friend) =>
+        friend.id ===
+        currentChatInfo.participantIDs.find(
+          (id) => id !== userInformation.userId
+        )
+    );
+    const callersInfo = {
+      caller: {
+        id: userInformation.userId,
+        username: userInformation.username,
+        email: userInformation.email,
+      },
+      callee,
+    };
+    const issueCallersInfoResponse = await axios.post(
+      `${BACKEND_URL}/token/issueCallerInfoToken`,
+      callersInfo,
+      { withCredentials: true }
+    );
+    if (issueCallersInfoResponse.data.generatedCallerInfoToken) {
+      window.open(
+        `/stream?callerInfoToken=${issueCallersInfoResponse.data.callerInfoToken}`,
+        "_blank",
+        "width=400,height=1000"
+      );
+    }
+  };
+
   return (
     <div className="w-full h-[calc(100%-80px)] flex flex-col items-center">
       <div className="w-full flex items-center justify-center h-10">
@@ -99,14 +130,11 @@ const ChatSection = ({
           variant="ghost"
           size="icon"
           type="button"
-          className="text-muted-foreground rounded-lg w-10 h-10 absolute right-2"
-          onClick={() => {
-            const url = "/stream"; // Replace with your route or external link
-            const windowFeatures = "width=400,height=600,fullscreen=yes"; // Customize as needed
-
-            // Open the new window
-            window.open(url, "_blank", windowFeatures);
-          }}
+          className={cn(
+            "text-muted-foreground rounded-lg w-10 h-10 absolute right-2",
+            currentChatInfo.type === "group" && "hidden"
+          )}
+          onClick={handleCalltoFriend}
         >
           <Phone style={{ width: "26px", height: "26px" }} />
         </Button>

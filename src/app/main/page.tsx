@@ -3,13 +3,15 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useToast } from "@/hooks/use-toast";
+import { Button } from "@/components/ui/button";
+import { Phone, PhoneOff } from "lucide-react";
 import NavBar from "./components/navBar";
 import TabsSection from "./components/tabsSection";
 import ChatSection from "./components/chatSection";
 import SearchSection from "./components/searchSection";
 import SettingsSection from "./components/settingsSection";
 import { useAuthStore } from "@/stores/authStore";
-import { useUserStore, Message } from "@/stores/userStore";
+import { useUserStore, Message, Friend } from "@/stores/userStore";
 import { useSocketStore } from "@/stores/socketStore";
 import { useTheme } from "next-themes";
 import useUnexpectedErrorHandler from "@/utils/useUnexpectedErrorHandler";
@@ -31,9 +33,13 @@ const Page = () => {
   const [currentTab, setCurrentTab] = useState("chatroom"); // chatroom, group, friend
   const [currentSection, setCurrentSection] = useState("tabs"); // tabs, chat, settings, search
   const router = useRouter();
-  const { toast } = useToast();
+  const { toast, dismiss } = useToast();
   const { handleUnexpectedError } = useUnexpectedErrorHandler();
   const { setTheme } = useTheme();
+  interface CallersInfo {
+    caller: Friend;
+    callee: Friend;
+  }
 
   useEffect(() => {
     const verifyServerConnection = async () => {
@@ -58,6 +64,53 @@ const Page = () => {
       for (const conversationId in userChatData.conversations) {
         socket.emit("join_room", conversationId);
       }
+      socket.on(
+        "webrtc_call",
+        (
+          e: (RTCSessionDescriptionInit | RTCIceCandidateInit) & {
+            type: string;
+            callersInfo: CallersInfo;
+          }
+        ) => {
+          if (e.type === "call_request") {
+            const { id: toastId } = toast({
+              variant: "default",
+              title: "Incoming call",
+              description: (
+                <p>
+                  You have a call from <b>{e.callersInfo.caller.username}</b>
+                </p>
+              ),
+              action: (
+                <div className="flex gap-1 !mr-1">
+                  <Button
+                    className="h-10 w-10"
+                    variant="outline"
+                    onClick={() => {
+                      alert("Answer");
+                    }}
+                  >
+                    <Phone style={{ width: "20px", height: "20px" }} />
+                  </Button>
+                  <Button
+                    className="h-10 w-10"
+                    variant="destructive"
+                    onClick={() => {
+                      dismiss(toastId);
+                    }}
+                  >
+                    <PhoneOff style={{ width: "20px", height: "20px" }} />
+                  </Button>
+                </div>
+              ),
+              duration: 1000 * 60,
+            });
+          }
+        }
+      );
+      return () => {
+        socket.off("webrtc_call");
+      };
     }
   }, [socket, userChatData.conversations, userInformation.userId]);
 
