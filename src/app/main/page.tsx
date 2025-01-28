@@ -68,6 +68,8 @@ const Page = () => {
         "webrtc_call",
         (
           e: (RTCSessionDescriptionInit | RTCIceCandidateInit) & {
+            newCallingId?: string;
+            callingId: string;
             type: string;
             callersInfo: CallersInfo;
           }
@@ -86,8 +88,25 @@ const Page = () => {
                   <Button
                     className="h-10 w-10"
                     variant="outline"
-                    onClick={() => {
-                      alert("Answer");
+                    onClick={async () => {
+                      const issueCallersInfoResponse = await axios.post(
+                        `${BACKEND_URL}/token/issueCallersInfoToken`,
+                        {
+                          callersInfo: e.callersInfo,
+                          callingId: e.newCallingId,
+                        },
+                        { withCredentials: true }
+                      );
+                      if (
+                        issueCallersInfoResponse.data.generatedCallersInfoToken
+                      ) {
+                        window.open(
+                          `/stream?callersInfoToken=${issueCallersInfoResponse.data.callersInfoToken}`,
+                          "_blank",
+                          "width=400,height=1000"
+                        );
+                        dismiss(toastId);
+                      }
                     }}
                   >
                     <Phone style={{ width: "20px", height: "20px" }} />
@@ -96,6 +115,11 @@ const Page = () => {
                     className="h-10 w-10"
                     variant="destructive"
                     onClick={() => {
+                      socket.emit("webrtc_call", {
+                        ...e,
+                        callingId: e.callersInfo.caller.id,
+                        type: "bye",
+                      });
                       dismiss(toastId);
                     }}
                   >

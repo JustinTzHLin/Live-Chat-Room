@@ -33,6 +33,7 @@ const Page = () => {
   const [infoTokenVerified, setInfoTokenVerified] = useState(false);
   const [socketSetted, setSocketSetted] = useState(false);
   const [callSetted, setCallSetted] = useState(false);
+  const [callingId, setCallingId] = useState("");
   const [videoShareBtnDisabled, setVideoShareBtnDisabled] = useState(true);
   const [hangupBtnDisabled, setHangupBtnDisabled] = useState(true);
   const [micBtnDisabled, setMicBtnDisabled] = useState(true);
@@ -49,7 +50,9 @@ const Page = () => {
   const localStreamRef = useRef<null | MediaStream>(null);
   const localVideo = useRef<null | HTMLVideoElement>(null);
   const remoteVideo = useRef<null | HTMLVideoElement>(null);
-  const { userInformation } = useUserStore((state) => state);
+  const { userInformation, setUserInformation } = useUserStore(
+    (state) => state
+  );
   const { socket, connect } = useSocketStore((state) => state);
   const { handleUnexpectedError } = useUnexpectedErrorHandler();
   const { toast } = useToast();
@@ -57,10 +60,10 @@ const Page = () => {
   const router = useRouter();
 
   useEffect(() => {
-    const getCallerInfoToken = async () => {
+    const getCallersInfoToken = async () => {
       try {
-        const callerInfoToken = searchParams.get("callerInfoToken");
-        if (!callerInfoToken) {
+        const callersInfoToken = searchParams.get("callersInfoToken");
+        if (!callersInfoToken) {
           toast({
             variant: "destructive",
             title: "Info not found",
@@ -70,14 +73,14 @@ const Page = () => {
           window.close();
           return router.push("/home");
         }
-        const verifyCallerInfoTokenResponse = await axios.post(
+        const verifyCallersInfoTokenResponse = await axios.post(
           `${BACKEND_URL}/token/verifyParamToken`,
           {
-            token: callerInfoToken,
+            token: callersInfoToken,
           },
           { withCredentials: true }
         );
-        if (!verifyCallerInfoTokenResponse.data.tokenVerified) {
+        if (!verifyCallersInfoTokenResponse.data.tokenVerified) {
           toast({
             variant: "destructive",
             title: "Token malformed",
@@ -87,54 +90,33 @@ const Page = () => {
           window.close();
           return router.push("/home");
         }
-        setCallersInfo(verifyCallerInfoTokenResponse.data.decoded);
+        if ("callingId" in verifyCallersInfoTokenResponse.data.decoded) {
+          const {
+            callersInfo: callersInfoDecoded,
+            callingId: callingIdDecoded,
+          } = verifyCallersInfoTokenResponse.data.decoded;
+          setCallingId(callingIdDecoded);
+          setCallersInfo(callersInfoDecoded);
+        } else {
+          const newCallingId = `${Date.now().toString(36)}-${Math.random()
+            .toString(36)
+            .substring(2, 10)}`;
+          setCallingId(newCallingId);
+          setCallersInfo(verifyCallersInfoTokenResponse.data.decoded);
+        }
         setInfoTokenVerified(true);
       } catch (err) {
         handleUnexpectedError(err);
       }
     };
-    getCallerInfoToken();
+    getCallersInfoToken();
     return () => {
       useSocketStore.getState().disconnect();
     };
   }, []);
 
   useEffect(() => {
-    if (socket) {
-      socket.on(
-        "webrtc_call",
-        (
-          e: (RTCSessionDescriptionInit | RTCIceCandidateInit) & {
-            type: string;
-            callersInfo: CallersInfo;
-          }
-        ) => {
-          if (!localStreamRef.current) {
-            return console.log("not ready yet");
-          }
-          switch (e.type) {
-            case "offer":
-              return handleOffer(e as RTCSessionDescriptionInit);
-            case "answer":
-              return handleAnswer(e as RTCSessionDescriptionInit);
-            case "candidate":
-              return handleCandidate(e);
-            case "ready":
-              if (peerConnectionRef.current)
-                return console.log("already in call, ignoring");
-              else return makeCall();
-            case "bye":
-              if (peerConnectionRef.current) return hangup();
-            default:
-              console.log("unhandled", e);
-          }
-        }
-      );
-      setSocketSetted(true);
-      return () => {
-        socket.off("webrtc_call");
-      };
-    } else {
+    if (infoTokenVerified && !socket) {
       const onMaxRetries = () => {
         toast({
           variant: "destructive",
@@ -146,11 +128,94 @@ const Page = () => {
       };
       connect(onMaxRetries);
     }
-  }, [socket]);
+  }, [infoTokenVerified, socket]);
+
+  useEffect(() => {
+    if (socket && callingId) {
+      const handleWebRTCMessage = (
+        e: (RTCSessionDescriptionInit | RTCIceCandidateInit) & {
+          callingId: string;
+          type: string;
+          callersInfo: CallersInfo;
+        }
+      ) => {
+        if (!localStreamRef.current) return console.log("not ready yet");
+        console.log("webrtc_call", e);
+        switch (e.type) {
+          case "offer":
+            return handleOffer(e as RTCSessionDescriptionInit);
+          case "answer":
+            return handleAnswer(e as RTCSessionDescriptionInit);
+          case "candidate":
+            return handleCandidate(e);
+          case "ready":
+            if (peerConnectionRef.current)
+              return console.log("already in call, ignoring");
+            else return makeCall(callingId);
+          case "bye":
+            if (peerConnectionRef.current) return hangup();
+            else return console.log("not in call, ignoring");
+          default:
+            console.log("unhandled", e);
+        }
+      };
+      socket.off("webrtc_call");
+      socket.on("webrtc_call", handleWebRTCMessage);
+      setSocketSetted(true);
+      return () => {
+        socket.off("webrtc_call", handleWebRTCMessage);
+      };
+    }
+  }, [socket, callingId]);
+
+  useEffect(() => {
+    const verifyLoggedInToken = async () => {
+      if (socketSetted && infoTokenVerified && callersInfo && callingId) {
+        try {
+          const tokenVerified = await axios(
+            `${BACKEND_URL}/token/verifyLoggedInToken`,
+            { withCredentials: true }
+          );
+          if (tokenVerified.data.tokenVerified) {
+            socket.emit("join_room", callingId);
+            setUserInformation(tokenVerified.data.user);
+            socket.emit("join_room", tokenVerified.data.user.userId);
+          } else {
+            router.push("/home");
+            if (tokenVerified.data.errorMessage === "no token found")
+              toast({
+                title: "No token found",
+                description: "Please login instead.",
+                duration: 3000,
+              });
+            else if (tokenVerified.data.errorMessage === "jwt malformed")
+              toast({
+                variant: "destructive",
+                title: "Token malformed",
+                description: "The token is malformed. Please login instead.",
+                duration: 3000,
+              });
+            else if (tokenVerified.data.errorMessage === "jwt expired")
+              toast({
+                variant: "destructive",
+                title: "Token expired",
+                description: "The token has expired. Please login instead.",
+                duration: 3000,
+              });
+            else throw new Error("Token not verified");
+          }
+        } catch (err) {
+          router.push("/home");
+          handleUnexpectedError(err, "Please login instead.");
+        }
+      }
+    };
+    verifyLoggedInToken();
+  }, [socketSetted, infoTokenVerified, callersInfo, callingId]);
 
   useEffect(() => {
     const callInitialization = async () => {
-      if (socketSetted && infoTokenVerified && callersInfo) {
+      if (userInformation.userId) {
         try {
           localStreamRef.current = await navigator.mediaDevices.getUserMedia({
             video: true,
@@ -163,22 +228,28 @@ const Page = () => {
               track.enabled = false;
             });
             setCallSetted(true);
-            socket.emit("webrtc_call", {
-              type: "ready",
-              callersInfo,
-            });
-            socket.emit("webrtc_call", {
-              type: "call_request",
-              callersInfo,
-            });
+            if (callersInfo?.callee.id === userInformation.userId) {
+              socket.emit("webrtc_call", {
+                callingId: callingId,
+                type: "ready",
+                callersInfo,
+              });
+            } else {
+              socket.emit("webrtc_call", {
+                newCallingId: callingId,
+                callingId: callersInfo?.callee.id,
+                type: "call_request",
+                callersInfo,
+              });
+            }
           } else throw new Error("No local video");
         } catch (err) {
-          console.log(err);
+          console.error(err);
         }
       }
     };
     callInitialization();
-  }, [socketSetted, infoTokenVerified, callersInfo]);
+  }, [userInformation.userId]);
 
   useEffect(() => {
     setVideoShareBtnDisabled(!callSetted);
@@ -196,6 +267,7 @@ const Page = () => {
       peerConnectionRef.current = new RTCPeerConnection(configuration);
       peerConnectionRef.current.onicecandidate = (e) => {
         const message = {
+          callingId,
           type: "candidate",
           callersInfo,
           candidate: e.candidate?.candidate || null,
@@ -218,13 +290,14 @@ const Page = () => {
 
       const answer = await peerConnectionRef.current.createAnswer();
       socket.emit("webrtc_call", {
+        callingId,
         type: "answer",
         callersInfo,
         sdp: answer.sdp,
       });
       await peerConnectionRef.current.setLocalDescription(answer);
-    } catch (e) {
-      console.log(e);
+    } catch (err) {
+      console.error(err);
     }
   };
 
@@ -235,8 +308,8 @@ const Page = () => {
     }
     try {
       await peerConnectionRef.current.setRemoteDescription(answer);
-    } catch (e) {
-      console.log(e);
+    } catch (err) {
+      console.error(err);
     }
   };
 
@@ -247,17 +320,17 @@ const Page = () => {
         return;
       }
       await peerConnectionRef.current.addIceCandidate(candidate || null);
-    } catch (e) {
-      console.log(e);
+    } catch (err) {
+      console.error(err);
     }
   };
 
-  const makeCall = async () => {
-    console.log("Making call");
+  const makeCall = async (callingId: string) => {
     try {
       peerConnectionRef.current = new RTCPeerConnection(configuration);
       peerConnectionRef.current.onicecandidate = (e) => {
         const message = {
+          callingId,
           type: "candidate",
           callersInfo,
           candidate: e.candidate?.candidate || null,
@@ -277,17 +350,19 @@ const Page = () => {
           );
       const offer = await peerConnectionRef.current.createOffer();
       socket.emit("webrtc_call", {
+        callingId,
         type: "offer",
         callersInfo,
         sdp: offer.sdp,
       });
       await peerConnectionRef.current.setLocalDescription(offer);
-    } catch (e) {
-      console.log(e);
+    } catch (err) {
+      console.error(err);
     }
   };
 
   const hangup = async () => {
+    console.log("Hanging up");
     if (peerConnectionRef.current) {
       peerConnectionRef.current.close();
       peerConnectionRef.current = null;
@@ -302,7 +377,11 @@ const Page = () => {
 
   const handleHangupBtnClick = async () => {
     hangup();
-    socket.emit("webrtc_call", { type: "bye", callersInfo });
+    socket.emit("webrtc_call", {
+      callingId,
+      type: "bye",
+      callersInfo,
+    });
   };
 
   const stopVideoSharing = () => {

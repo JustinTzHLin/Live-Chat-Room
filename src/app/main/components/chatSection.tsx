@@ -97,13 +97,13 @@ const ChatSection = ({
       callee,
     };
     const issueCallersInfoResponse = await axios.post(
-      `${BACKEND_URL}/token/issueCallerInfoToken`,
+      `${BACKEND_URL}/token/issueCallersInfoToken`,
       callersInfo,
       { withCredentials: true }
     );
-    if (issueCallersInfoResponse.data.generatedCallerInfoToken) {
+    if (issueCallersInfoResponse.data.generatedCallersInfoToken) {
       window.open(
-        `/stream?callerInfoToken=${issueCallersInfoResponse.data.callerInfoToken}`,
+        `/stream?callersInfoToken=${issueCallersInfoResponse.data.callersInfoToken}`,
         "_blank",
         "width=400,height=1000"
       );
@@ -136,7 +136,7 @@ const ChatSection = ({
           )}
           onClick={handleCalltoFriend}
         >
-          <Phone style={{ width: "26px", height: "26px" }} />
+          <Phone style={{ width: "24px", height: "24px" }} />
         </Button>
       </div>
       <ScrollArea className="w-full h-[calc(100%-120px)] flex flex-col px-4 pt-2">
