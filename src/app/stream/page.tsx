@@ -411,22 +411,29 @@ const Page = () => {
 
   return (
     infoTokenVerified && (
-      <main className="flex flex-col p-4 gap-4">
-        <div className="flex flex-col md:flex-row items-center justify-around bg-slate-200">
-          <video
-            ref={localVideo}
-            className="w-[90%] h-64 md:w-[40%] h-96 border-4 border-slate-50 rounded-lg m-3 bg-slate-900"
-            autoPlay
-            playsInline
-          />
-          <video
-            ref={remoteVideo}
-            className="w-[90%] h-64 md:w-[40%] h-96 border-4 border-slate-50 rounded-lg m-3 bg-slate-900"
-            autoPlay
-            playsInline
-          />
+      <main className="min-w-[320px] flex flex-col items-center p-4 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+          <div className="aspect-auto border-8 border-slate-200 rounded-lg relative">
+            <video
+              ref={localVideo}
+              className="w-full h-full rounded-md bg-slate-900"
+              autoPlay
+              playsInline
+            />
+            {!videoOn && (
+              <VideoOff className="w-1/4 h-1/4 absolute top-1/2 left-1/2 translate-x-[-50%] translate-y-[-50%] text-white opacity-50 rounded-full" />
+            )}
+          </div>
+          <div className="aspect-auto border-8 border-slate-200 rounded-lg  relative">
+            <video
+              ref={remoteVideo}
+              className="w-full h-full rounded-md bg-slate-900"
+              autoPlay
+              playsInline
+            />
+          </div>
         </div>
-        <div className="flex justify-center gap-x-5 mt-3">
+        <div className="flex justify-around w-full max-w-96 mt-3">
           <Button
             className="w-16 h-16"
             disabled={videoShareBtnDisabled}
