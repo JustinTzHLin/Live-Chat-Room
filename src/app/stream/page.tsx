@@ -39,7 +39,9 @@ const Page = () => {
   const [micBtnDisabled, setMicBtnDisabled] = useState(true);
   const [soundBtnDisabled, setSoundBtnDisabled] = useState(true);
   const [videoOn, setVideoOn] = useState(false);
+  const [p2VideoOn, setP2VideoOn] = useState(false);
   const [micOn, setMicOn] = useState(true);
+  const [p2MicOn, setP2MicOn] = useState(true);
   const [soundOn, setSoundOn] = useState(true);
   interface CallersInfo {
     caller: Friend;
@@ -159,11 +161,20 @@ const Page = () => {
             console.log("unhandled", e);
         }
       };
-      socket.off("webrtc_call");
+      const handleCallSettingChange = (data: {
+        callingId: string;
+        type: string;
+        value: boolean;
+      }) => {
+        if (data.type === "video") setP2VideoOn(data.value);
+        else if (data.type === "audio") setP2MicOn(data.value);
+      };
       socket.on("webrtc_call", handleWebRTCMessage);
+      socket.on("change_call_setting", handleCallSettingChange);
       setSocketSetted(true);
       return () => {
         socket.off("webrtc_call", handleWebRTCMessage);
+        socket.off("change_call_setting", handleCallSettingChange);
       };
     }
   }, [socket, callingId]);
@@ -389,12 +400,22 @@ const Page = () => {
     localStreamRef.current?.getVideoTracks().forEach((track) => {
       track.enabled = !videoOn;
     });
+    socket.emit("change_call_setting", {
+      callingId,
+      type: "video",
+      value: !videoOn,
+    });
   };
 
   const muteAudio = () => {
     setMicOn(!micOn);
     localStreamRef.current?.getAudioTracks().forEach((track) => {
       track.enabled = !micOn;
+    });
+    socket.emit("change_call_setting", {
+      callingId,
+      type: "audio",
+      value: !micOn,
     });
   };
 
@@ -421,16 +442,43 @@ const Page = () => {
               playsInline
             />
             {!videoOn && (
-              <VideoOff className="w-1/4 h-1/4 absolute top-1/2 left-1/2 translate-x-[-50%] translate-y-[-50%] text-white opacity-50 rounded-full" />
+              <VideoOff className="w-1/4 h-auto absolute top-1/2 left-1/2 translate-x-[-50%] translate-y-[-50%] text-white opacity-50 rounded-full" />
             )}
+            <div className="w-full flex items-center justify-end absolute top-full left-full translate-x-[-100%] translate-y-[-100%] text-lg text-white">
+              <div className="flex items-center bg-slate-900 bg-opacity-70 rounded-xl m-1 px-2 gap-1">
+                {callersInfo?.caller.username}
+                {!micOn && (
+                  <MicOff
+                    strokeWidth={2.5}
+                    size={18}
+                    className="text-red-600 rounded-full"
+                  />
+                )}
+              </div>
+            </div>
           </div>
-          <div className="aspect-auto border-8 border-slate-200 rounded-lg  relative">
+          <div className="aspect-auto border-8 border-slate-200 rounded-lg relative">
             <video
               ref={remoteVideo}
               className="w-full h-full rounded-md bg-slate-900"
               autoPlay
               playsInline
             />
+            {!p2VideoOn && (
+              <VideoOff className="w-1/4 h-auto absolute top-1/2 left-1/2 translate-x-[-50%] translate-y-[-50%] text-white opacity-50 rounded-full" />
+            )}
+            <div className="w-full flex items-center justify-end absolute top-full left-full translate-x-[-100%] translate-y-[-100%] text-lg text-white">
+              <div className="flex items-center justify-center bg-slate-900 bg-opacity-70 rounded-xl m-1 px-2 gap-1">
+                {callersInfo?.callee.username}
+                {!p2MicOn && (
+                  <MicOff
+                    strokeWidth={2.5}
+                    size={18}
+                    className="text-red-600 rounded-full"
+                  />
+                )}
+              </div>
+            </div>
           </div>
         </div>
         <div className="flex justify-around w-full max-w-96 mt-3">
