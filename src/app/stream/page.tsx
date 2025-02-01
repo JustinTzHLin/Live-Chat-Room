@@ -446,7 +446,7 @@ const Page = () => {
             )}
             <div className="w-full flex items-center justify-end absolute top-full left-full translate-x-[-100%] translate-y-[-100%] text-lg text-white">
               <div className="flex items-center bg-slate-900 bg-opacity-70 rounded-xl m-1 px-2 gap-1">
-                {callersInfo?.caller.username}
+                {userInformation.username}
                 {!micOn && (
                   <MicOff
                     strokeWidth={2.5}
@@ -469,7 +469,11 @@ const Page = () => {
             )}
             <div className="w-full flex items-center justify-end absolute top-full left-full translate-x-[-100%] translate-y-[-100%] text-lg text-white">
               <div className="flex items-center justify-center bg-slate-900 bg-opacity-70 rounded-xl m-1 px-2 gap-1">
-                {callersInfo?.callee.username}
+                {userInformation.userId === callersInfo?.caller.id
+                  ? callersInfo?.callee.username
+                  : userInformation.userId === callersInfo?.callee.id
+                  ? callersInfo?.caller.username
+                  : ""}
                 {!p2MicOn && (
                   <MicOff
                     strokeWidth={2.5}
