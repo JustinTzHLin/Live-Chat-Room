@@ -34,15 +34,23 @@ const Page = () => {
   const [socketSetted, setSocketSetted] = useState(false);
   const [callSetted, setCallSetted] = useState(false);
   const [callingId, setCallingId] = useState("");
-  const [videoShareBtnDisabled, setVideoShareBtnDisabled] = useState(true);
-  const [hangupBtnDisabled, setHangupBtnDisabled] = useState(true);
-  const [micBtnDisabled, setMicBtnDisabled] = useState(true);
-  const [soundBtnDisabled, setSoundBtnDisabled] = useState(true);
-  const [videoOn, setVideoOn] = useState(false);
-  const [p2VideoOn, setP2VideoOn] = useState(false);
-  const [micOn, setMicOn] = useState(true);
-  const [p2MicOn, setP2MicOn] = useState(true);
-  const [soundOn, setSoundOn] = useState(true);
+  const [callSettings, setCallSettings] = useState({
+    videoShareBtnDisabled: true,
+    hangupBtnDisabled: true,
+    micBtnDisabled: true,
+    soundBtnDisabled: true,
+  });
+  const [mediaSettings, setMediaSettings] = useState({
+    videoOn: false,
+    micOn: true,
+    soundOn: true,
+    p2VideoOn: false,
+    p2MicOn: true,
+  });
+  const myCurrentMedia = useRef({
+    videoOn: false,
+    micOn: true,
+  });
   interface CallersInfo {
     caller: Friend;
     callee: Friend;
@@ -153,7 +161,7 @@ const Page = () => {
           case "ready":
             if (peerConnectionRef.current)
               return console.log("already in call, ignoring");
-            else return makeCall(callingId);
+            else return makeCall();
           case "bye":
             if (peerConnectionRef.current) return hangup();
             else return console.log("not in call, ignoring");
@@ -164,10 +172,16 @@ const Page = () => {
       const handleCallSettingChange = (data: {
         callingId: string;
         type: string;
-        value: boolean;
+        value: {
+          videoOn: boolean;
+          micOn: boolean;
+        };
       }) => {
-        if (data.type === "video") setP2VideoOn(data.value);
-        else if (data.type === "audio") setP2MicOn(data.value);
+        setMediaSettings((prev) => ({
+          ...prev,
+          p2VideoOn: data.value.videoOn,
+          p2MicOn: data.value.micOn,
+        }));
       };
       socket.on("webrtc_call", handleWebRTCMessage);
       socket.on("change_call_setting", handleCallSettingChange);
@@ -263,10 +277,12 @@ const Page = () => {
   }, [userInformation.userId]);
 
   useEffect(() => {
-    setVideoShareBtnDisabled(!callSetted);
-    setHangupBtnDisabled(!callSetted);
-    setMicBtnDisabled(!callSetted);
-    setSoundBtnDisabled(!callSetted);
+    setCallSettings({
+      videoShareBtnDisabled: !callSetted,
+      hangupBtnDisabled: !callSetted,
+      micBtnDisabled: !callSetted,
+      soundBtnDisabled: !callSetted,
+    });
   }, [callSetted]);
 
   const handleOffer = async (offer: RTCSessionDescriptionInit) => {
@@ -336,8 +352,12 @@ const Page = () => {
     }
   };
 
-  const makeCall = async (callingId: string) => {
+  const makeCall = async () => {
     try {
+      socket.emit("change_call_setting", {
+        callingId,
+        value: myCurrentMedia.current,
+      });
       peerConnectionRef.current = new RTCPeerConnection(configuration);
       peerConnectionRef.current.onicecandidate = (e) => {
         const message = {
@@ -395,38 +415,56 @@ const Page = () => {
     });
   };
 
-  const stopVideoSharing = () => {
-    setVideoOn(!videoOn);
-    localStreamRef.current?.getVideoTracks().forEach((track) => {
-      track.enabled = !videoOn;
-    });
-    socket.emit("change_call_setting", {
-      callingId,
-      type: "video",
-      value: !videoOn,
+  const toggleVideo = () => {
+    setMediaSettings((prev) => {
+      const newVideoOn = !prev.videoOn;
+      localStreamRef.current?.getVideoTracks().forEach((track) => {
+        track.enabled = newVideoOn;
+      });
+      socket.emit("change_call_setting", {
+        callingId,
+        value: {
+          ...prev,
+          videoOn: newVideoOn,
+        },
+      });
+      myCurrentMedia.current = {
+        ...myCurrentMedia.current,
+        videoOn: newVideoOn,
+      };
+      return { ...prev, videoOn: newVideoOn };
     });
   };
 
-  const muteAudio = () => {
-    setMicOn(!micOn);
-    localStreamRef.current?.getAudioTracks().forEach((track) => {
-      track.enabled = !micOn;
-    });
-    socket.emit("change_call_setting", {
-      callingId,
-      type: "audio",
-      value: !micOn,
+  const toggleMic = () => {
+    setMediaSettings((prev) => {
+      const newMicOn = !prev.micOn;
+      localStreamRef.current?.getAudioTracks().forEach((track) => {
+        track.enabled = newMicOn;
+      });
+      socket.emit("change_call_setting", {
+        callingId,
+        value: {
+          ...prev,
+          micOn: newMicOn,
+        },
+      });
+      myCurrentMedia.current = {
+        ...myCurrentMedia.current,
+        micOn: newMicOn,
+      };
+      return { ...prev, micOn: newMicOn };
     });
   };
 
   const muteSound = () => {
     if (!remoteVideo.current) return;
-    if (soundOn) {
+    if (mediaSettings.soundOn) {
       remoteVideo.current.muted = true;
-      setSoundOn(false);
+      setMediaSettings((prev) => ({ ...prev, soundOn: false }));
     } else {
       remoteVideo.current.muted = false;
-      setSoundOn(true);
+      setMediaSettings((prev) => ({ ...prev, soundOn: true }));
     }
   };
 
@@ -441,13 +479,13 @@ const Page = () => {
               autoPlay
               playsInline
             />
-            {!videoOn && (
+            {!mediaSettings.videoOn && (
               <VideoOff className="w-1/4 h-auto absolute top-1/2 left-1/2 translate-x-[-50%] translate-y-[-50%] text-white opacity-50 rounded-full" />
             )}
             <div className="w-full flex items-center justify-end absolute top-full left-full translate-x-[-100%] translate-y-[-100%] text-lg text-white">
               <div className="flex items-center bg-slate-900 bg-opacity-70 rounded-xl m-1 px-2 gap-1">
                 {userInformation.username}
-                {!micOn && (
+                {!mediaSettings.micOn && (
                   <MicOff
                     strokeWidth={2.5}
                     size={18}
@@ -464,7 +502,7 @@ const Page = () => {
               autoPlay
               playsInline
             />
-            {!p2VideoOn && (
+            {!mediaSettings.p2VideoOn && (
               <VideoOff className="w-1/4 h-auto absolute top-1/2 left-1/2 translate-x-[-50%] translate-y-[-50%] text-white opacity-50 rounded-full" />
             )}
             <div className="w-full flex items-center justify-end absolute top-full left-full translate-x-[-100%] translate-y-[-100%] text-lg text-white">
@@ -474,7 +512,7 @@ const Page = () => {
                   : userInformation.userId === callersInfo?.callee.id
                   ? callersInfo?.caller.username
                   : ""}
-                {!p2MicOn && (
+                {!mediaSettings.p2MicOn && (
                   <MicOff
                     strokeWidth={2.5}
                     size={18}
@@ -488,10 +526,10 @@ const Page = () => {
         <div className="flex justify-around w-full max-w-96 mt-3">
           <Button
             className="w-16 h-16"
-            disabled={videoShareBtnDisabled}
-            onClick={stopVideoSharing}
+            disabled={callSettings.videoShareBtnDisabled}
+            onClick={toggleVideo}
           >
-            {videoOn ? (
+            {mediaSettings.videoOn ? (
               <Video style={{ width: "26px", height: "26px" }} />
             ) : (
               <VideoOff style={{ width: "26px", height: "26px" }} />
@@ -499,7 +537,7 @@ const Page = () => {
           </Button>
           <Button
             className="w-16 h-16"
-            disabled={hangupBtnDisabled}
+            disabled={callSettings.hangupBtnDisabled}
             onClick={handleHangupBtnClick}
             variant="destructive"
           >
@@ -507,10 +545,10 @@ const Page = () => {
           </Button>
           <Button
             className="w-16 h-16"
-            disabled={micBtnDisabled}
-            onClick={muteAudio}
+            disabled={callSettings.micBtnDisabled}
+            onClick={toggleMic}
           >
-            {micOn ? (
+            {mediaSettings.micOn ? (
               <Mic style={{ width: "26px", height: "26px" }} />
             ) : (
               <MicOff style={{ width: "26px", height: "26px" }} />
@@ -518,10 +556,10 @@ const Page = () => {
           </Button>
           <Button
             className="w-16 h-16"
-            disabled={soundBtnDisabled}
+            disabled={callSettings.soundBtnDisabled}
             onClick={muteSound}
           >
-            {soundOn ? (
+            {mediaSettings.soundOn ? (
               <Volume2 style={{ width: "26px", height: "26px" }} />
             ) : (
               <VolumeOff style={{ width: "26px", height: "26px" }} />
