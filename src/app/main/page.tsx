@@ -90,18 +90,16 @@ const Page = () => {
                     variant="outline"
                     onClick={async () => {
                       const issueCallersInfoResponse = await axios.post(
-                        `${BACKEND_URL}/token/issueCallersInfoToken`,
+                        `${BACKEND_URL}/token/issueOtherToken`,
                         {
                           callersInfo: e.callersInfo,
                           callingId: e.newCallingId,
                         },
                         { withCredentials: true }
                       );
-                      if (
-                        issueCallersInfoResponse.data.generatedCallersInfoToken
-                      ) {
+                      if (issueCallersInfoResponse.data.generatedToken) {
                         window.open(
-                          `/stream?callersInfoToken=${issueCallersInfoResponse.data.callersInfoToken}`,
+                          `/stream?callersInfoToken=${issueCallersInfoResponse.data.otherToken}`,
                           "_blank",
                           "width=400,height=1000"
                         );

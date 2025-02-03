@@ -12,11 +12,18 @@ import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Input } from "@/components/ui/input";
 import * as VisuallyHidden from "@radix-ui/react-visually-hidden";
-import { UserSearch, UserRoundPlus } from "lucide-react";
-import { useUserStore } from "@/stores/userStore";
+import {
+  UserSearch,
+  UserRoundPlus,
+  QrCode,
+  ArrowLeft,
+  RotateCw,
+} from "lucide-react";
+import { useUserStore, Friend } from "@/stores/userStore";
 import { useSocketStore } from "@/stores/socketStore";
 import getNameInitials from "@/utils/getNameInitials";
 import useUnexpectedErrorHandler from "@/utils/useUnexpectedErrorHandler";
+import { QRCodeSVG } from "qrcode.react";
 import axios from "axios";
 import { z } from "zod";
 
@@ -31,20 +38,21 @@ const AddFriendDialog = ({
   addFriendDialogOpen: boolean;
   setAddFriendDialogOpen: (open: boolean) => void;
 }) => {
+  const COUNTDOWN_TIME = 300;
   const userInformation = useUserStore((state) => state.userInformation);
   const friendsList = useUserStore((state) => state.userChatData.friends);
   const socket = useSocketStore((state) => state.socket);
   const [radioValue, setRadioValue] = useState<string>("email");
   const [searchInput, setSearchInput] = useState<string>("");
-  const [searchedUser, setSearchedUser] = useState<{
-    id: string;
-    username: string;
-    email: string;
-  } | null>({
+  const [searchedUser, setSearchedUser] = useState<Friend | null>({
     id: "",
     username: "",
     email: "",
   });
+  const [showQrCode, setShowQrCode] = useState<boolean>(false);
+  const [qrCodeUrl, setQrCodeUrl] = useState<string>("");
+  const [timeLeft, setTimeLeft] = useState<number>(0);
+  const [intervalId, setIntervalId] = useState<NodeJS.Timeout | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [searching, setSearching] = useState<boolean>(false);
   const { toast } = useToast();
@@ -52,6 +60,8 @@ const AddFriendDialog = ({
 
   useEffect(() => {
     if (addFriendDialogOpen) {
+      setShowQrCode(false);
+      setQrCodeUrl("");
       setRadioValue("email");
       setError(null);
       setSearchInput("");
@@ -64,6 +74,44 @@ const AddFriendDialog = ({
     setSearchInput("");
     setSearchedUser(null);
   }, [radioValue]);
+
+  const generateQrCode = useCallback(async () => {
+    const generateQrCodeResponse = await axios.post(
+      `${BACKEND_URL}/token/issueOtherToken`,
+      { userId: userInformation.userId },
+      { withCredentials: true }
+    );
+    if (generateQrCodeResponse.data.generatedToken) {
+      setQrCodeUrl(`${generateQrCodeResponse.data.otherToken}`);
+      setTimeLeft(COUNTDOWN_TIME);
+      return COUNTDOWN_TIME;
+    }
+  }, [userInformation.userId]);
+
+  useEffect(() => {
+    if (showQrCode) regenerateQrCode();
+    else if (intervalId) {
+      clearInterval(intervalId);
+      setIntervalId(null);
+    }
+  }, [showQrCode, generateQrCode]);
+
+  const regenerateQrCode = useCallback(async () => {
+    if (intervalId) clearInterval(intervalId);
+    generateQrCode();
+    const interval = setInterval(() => {
+      setTimeLeft((prev) => {
+        if (prev <= 1) {
+          console.log("Time's up");
+          clearInterval(interval);
+          regenerateQrCode();
+          return COUNTDOWN_TIME;
+        } else return prev - 1;
+      });
+    }, 1000);
+    setIntervalId(interval);
+    return () => clearInterval(interval);
+  }, [generateQrCode, intervalId]);
 
   const searchUser = useCallback(
     async (e: React.SyntheticEvent) => {
@@ -165,7 +213,9 @@ const AddFriendDialog = ({
     <Dialog open={addFriendDialogOpen} onOpenChange={setAddFriendDialogOpen}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle className="text-xl">Add Friend</DialogTitle>
+          <DialogTitle className="text-xl">
+            {showQrCode ? "Your QR Code" : "Add Friend"}
+          </DialogTitle>
           <VisuallyHidden.Root asChild>
             <DialogDescription>
               Enter the email or JIC ID of the user you would like to add as a
@@ -173,70 +223,108 @@ const AddFriendDialog = ({
             </DialogDescription>
           </VisuallyHidden.Root>
         </DialogHeader>
-        <RadioGroup
-          value={radioValue}
-          onValueChange={setRadioValue}
-          className="flex gap-4"
-        >
-          <div className="flex items-center space-x-2">
-            <RadioGroupItem value="email" id="option-email" />
-            <Label htmlFor="option-email">Email</Label>
-          </div>
-          <div className="flex items-center space-x-2">
-            <RadioGroupItem value="jicId" id="option-jicId" />
-            <Label htmlFor="option-jicId">JIC ID</Label>
-          </div>
-        </RadioGroup>
-        <div className="relative w-full">
-          <form onSubmit={searchUser}>
-            <Input
-              type="text"
-              placeholder={
-                radioValue === "email"
-                  ? "JustInChat@example.com"
-                  : "Just In Chat ID"
-              }
-              className="h-10 pr-9 !text-base"
-              value={searchInput}
-              onChange={(e) => {
-                setSearchInput(e.target.value);
-                setError(null);
-              }}
-            />
-            <Button
-              variant="ghost"
-              type="submit"
-              size="icon"
-              className="text-muted-foreground hover:bg-transparent w-10 h-10 absolute right-0 top-5 transform -translate-y-1/2 rounded-full"
-            >
-              <UserSearch style={{ width: "22px", height: "22px" }} />
-            </Button>
-            {error && (
-              <p className="text-sm font-medium text-destructive mt-2 ml-2">
-                {error}
-              </p>
-            )}
-          </form>
-        </div>
-        {searchedUser ? (
-          <div className="flex items-center justify-between gap-2 rounded-lg bg-slate-100 dark:bg-slate-800">
-            <p className="ml-3 text-lg font-semibold">
-              {getNameInitials(searchedUser.username)}
-            </p>
-            <p className="text-lg">{searchedUser.username}</p>
-            <Button
-              variant="ghost"
-              size="icon"
-              className="w-10 h-10 text-muted-foreground"
-              onClick={sendFriendRequest}
-            >
-              <UserRoundPlus style={{ width: "22px", height: "22px" }} />
-            </Button>
+        {showQrCode ? (
+          <div className="flex items-start justify-between">
+            <div className="w-16">
+              <Button
+                variant="ghost"
+                size="icon"
+                type="button"
+                className="text-muted-foreground rounded-full hover:bg-transparent"
+                onClick={() => {
+                  setShowQrCode(false);
+                }}
+              >
+                <ArrowLeft style={{ width: "26px", height: "26px" }} />
+              </Button>
+            </div>
+            <QRCodeSVG size={128} value={qrCodeUrl} />
+            <div className="w-16 flex items-center justify-end gap-1">
+              <RotateCw size={16} onClick={regenerateQrCode} />
+              <div className="w-9">{`${Math.floor(timeLeft / 60)}: ${(
+                timeLeft % 60
+              )
+                .toString()
+                .padStart(2, "0")}`}</div>
+            </div>
           </div>
         ) : (
-          <div className="h-10 flex justify-center items-center text-slate-600 dark:text-slate-400">
-            {searching ? "Loading..." : "No User Found"}
-          </div>
+          <>
+            <RadioGroup
+              value={radioValue}
+              onValueChange={setRadioValue}
+              className="flex justify-between"
+            >
+              <div className="flex gap-4">
+                <div className="flex items-center space-x-2">
+                  <RadioGroupItem value="email" id="option-email" />
+                  <Label htmlFor="option-email">Email</Label>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <RadioGroupItem value="jicId" id="option-jicId" />
+                  <Label htmlFor="option-jicId">JIC ID</Label>
+                </div>
+              </div>
+              <QrCode
+                size={20}
+                className="cursor-pointer hover:scale-110"
+                onClick={() => {
+                  setShowQrCode(true);
+                }}
+              />
+            </RadioGroup>
+            <div className="relative w-full">
+              <form onSubmit={searchUser}>
+                <Input
+                  type="text"
+                  placeholder={
+                    radioValue === "email"
+                      ? "JustInChat@example.com"
+                      : "Just In Chat ID"
+                  }
+                  className="h-10 pr-9 !text-base"
+                  value={searchInput}
+                  onChange={(e) => {
+                    setSearchInput(e.target.value);
+                    setError(null);
+                  }}
+                />
+                <Button
+                  variant="ghost"
+                  type="submit"
+                  size="icon"
+                  className="text-muted-foreground hover:bg-transparent w-10 h-10 absolute right-0 top-5 transform -translate-y-1/2 rounded-full"
+                >
+                  <UserSearch style={{ width: "22px", height: "22px" }} />
+                </Button>
+                {error && (
+                  <p className="text-sm font-medium text-destructive mt-2 ml-2">
+                    {error}
+                  </p>
+                )}
+              </form>
+            </div>
+            {searchedUser ? (
+              <div className="flex items-center justify-between gap-2 rounded-lg bg-slate-100 dark:bg-slate-800">
+                <p className="ml-3 text-lg font-semibold">
+                  {getNameInitials(searchedUser.username)}
+                </p>
+                <p className="text-lg">{searchedUser.username}</p>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="w-10 h-10 text-muted-foreground"
+                  onClick={sendFriendRequest}
+                >
+                  <UserRoundPlus style={{ width: "22px", height: "22px" }} />
+                </Button>
+              </div>
+            ) : (
+              <div className="h-10 flex justify-center items-center text-slate-600 dark:text-slate-400">
+                {searching ? "Loading..." : "No User Found"}
+              </div>
+            )}
+          </>
         )}
       </DialogContent>
     </Dialog>

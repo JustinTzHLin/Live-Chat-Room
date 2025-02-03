@@ -475,7 +475,7 @@ const Page = () => {
           <div className="aspect-auto border-8 border-slate-200 rounded-lg relative">
             <video
               ref={localVideo}
-              className="w-full h-full rounded-md bg-slate-900"
+              className="w-full h-full rounded-md bg-black"
               autoPlay
               playsInline
             />
@@ -483,8 +483,9 @@ const Page = () => {
               <VideoOff className="w-1/4 h-auto absolute top-1/2 left-1/2 translate-x-[-50%] translate-y-[-50%] text-white opacity-50 rounded-full" />
             )}
             <div className="w-full flex items-center justify-end absolute top-full left-full translate-x-[-100%] translate-y-[-100%] text-lg text-white">
-              <div className="flex items-center bg-slate-900 bg-opacity-70 rounded-xl m-1 px-2 gap-1">
+              <div className="flex items-center bg-slate-800 bg-opacity-70 rounded-lg m-1 px-1.5 gap-1">
                 {userInformation.username}
+                <p className="text-sm font-semibold">(You)</p>
                 {!mediaSettings.micOn && (
                   <MicOff
                     strokeWidth={2.5}
@@ -498,7 +499,7 @@ const Page = () => {
           <div className="aspect-auto border-8 border-slate-200 rounded-lg relative">
             <video
               ref={remoteVideo}
-              className="w-full h-full rounded-md bg-slate-900"
+              className="w-full h-full rounded-md bg-black"
               autoPlay
               playsInline
             />
@@ -506,7 +507,7 @@ const Page = () => {
               <VideoOff className="w-1/4 h-auto absolute top-1/2 left-1/2 translate-x-[-50%] translate-y-[-50%] text-white opacity-50 rounded-full" />
             )}
             <div className="w-full flex items-center justify-end absolute top-full left-full translate-x-[-100%] translate-y-[-100%] text-lg text-white">
-              <div className="flex items-center justify-center bg-slate-900 bg-opacity-70 rounded-xl m-1 px-2 gap-1">
+              <div className="flex items-center justify-center bg-slate-800 bg-opacity-70 rounded-lg m-1 px-1.5">
                 {userInformation.userId === callersInfo?.caller.id
                   ? callersInfo?.callee.username
                   : userInformation.userId === callersInfo?.callee.id

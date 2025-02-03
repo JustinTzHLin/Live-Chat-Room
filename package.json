@@ -7,9 +7,7 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint",
-    "server": "nodemon server/index.js",
-    "prod": "cross-env NODE_ENV=production node server/index.js"
+    "lint": "next lint"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.9.1",
@@ -51,6 +49,7 @@
     "moment-timezone": "^0.5.46",
     "next": "^14.2.23",
     "next-themes": "^0.4.4",
+    "qrcode.react": "^4.2.0",
     "react": "^18",
     "react-day-picker": "^8.10.1",
     "react-dom": "^18",
