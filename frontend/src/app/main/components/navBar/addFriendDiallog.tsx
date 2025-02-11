@@ -75,7 +75,8 @@ const AddFriendDialog = ({
     setSearchedUser(null);
   }, [radioValue]);
 
-  const generateQrCode = useCallback(async () => {
+  const regenerateQrCode = useCallback(async () => {
+    if (intervalId) clearInterval(intervalId);
     const generateQrCodeResponse = await axios.post(
       `${BACKEND_URL}/token/issueOtherToken`,
       { userId: userInformation.userId },
@@ -84,21 +85,7 @@ const AddFriendDialog = ({
     if (generateQrCodeResponse.data.generatedToken) {
       setQrCodeUrl(`${generateQrCodeResponse.data.otherToken}`);
       setTimeLeft(COUNTDOWN_TIME);
-      return COUNTDOWN_TIME;
     }
-  }, [userInformation.userId]);
-
-  useEffect(() => {
-    if (showQrCode) regenerateQrCode();
-    else if (intervalId) {
-      clearInterval(intervalId);
-      setIntervalId(null);
-    }
-  }, [showQrCode, generateQrCode]);
-
-  const regenerateQrCode = useCallback(async () => {
-    if (intervalId) clearInterval(intervalId);
-    generateQrCode();
     const interval = setInterval(() => {
       setTimeLeft((prev) => {
         if (prev <= 1) {
@@ -111,7 +98,16 @@ const AddFriendDialog = ({
     }, 1000);
     setIntervalId(interval);
     return () => clearInterval(interval);
-  }, [generateQrCode, intervalId]);
+  }, [userInformation.userId, intervalId]);
+
+  useEffect(() => {
+    if (showQrCode) regenerateQrCode();
+    else if (intervalId) {
+      clearInterval(intervalId);
+      setIntervalId(null);
+      setQrCodeUrl("");
+    }
+  }, [showQrCode]);
 
   const searchUser = useCallback(
     async (e: React.SyntheticEvent) => {
@@ -224,13 +220,13 @@ const AddFriendDialog = ({
           </VisuallyHidden.Root>
         </DialogHeader>
         {showQrCode ? (
-          <div className="flex items-start justify-between">
+          <div className="flex h-[132px] items-start justify-between">
             <div className="w-16">
               <Button
                 variant="ghost"
                 size="icon"
                 type="button"
-                className="text-muted-foreground rounded-full hover:bg-transparent"
+                className="w-7 h-7 text-muted-foreground rounded-full hover:bg-transparent"
                 onClick={() => {
                   setShowQrCode(false);
                 }}
@@ -238,9 +234,26 @@ const AddFriendDialog = ({
                 <ArrowLeft style={{ width: "26px", height: "26px" }} />
               </Button>
             </div>
-            <QRCodeSVG size={128} value={qrCodeUrl} />
+            {qrCodeUrl && (
+              <QRCodeSVG
+                value={qrCodeUrl}
+                title="Just In Chat QR Code"
+                size={128}
+                imageSettings={{
+                  src: "/icon.png",
+                  height: 24,
+                  width: 24,
+                  opacity: 1,
+                  excavate: true,
+                }}
+              />
+            )}
             <div className="w-16 flex items-center justify-end gap-1">
-              <RotateCw size={16} onClick={regenerateQrCode} />
+              <RotateCw
+                size={16}
+                className="cursor-pointer"
+                onClick={regenerateQrCode}
+              />
               <div className="w-9">{`${Math.floor(timeLeft / 60)}: ${(
                 timeLeft % 60
               )
