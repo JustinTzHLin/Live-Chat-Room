@@ -1,0 +1,15 @@
+# macOS system files
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# macOS resource forks
+._*
+
+# macOS Trash and temporary files
+.Trashes
+.Spotlight-V100
+.fseventsd
+
+# macOS .Icon files (resource forks)
+Icon?
