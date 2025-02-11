@@ -1,8 +1,6 @@
 # Just In Chat
 
-***Your Secure and Private Live Chat Space***  
-
-This is the **frontend repository** of **Just In Chat**. To view the backend, please visit [here](https://github.com/JustinTzHLin/Live-Chat-Room-Backend).
+***Your Secure and Private Live Chat Space***
 
 ## 📖 Table of Contents
 
@@ -25,7 +23,7 @@ Start chatting instantly!
 
 ## 🛠 Technologies Used
 
-**Just In Chat** is built with following technologies:
+**Just In Chat** is built with the following technologies:
 
 ### Frontend:
 [![JavaScript](https://img.shields.io/badge/JavaScript-F7DF1E?style=for-the-badge&logo=javascript&logoColor=black)](https://www.javascript.com/)
