@@ -8,7 +8,7 @@ import { useTheme } from "next-themes";
 import getNameInitials from "@/utils/getNameInitials";
 import useUnexpectedErrorHandler from "@/utils/useUnexpectedErrorHandler";
 import { PencilLine, UserRound, X } from "lucide-react";
-import axios from "axios";
+import axiosInstance from "@/lib/axios";
 import { z } from "zod";
 
 const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL;
@@ -57,7 +57,7 @@ const EditProfile = () => {
     }
     try {
       usernameSchema.parse(newUsername);
-      const updateUsernameResponse = await axios.post(
+      const updateUsernameResponse = await axiosInstance.post(
         `${BACKEND_URL}/user/updateUsername`,
         { newUsername: newUsername },
         { withCredentials: true }
@@ -87,7 +87,7 @@ const EditProfile = () => {
     }
     try {
       jicIdSchema.parse(newJicId);
-      const updateJicIdResponse = await axios.post(
+      const updateJicIdResponse = await axiosInstance.post(
         `${BACKEND_URL}/user/updateJicId`,
         { newJicId: newJicId },
         { withCredentials: true }

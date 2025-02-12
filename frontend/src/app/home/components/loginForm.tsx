@@ -18,7 +18,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { useTheme } from "next-themes";
 import { z } from "zod";
-import axios from "axios";
+import axiosInstance from "@/lib/axios";
 
 const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL;
 const formSchema = z.object({
@@ -53,7 +53,7 @@ const LoginForm = () => {
       setIsLoading(true);
       const { email, password } = values;
       try {
-        const loginResult = await axios.post(
+        const loginResult = await axiosInstance.post(
           `${BACKEND_URL}/user/signIn`,
           { email, password },
           { withCredentials: true }

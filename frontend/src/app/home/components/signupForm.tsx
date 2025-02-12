@@ -16,7 +16,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { useTheme } from "next-themes";
 import { z } from "zod";
-import axios from "axios";
+import axiosInstance from "@/lib/axios";
 
 const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL;
 const formSchema = z.object({
@@ -40,7 +40,7 @@ const SignupForm = () => {
     async (values: z.infer<typeof formSchema>) => {
       setIsLoading(true);
       try {
-        const userExists = await axios.post(
+        const userExists = await axiosInstance.post(
           `${BACKEND_URL}/user/registerCheck`,
           values,
           { withCredentials: true }

@@ -81,17 +81,9 @@ tokenController.issueToken = async (req, res, next) => {
       JWT_SECRET,
       { expiresIn: generateOtp ? "10m" : "1h" }
     );
-    // Store the token in HTTP-only cookie
-    res.cookie(
-      generateOtp ? "just.in.chat.2fa" : "just.in.chat.user",
-      loggedInToken,
-      {
-        httpOnly: true,
-        secure: true,
-        sameSite: "none",
-        maxAge: generateOtp ? 10 * 60 * 1000 : 60 * 60 * 1000,
-      }
-    );
+    // Store the token in local storage
+    if (generateOtp) res.locals.result.otpToken = loggedInToken;
+    else res.locals.result.userToken = loggedInToken;
     res.locals.otpCode = otpCode;
     return next();
   } catch (err) {
@@ -106,7 +98,8 @@ tokenController.issueToken = async (req, res, next) => {
 /* verify token for logged in */
 tokenController.verifyLoggedInToken = async (req, res, next) => {
   // check if token exists
-  const loggedInToken = req.cookies["just.in.chat.user"];
+  const tokenObj = JSON.parse(req.headers.authorization.split(" ")[1]);
+  const loggedInToken = tokenObj["just.in.chat.user"];
   if (!loggedInToken) {
     res.locals.result = {
       tokenVerified: false,
@@ -151,7 +144,8 @@ tokenController.verifyLoggedInToken = async (req, res, next) => {
 tokenController.verifyOTPCode = async (req, res, next) => {
   const { otp } = req.body;
   // check if token exists
-  const otpToken = req.cookies["just.in.chat.2fa"];
+  const tokenObj = JSON.parse(req.headers.authorization.split(" ")[1]);
+  const otpToken = tokenObj["just.in.chat.2fa"];
   if (!otpToken) {
     res.locals.skipIssueToken = true;
     res.locals.result = {
@@ -167,8 +161,9 @@ tokenController.verifyOTPCode = async (req, res, next) => {
       res.locals.result = {
         otpVerified: true,
         authenticatedUser: decoded,
+        removeOtpToken: true,
       };
-      res.clearCookie("just.in.chat.2fa");
+      res.locals.result;
     } else {
       res.locals.skipIssueToken = true;
       res.locals.result = {
@@ -227,21 +222,6 @@ tokenController.issueOtherToken = async (req, res, next) => {
       log: `tokenController.issueOtherToken error: ${err}`,
       status: 500,
       message: { error: "Error occurred in tokenController.issueOtherToken." },
-    });
-  }
-};
-
-/* logout */
-tokenController.logout = async (req, res, next) => {
-  try {
-    res.clearCookie("just.in.chat.user");
-    res.locals.result = { success: true };
-    return next();
-  } catch (err) {
-    return next({
-      log: `userController.logout error: ${err}`,
-      status: 500,
-      message: { error: "Error occurred in userController.logout." },
     });
   }
 };

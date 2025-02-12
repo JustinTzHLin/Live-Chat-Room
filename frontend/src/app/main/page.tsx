@@ -15,7 +15,7 @@ import { useUserStore, Message, Friend } from "@/stores/userStore";
 import { useSocketStore } from "@/stores/socketStore";
 import { useTheme } from "next-themes";
 import useUnexpectedErrorHandler from "@/utils/useUnexpectedErrorHandler";
-import axios from "axios";
+import axiosInstance from "@/lib/axios";
 
 const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL;
 
@@ -46,7 +46,7 @@ const Page = () => {
       try {
         console.log(
           (
-            await axios(`${BACKEND_URL}`, {
+            await axiosInstance(`${BACKEND_URL}`, {
               withCredentials: true,
             })
           ).data
@@ -89,7 +89,7 @@ const Page = () => {
                     className="h-10 w-10"
                     variant="outline"
                     onClick={async () => {
-                      const issueCallersInfoResponse = await axios.post(
+                      const issueCallersInfoResponse = await axiosInstance.post(
                         `${BACKEND_URL}/token/issueOtherToken`,
                         {
                           callersInfo: e.callersInfo,
@@ -152,7 +152,7 @@ const Page = () => {
     };
     const fetchChatData = async (userId: string) => {
       try {
-        const chatData = await axios.post(
+        const chatData = await axiosInstance.post(
           `${BACKEND_URL}/user/getChatData`,
           { userId },
           { withCredentials: true }
@@ -166,7 +166,7 @@ const Page = () => {
     };
     const verifyLoggedInToken = async () => {
       try {
-        const tokenVerified = await axios(
+        const tokenVerified = await axiosInstance(
           `${BACKEND_URL}/token/verifyLoggedInToken`,
           { withCredentials: true }
         );
@@ -280,7 +280,7 @@ const Page = () => {
   }, [socket, userInformation.userId]);
 
   return (
-    <div className="flex flex-col h-screen items-center min-h-[500px] min-w-[320px]">
+    <div className="flex flex-col h-dvh items-center min-h-[500px] min-w-[320px]">
       <NavBar setCurrentSection={setCurrentSection} />
       {currentSection === "tabs" ? (
         <TabsSection

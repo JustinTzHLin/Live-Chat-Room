@@ -23,7 +23,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { useTheme } from "next-themes";
 import { z } from "zod";
-import axios from "axios";
+import axiosInstance from "@/lib/axios";
 
 const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL;
 const formSchema = z.object({
@@ -51,7 +51,7 @@ const OTPForm = () => {
     async (values: z.infer<typeof formSchema>) => {
       setIsLoading(true);
       try {
-        const otpVerified = await axios.post(
+        const otpVerified = await axiosInstance.post(
           `${BACKEND_URL}/user/verifyOTPCode`,
           values,
           { withCredentials: true }

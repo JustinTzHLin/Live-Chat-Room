@@ -14,7 +14,7 @@ import { LoaderCircle } from "lucide-react";
 import { useUserStore } from "@/stores/userStore";
 import { useTheme } from "next-themes";
 import useUnexpectedErrorHandler from "@/utils/useUnexpectedErrorHandler";
-import axios from "axios";
+import axiosInstance from "@/lib/axios";
 
 const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL;
 
@@ -31,7 +31,7 @@ const TwoStepVerification = () => {
   const handleChange2FA = useCallback(async () => {
     setIsLoading(true);
     try {
-      const change2FAResponse = await axios.post(
+      const change2FAResponse = await axiosInstance.post(
         `${BACKEND_URL}/user/change2FA`,
         { twoFactor: current2FA },
         { withCredentials: true }

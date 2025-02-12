@@ -45,7 +45,7 @@ const ChatRoom = () => {
   };
 
   return (
-    <div className="w-full h-screen flex flex-col gap-2 p-4">
+    <div className="w-full h-dvh flex flex-col gap-2 p-4">
       <h1 className="text-2xl text-center font-bold">Global Chat Room</h1>
       <div className="flex flex-col flex-1 gap-2 border rounded-md p-2">
         {messages.map((msg, index) => (

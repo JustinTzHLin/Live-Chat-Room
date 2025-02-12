@@ -13,9 +13,6 @@ import { Button } from "@/components/ui/button";
 import { useSocketStore } from "@/stores/socketStore";
 import useUnexpectedErrorHandler from "@/utils/useUnexpectedErrorHandler";
 import { useTheme } from "next-themes";
-import axios from "axios";
-
-const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL;
 
 const LogoutDialog = ({
   logoutDialogOpen,
@@ -32,18 +29,15 @@ const LogoutDialog = ({
 
   const handleLogout = useCallback(async () => {
     try {
-      const logoutResponse = await axios(`${BACKEND_URL}/token/logout`, {
-        withCredentials: true,
+      router.push("/");
+      localStorage.removeItem("just.in.chat.user");
+      sessionStorage.removeItem("just.in.chat.user");
+      disconnect();
+      toast({
+        title: "Logout successful",
+        description: "You have been logged out.",
+        duration: 3000,
       });
-      if (logoutResponse.data.success) {
-        router.push("/");
-        disconnect();
-        toast({
-          title: "Logout successful",
-          description: "You have been logged out.",
-          duration: 3000,
-        });
-      }
     } catch (err) {
       handleUnexpectedError(err);
     }

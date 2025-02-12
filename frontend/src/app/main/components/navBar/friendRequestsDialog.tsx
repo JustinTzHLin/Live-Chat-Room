@@ -12,7 +12,7 @@ import { useUserStore } from "@/stores/userStore";
 import { useSocketStore } from "@/stores/socketStore";
 import getNameInitials from "@/utils/getNameInitials";
 import useUnexpectedErrorHandler from "@/utils/useUnexpectedErrorHandler";
-import axios from "axios";
+import axiosInstance from "@/lib/axios";
 
 const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL;
 
@@ -40,7 +40,7 @@ const FriendRequestsDialog = ({
     const fetchFriendRequests = async () => {
       setFetchingFriendRequests(true);
       try {
-        const fetchFriendRequestsResponse = await axios(
+        const fetchFriendRequestsResponse = await axiosInstance(
           `${BACKEND_URL}/user/fetchFriendRequests`,
           { withCredentials: true }
         );
@@ -109,7 +109,7 @@ const FriendRequestsDialog = ({
   const handleRequestAction = useCallback(
     async (action: string, requestId: string) => {
       try {
-        const requestActionResponse = await axios.post(
+        const requestActionResponse = await axiosInstance.post(
           `${BACKEND_URL}/user/friendRequestAction`,
           { action, requestId },
           { withCredentials: true }

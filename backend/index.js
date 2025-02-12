@@ -6,7 +6,6 @@ dotenv.config({ path: "./.env.local" });
 import express from "express";
 import mongoose from "mongoose";
 import cors from "cors";
-import cookieParser from "cookie-parser";
 import { createServer } from "node:http";
 import { Server } from "socket.io";
 
@@ -28,7 +27,6 @@ const corsOptions = {
 expressServer.use(cors(corsOptions));
 
 // Other Middleware
-expressServer.use(cookieParser());
 expressServer.use(express.json());
 expressServer.use(express.urlencoded({ extended: true }));
 

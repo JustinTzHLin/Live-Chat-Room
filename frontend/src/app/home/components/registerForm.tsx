@@ -14,7 +14,6 @@ import {
   LoaderCircle,
 } from "lucide-react";
 import { useAuthStore } from "@/stores/authStore";
-import axios from "axios";
 import {
   Form,
   FormControl,
@@ -27,6 +26,7 @@ import useUnexpectedErrorHandler from "@/utils/useUnexpectedErrorHandler";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { useTheme } from "next-themes";
+import axiosInstance from "@/lib/axios";
 import { z } from "zod";
 
 const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL;
@@ -63,7 +63,7 @@ const RegisterForm = ({ registerEmail }: { registerEmail: string }) => {
       setIsLoading(true);
       const { username, password } = values;
       try {
-        const registerResult = await axios.post(
+        const registerResult = await axiosInstance.post(
           `${BACKEND_URL}/user/signUp`,
           { username, password, email: registerEmail },
           { withCredentials: true }

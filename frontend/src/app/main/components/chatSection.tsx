@@ -8,7 +8,7 @@ import { useUserStore } from "@/stores/userStore";
 import { useSocketStore } from "@/stores/socketStore";
 import timestampToFormattedTime from "@/utils/timestampToFormattedTime";
 import useUnexpectedErrorHandler from "@/utils/useUnexpectedErrorHandler";
-import axios from "axios";
+import axiosInstance from "@/lib/axios";
 
 const ChatSection = ({
   setCurrentSection,
@@ -60,7 +60,7 @@ const ChatSection = ({
             },
           },
         }));
-        const sendMessageResponse = await axios.post(
+        const sendMessageResponse = await axiosInstance.post(
           `${BACKEND_URL}/chat/sendMessage`,
           {
             senderId: userInformation.userId,
@@ -96,7 +96,7 @@ const ChatSection = ({
       },
       callee,
     };
-    const issueCallersInfoResponse = await axios.post(
+    const issueCallersInfoResponse = await axiosInstance.post(
       `${BACKEND_URL}/token/issueOtherToken`,
       callersInfo,
       { withCredentials: true }

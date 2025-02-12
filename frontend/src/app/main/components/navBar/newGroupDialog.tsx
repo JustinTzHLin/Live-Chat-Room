@@ -25,7 +25,7 @@ import useUnexpectedErrorHandler from "@/utils/useUnexpectedErrorHandler";
 import { useToast } from "@/hooks/use-toast";
 import { useTheme } from "next-themes";
 import { z } from "zod";
-import axios from "axios";
+import axiosInstance from "@/lib/axios";
 
 const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL;
 const groupNameSchema = z
@@ -78,7 +78,7 @@ const NewGroupDialog = ({
         roomName: groupName,
         participantIDs: [userId, ...Object.keys(groupMembers)],
       };
-      const createGroupResponse = await axios.post(
+      const createGroupResponse = await axiosInstance.post(
         `${BACKEND_URL}/user/createGroup`,
         { newGroup },
         { withCredentials: true }

@@ -24,7 +24,7 @@ import { useSocketStore } from "@/stores/socketStore";
 import getNameInitials from "@/utils/getNameInitials";
 import useUnexpectedErrorHandler from "@/utils/useUnexpectedErrorHandler";
 import { QRCodeSVG } from "qrcode.react";
-import axios from "axios";
+import axiosInstance from "@/lib/axios";
 import { z } from "zod";
 
 const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL;
@@ -77,7 +77,7 @@ const AddFriendDialog = ({
 
   const regenerateQrCode = useCallback(async () => {
     if (intervalId) clearInterval(intervalId);
-    const generateQrCodeResponse = await axios.post(
+    const generateQrCodeResponse = await axiosInstance.post(
       `${BACKEND_URL}/token/issueOtherToken`,
       { userId: userInformation.userId },
       { withCredentials: true }
@@ -124,7 +124,7 @@ const AddFriendDialog = ({
               : null;
           if (schema) schema.parse(searchInput);
           else throw new Error("Invalid radio input");
-          const searchUserResponse = await axios.post(
+          const searchUserResponse = await axiosInstance.post(
             `${BACKEND_URL}/user/searchUser`,
             { [radioValue]: searchInput },
             { withCredentials: true }
@@ -160,7 +160,7 @@ const AddFriendDialog = ({
       return;
     } else {
       try {
-        const sendFriendRequest = await axios.post(
+        const sendFriendRequest = await axiosInstance.post(
           `${BACKEND_URL}/user/sendFriendRequest`,
           { senderId: userInformation.userId, receiverId: searchedUser?.id },
           { withCredentials: true }

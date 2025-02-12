@@ -14,10 +14,7 @@ router.get(
   (req, res) => res.status(200).json(res.locals.result)
 );
 
-router.get("/logout", tokenController.logout, (req, res) =>
-  res.status(200).json(res.locals.result)
-);
-
+// Issue Other Token
 router.post(
   "/issueOtherToken",
   tokenController.verifyLoggedInToken,

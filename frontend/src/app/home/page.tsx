@@ -9,7 +9,7 @@ import OtpForm from "./components/otpForm";
 import { useAuthStore } from "@/stores/authStore";
 import useUnexpectedErrorHandler from "@/utils/useUnexpectedErrorHandler";
 import { useSearchParams } from "next/navigation";
-import axios from "axios";
+import axiosInstance from "@/lib/axios";
 
 const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL;
 
@@ -25,7 +25,7 @@ const Home = () => {
       try {
         console.log(
           (
-            await axios(`${BACKEND_URL}`, {
+            await axiosInstance(`${BACKEND_URL}`, {
               withCredentials: true,
             })
           ).data
@@ -42,7 +42,7 @@ const Home = () => {
       const registerToken = searchParams.get("registerToken");
       if (registerToken) {
         try {
-          const tokenVerified = await axios.post(
+          const tokenVerified = await axiosInstance.post(
             `${BACKEND_URL}/token/verifyParamToken`,
             { token: registerToken },
             { withCredentials: true }
@@ -80,7 +80,7 @@ const Home = () => {
   }, []);
 
   return (
-    <div className="flex flex-col h-screen items-center justify-center gap-4 min-h-[500px] min-w-[320px]">
+    <div className="flex flex-col h-dvh items-center justify-center gap-4 min-h-[500px] min-w-[320px]">
       <h1 className="text-3xl font-bold">Just In Chat</h1>
       <p className="text-sm text-muted-foreground">
         Your <span className="font-semibold">Secure</span> and{" "}
@@ -117,7 +117,7 @@ const App = () => {
   return (
     <Suspense
       fallback={
-        <div className="flex flex-col h-screen items-center justify-center gap-4 min-h-[500px] min-w-[320px]">
+        <div className="flex flex-col h-dvh items-center justify-center gap-4 min-h-[500px] min-w-[320px]">
           <h1 className="text-3xl font-bold">Just In Chat</h1>
           <p className="text-sm text-muted-foreground">
             Your <span className="font-semibold">Secure</span> and{" "}

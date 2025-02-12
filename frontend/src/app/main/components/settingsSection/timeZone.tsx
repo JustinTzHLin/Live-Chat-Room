@@ -9,7 +9,7 @@ import { useUserStore } from "@/stores/userStore";
 import useUnexpectedErrorHandler from "@/utils/useUnexpectedErrorHandler";
 import { useTheme } from "next-themes";
 import { useToast } from "@/hooks/use-toast";
-import axios from "axios";
+import axiosInstance from "@/lib/axios";
 
 const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL;
 const timeZones = [
@@ -48,7 +48,7 @@ export default function TimeZoneEditor() {
   const handleChangeTimeZone = async () => {
     setIsLoading(true);
     try {
-      const changeTimeZoneResponse = await axios.post(
+      const changeTimeZoneResponse = await axiosInstance.post(
         `${BACKEND_URL}/user/changeTimeZone`,
         { timeZone: selectedTimeZone },
         { withCredentials: true }

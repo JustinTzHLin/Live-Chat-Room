@@ -7,7 +7,7 @@ import { useUserStore } from "@/stores/userStore";
 import { useTheme } from "next-themes";
 import { useToast } from "@/hooks/use-toast";
 import useUnexpectedErrorHandler from "@/utils/useUnexpectedErrorHandler";
-import axios from "axios";
+import axiosInstance from "@/lib/axios";
 
 const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL;
 
@@ -25,7 +25,7 @@ const Theme = () => {
   const handleChangeTheme = useCallback(async () => {
     setIsLoading(true);
     try {
-      const changeThemeResponse = await axios.post(
+      const changeThemeResponse = await axiosInstance.post(
         `${BACKEND_URL}/user/changeTheme`,
         {
           theme: currentTheme,

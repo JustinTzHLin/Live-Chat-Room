@@ -17,7 +17,7 @@ import useUnexpectedErrorHandler from "@/utils/useUnexpectedErrorHandler";
 import { useToast } from "@/hooks/use-toast";
 import { useSearchParams } from "next/navigation";
 import { useRouter } from "next/navigation";
-import axios from "axios";
+import axiosInstance from "@/lib/axios";
 
 const configuration = {
   iceServers: [
@@ -83,7 +83,7 @@ const Page = () => {
           window.close();
           return router.push("/home");
         }
-        const verifyCallersInfoTokenResponse = await axios.post(
+        const verifyCallersInfoTokenResponse = await axiosInstance.post(
           `${BACKEND_URL}/token/verifyParamToken`,
           {
             token: callersInfoToken,
@@ -197,7 +197,7 @@ const Page = () => {
     const verifyLoggedInToken = async () => {
       if (socketSetted && infoTokenVerified && callersInfo && callingId) {
         try {
-          const tokenVerified = await axios(
+          const tokenVerified = await axiosInstance(
             `${BACKEND_URL}/token/verifyLoggedInToken`,
             { withCredentials: true }
           );
