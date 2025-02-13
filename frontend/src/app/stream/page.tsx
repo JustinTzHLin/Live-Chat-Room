@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useEffect, useState, Suspense } from "react";
+import { useRef, useEffect, useState, Suspense, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import {
   Video,
@@ -30,8 +30,7 @@ const configuration = {
 
 const Page = () => {
   const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL;
-  const [infoTokenVerified, setInfoTokenVerified] = useState(false);
-  const [socketSetted, setSocketSetted] = useState(false);
+  const [currentStep, setCurrentStep] = useState(0);
   const [callSetted, setCallSetted] = useState(false);
   const [callingId, setCallingId] = useState("");
   const [callSettings, setCallSettings] = useState({
@@ -69,213 +68,234 @@ const Page = () => {
   const searchParams = useSearchParams();
   const router = useRouter();
 
-  useEffect(() => {
-    const getCallersInfoToken = async () => {
-      try {
-        const callersInfoToken = searchParams.get("callersInfoToken");
-        if (!callersInfoToken) {
+  const verifyCallersInfoToken = useCallback(async () => {
+    try {
+      const callersInfoToken = searchParams.get("callersInfoToken");
+      if (!callersInfoToken) {
+        toast({
+          variant: "destructive",
+          title: "Info not found",
+          description: "Please try again.",
+          duration: 3000,
+        });
+        window.close();
+        return router.push("/home");
+      }
+      const verifyCallersInfoTokenResponse = await axiosInstance.post(
+        `${BACKEND_URL}/token/verifyParamToken`,
+        {
+          token: callersInfoToken,
+        },
+        { withCredentials: true }
+      );
+      if (!verifyCallersInfoTokenResponse.data.tokenVerified) {
+        toast({
+          variant: "destructive",
+          title: "Token malformed",
+          description: "The token is malformed. Please try again.",
+          duration: 3000,
+        });
+        window.close();
+        return router.push("/home");
+      }
+      setCallersInfoAndCallingId(verifyCallersInfoTokenResponse.data.decoded);
+    } catch (err) {
+      handleUnexpectedError(err);
+    }
+  }, []);
+
+  const setCallersInfoAndCallingId = useCallback(async (decodedData: any) => {
+    if ("callingId" in decodedData) {
+      const { callersInfo: callersInfoDecoded, callingId: callingIdDecoded } =
+        decodedData;
+      setCallingId(callingIdDecoded);
+      setCallersInfo(callersInfoDecoded);
+    } else {
+      const newCallingId = `${Date.now().toString(36)}-${Math.random()
+        .toString(36)
+        .substring(2, 10)}`;
+      setCallingId(newCallingId);
+      setCallersInfo(decodedData);
+    }
+    setCurrentStep(1);
+  }, []);
+
+  const connectSocket = useCallback(() => {
+    if (socket) return;
+    const onMaxRetries = () => {
+      toast({
+        variant: "destructive",
+        title: "Connection failed",
+        description: "Please refresh the page and try again later.",
+        duration: 3000,
+      });
+      router.push("/home");
+    };
+    connect(onMaxRetries);
+    setCurrentStep(2);
+  }, [socket]);
+
+  const setSocketListeners = useCallback(() => {
+    if (!socket) return;
+    const handleWebRTCMessage = (
+      e: (RTCSessionDescriptionInit | RTCIceCandidateInit) & {
+        callingId: string;
+        type: string;
+        callersInfo: CallersInfo;
+      }
+    ) => {
+      if (!localStreamRef.current) return console.log("not ready yet");
+      console.log("webrtc_call", e);
+      switch (e.type) {
+        case "offer":
+          return handleOffer(e as RTCSessionDescriptionInit);
+        case "answer":
+          return handleAnswer(e as RTCSessionDescriptionInit);
+        case "candidate":
+          return handleCandidate(e);
+        case "ready":
+          if (peerConnectionRef.current)
+            return console.log("already in call, ignoring");
+          else return makeCall();
+        case "bye":
+          if (peerConnectionRef.current) return hangup();
+          else return console.log("not in call, ignoring");
+        default:
+          console.log("unhandled", e);
+      }
+    };
+    const handleCallSettingChange = (data: {
+      callingId: string;
+      type: string;
+      value: {
+        videoOn: boolean;
+        micOn: boolean;
+      };
+    }) => {
+      setMediaSettings((prev) => ({
+        ...prev,
+        p2VideoOn: data.value.videoOn,
+        p2MicOn: data.value.micOn,
+      }));
+    };
+    socket.on("webrtc_call", handleWebRTCMessage);
+    socket.on("change_call_setting", handleCallSettingChange);
+    setCurrentStep(3);
+    return () => {
+      socket.off("webrtc_call", handleWebRTCMessage);
+      socket.off("change_call_setting", handleCallSettingChange);
+    };
+  }, [socket]);
+
+  const verifyLoggedInToken = useCallback(async () => {
+    if (!callingId) return;
+    try {
+      const tokenVerified = await axiosInstance(
+        `${BACKEND_URL}/token/verifyLoggedInToken`,
+        { withCredentials: true }
+      );
+      if (tokenVerified.data.tokenVerified) {
+        socket.emit("join_room", callingId);
+        setUserInformation(tokenVerified.data.user);
+        socket.emit("join_room", tokenVerified.data.user.userId);
+        setCurrentStep(4);
+      } else {
+        router.push("/home");
+        if (tokenVerified.data.errorMessage === "no token found")
           toast({
-            variant: "destructive",
-            title: "Info not found",
-            description: "Please try again.",
+            title: "No token found",
+            description: "Please login instead.",
             duration: 3000,
           });
-          window.close();
-          return router.push("/home");
-        }
-        const verifyCallersInfoTokenResponse = await axiosInstance.post(
-          `${BACKEND_URL}/token/verifyParamToken`,
-          {
-            token: callersInfoToken,
-          },
-          { withCredentials: true }
-        );
-        if (!verifyCallersInfoTokenResponse.data.tokenVerified) {
+        else if (tokenVerified.data.errorMessage === "jwt malformed")
           toast({
             variant: "destructive",
             title: "Token malformed",
-            description: "The token is malformed. Please try again.",
+            description: "The token is malformed. Please login instead.",
             duration: 3000,
           });
-          window.close();
-          return router.push("/home");
-        }
-        if ("callingId" in verifyCallersInfoTokenResponse.data.decoded) {
-          const {
-            callersInfo: callersInfoDecoded,
-            callingId: callingIdDecoded,
-          } = verifyCallersInfoTokenResponse.data.decoded;
-          setCallingId(callingIdDecoded);
-          setCallersInfo(callersInfoDecoded);
-        } else {
-          const newCallingId = `${Date.now().toString(36)}-${Math.random()
-            .toString(36)
-            .substring(2, 10)}`;
-          setCallingId(newCallingId);
-          setCallersInfo(verifyCallersInfoTokenResponse.data.decoded);
-        }
-        setInfoTokenVerified(true);
-      } catch (err) {
-        handleUnexpectedError(err);
+        else if (tokenVerified.data.errorMessage === "jwt expired")
+          toast({
+            variant: "destructive",
+            title: "Token expired",
+            description: "The token has expired. Please login instead.",
+            duration: 3000,
+          });
+        else throw new Error("Token not verified");
       }
-    };
-    getCallersInfoToken();
-    return () => {
-      useSocketStore.getState().disconnect();
-    };
-  }, []);
-
-  useEffect(() => {
-    if (infoTokenVerified && !socket) {
-      const onMaxRetries = () => {
-        toast({
-          variant: "destructive",
-          title: "Connection failed",
-          description: "Please refresh the page and try again later.",
-          duration: 3000,
-        });
-        router.push("/home");
-      };
-      connect(onMaxRetries);
-    }
-  }, [infoTokenVerified, socket]);
-
-  useEffect(() => {
-    if (socket && callingId) {
-      const handleWebRTCMessage = (
-        e: (RTCSessionDescriptionInit | RTCIceCandidateInit) & {
-          callingId: string;
-          type: string;
-          callersInfo: CallersInfo;
-        }
-      ) => {
-        if (!localStreamRef.current) return console.log("not ready yet");
-        console.log("webrtc_call", e);
-        switch (e.type) {
-          case "offer":
-            return handleOffer(e as RTCSessionDescriptionInit);
-          case "answer":
-            return handleAnswer(e as RTCSessionDescriptionInit);
-          case "candidate":
-            return handleCandidate(e);
-          case "ready":
-            if (peerConnectionRef.current)
-              return console.log("already in call, ignoring");
-            else return makeCall();
-          case "bye":
-            if (peerConnectionRef.current) return hangup();
-            else return console.log("not in call, ignoring");
-          default:
-            console.log("unhandled", e);
-        }
-      };
-      const handleCallSettingChange = (data: {
-        callingId: string;
-        type: string;
-        value: {
-          videoOn: boolean;
-          micOn: boolean;
-        };
-      }) => {
-        setMediaSettings((prev) => ({
-          ...prev,
-          p2VideoOn: data.value.videoOn,
-          p2MicOn: data.value.micOn,
-        }));
-      };
-      socket.on("webrtc_call", handleWebRTCMessage);
-      socket.on("change_call_setting", handleCallSettingChange);
-      setSocketSetted(true);
-      return () => {
-        socket.off("webrtc_call", handleWebRTCMessage);
-        socket.off("change_call_setting", handleCallSettingChange);
-      };
+    } catch (err) {
+      router.push("/home");
+      handleUnexpectedError(err, "Please login instead.");
     }
   }, [socket, callingId]);
 
-  useEffect(() => {
-    const verifyLoggedInToken = async () => {
-      if (socketSetted && infoTokenVerified && callersInfo && callingId) {
-        try {
-          const tokenVerified = await axiosInstance(
-            `${BACKEND_URL}/token/verifyLoggedInToken`,
-            { withCredentials: true }
-          );
-          if (tokenVerified.data.tokenVerified) {
-            socket.emit("join_room", callingId);
-            setUserInformation(tokenVerified.data.user);
-            socket.emit("join_room", tokenVerified.data.user.userId);
-          } else {
-            router.push("/home");
-            if (tokenVerified.data.errorMessage === "no token found")
-              toast({
-                title: "No token found",
-                description: "Please login instead.",
-                duration: 3000,
-              });
-            else if (tokenVerified.data.errorMessage === "jwt malformed")
-              toast({
-                variant: "destructive",
-                title: "Token malformed",
-                description: "The token is malformed. Please login instead.",
-                duration: 3000,
-              });
-            else if (tokenVerified.data.errorMessage === "jwt expired")
-              toast({
-                variant: "destructive",
-                title: "Token expired",
-                description: "The token has expired. Please login instead.",
-                duration: 3000,
-              });
-            else throw new Error("Token not verified");
-          }
-        } catch (err) {
-          router.push("/home");
-          handleUnexpectedError(err, "Please login instead.");
-        }
-      }
-    };
-    verifyLoggedInToken();
-  }, [socketSetted, infoTokenVerified, callersInfo, callingId]);
-
-  useEffect(() => {
-    const callInitialization = async () => {
-      if (userInformation.userId) {
-        try {
-          localStreamRef.current = await navigator.mediaDevices.getUserMedia({
-            video: true,
-            audio: { echoCancellation: true },
+  const callInitialization = useCallback(async () => {
+    if (!userInformation.userId || !callersInfo) return;
+    try {
+      localStreamRef.current = await navigator.mediaDevices.getUserMedia({
+        video: true,
+        audio: { echoCancellation: true },
+      });
+      if (localVideo.current) {
+        localVideo.current.srcObject = localStreamRef.current;
+        localVideo.current.muted = true;
+        localStreamRef.current?.getVideoTracks().forEach((track) => {
+          track.enabled = false;
+        });
+        setCallSetted(true);
+        if (callersInfo?.callee.id === userInformation.userId) {
+          socket.emit("webrtc_call", {
+            callingId: callingId,
+            type: "ready",
+            callersInfo,
           });
-          if (localVideo.current) {
-            localVideo.current.srcObject = localStreamRef.current;
-            localVideo.current.muted = true;
-            localStreamRef.current?.getVideoTracks().forEach((track) => {
-              track.enabled = false;
-            });
-            setCallSetted(true);
-            if (callersInfo?.callee.id === userInformation.userId) {
-              socket.emit("webrtc_call", {
-                callingId: callingId,
-                type: "ready",
-                callersInfo,
-              });
-            } else {
-              socket.emit("webrtc_call", {
-                newCallingId: callingId,
-                callingId: callersInfo?.callee.id,
-                type: "call_request",
-                callersInfo,
-              });
-            }
-          } else throw new Error("No local video");
-        } catch (err) {
-          console.error(err);
+        } else {
+          socket.emit("webrtc_call", {
+            newCallingId: callingId,
+            callingId: callersInfo?.callee.id,
+            type: "call_request",
+            callersInfo,
+          });
         }
-      }
-    };
-    callInitialization();
-  }, [userInformation.userId]);
+      } else throw new Error("No local video");
+    } catch (err) {
+      console.error(err);
+    }
+  }, [userInformation.userId, callersInfo]);
 
+  // Step 1: Verify callersInfoToken
+  useEffect(() => {
+    verifyCallersInfoToken();
+    return () => {
+      useSocketStore.getState().disconnect();
+    };
+  }, [verifyCallersInfoToken]);
+
+  // Step 2: Connect socket
+  useEffect(() => {
+    if (currentStep !== 1) return;
+    connectSocket();
+  }, [currentStep, socket]);
+
+  // Step 3: Set socket listeners
+  useEffect(() => {
+    if (currentStep !== 2) return;
+    setSocketListeners();
+  }, [currentStep, socket]);
+
+  // Step 4: Verify logged in token
+  useEffect(() => {
+    if (currentStep !== 3) return;
+    verifyLoggedInToken();
+  }, [currentStep, callingId]);
+
+  // Step 5: Call initialization
+  useEffect(() => {
+    if (currentStep !== 4) return;
+    callInitialization();
+  }, [currentStep, userInformation.userId, callersInfo]);
+
+  // Set button disabled status
   useEffect(() => {
     setCallSettings({
       videoShareBtnDisabled: !callSetted,
@@ -469,7 +489,7 @@ const Page = () => {
   };
 
   return (
-    infoTokenVerified && (
+    currentStep > 0 && (
       <main className="min-w-[320px] flex flex-col items-center p-4 gap-4">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
           <div className="aspect-auto border-8 border-slate-200 rounded-lg relative">

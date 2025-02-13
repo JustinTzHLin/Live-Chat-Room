@@ -7,12 +7,12 @@ const ChatRoom = () => {
   const socket = useSocketStore((state) => state.socket);
   const [message, setMessage] = useState<string>("");
   const [messages, setMessages] = useState<
-    Array<{ text: string; createdAt: Date }>
+    Array<{ text: string; createdAt: Date; conversationId?: string }>
   >([]);
 
   useEffect(() => {
     if (socket) {
-      socket.emit("join_conversation", "global");
+      socket.emit("join_room", "global");
       socket.on(
         "receive_message",
         (message: {
