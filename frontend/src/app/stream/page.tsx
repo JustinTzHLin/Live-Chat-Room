@@ -1,6 +1,13 @@
 "use client";
 
-import { useRef, useEffect, useState, Suspense, useCallback } from "react";
+import {
+  useRef,
+  useEffect,
+  useState,
+  Suspense,
+  useCallback,
+  useMemo,
+} from "react";
 import { Button } from "@/components/ui/button";
 import {
   Video,
@@ -62,12 +69,13 @@ const Page = () => {
   const { userInformation, setUserInformation } = useUserStore(
     (state) => state
   );
-  const { socket, connect } = useSocketStore((state) => state);
+  const { socket, connect, disconnect } = useSocketStore((state) => state);
   const { handleUnexpectedError } = useUnexpectedErrorHandler();
   const { toast } = useToast();
   const searchParams = useSearchParams();
   const router = useRouter();
 
+  // Step 1-1: Verify callers info token
   const verifyCallersInfoToken = useCallback(async () => {
     try {
       const callersInfoToken = searchParams.get("callersInfoToken");
@@ -98,12 +106,13 @@ const Page = () => {
         window.close();
         return router.push("/home");
       }
-      setCallersInfoAndCallingId(verifyCallersInfoTokenResponse.data.decoded);
+      return verifyCallersInfoTokenResponse.data.decoded;
     } catch (err) {
       handleUnexpectedError(err);
     }
   }, []);
 
+  // Step 1-2: Set callers info and calling id
   const setCallersInfoAndCallingId = useCallback(async (decodedData: any) => {
     if ("callingId" in decodedData) {
       const { callersInfo: callersInfoDecoded, callingId: callingIdDecoded } =
@@ -120,6 +129,7 @@ const Page = () => {
     setCurrentStep(1);
   }, []);
 
+  // Step 2: Connect socket
   const connectSocket = useCallback(() => {
     if (socket) return;
     const onMaxRetries = () => {
@@ -135,6 +145,7 @@ const Page = () => {
     setCurrentStep(2);
   }, [socket]);
 
+  // Step 3: Set socket listeners
   const setSocketListeners = useCallback(() => {
     if (!socket) return;
     const handleWebRTCMessage = (
@@ -187,6 +198,7 @@ const Page = () => {
     };
   }, [socket]);
 
+  // Step 4: Verify logged in token
   const verifyLoggedInToken = useCallback(async () => {
     if (!callingId) return;
     try {
@@ -229,6 +241,7 @@ const Page = () => {
     }
   }, [socket, callingId]);
 
+  // Step 5: Call initialization
   const callInitialization = useCallback(async () => {
     if (!userInformation.userId || !callersInfo) return;
     try {
@@ -263,37 +276,43 @@ const Page = () => {
     }
   }, [userInformation.userId, callersInfo]);
 
-  // Step 1: Verify callersInfoToken
-  useEffect(() => {
-    verifyCallersInfoToken();
-    return () => {
-      useSocketStore.getState().disconnect();
-    };
-  }, [verifyCallersInfoToken]);
+  // Steps array for call setup
+  const setUpfuncs = useMemo(
+    () => [
+      async () => {
+        const decodedData = await verifyCallersInfoToken();
+        if (decodedData) setCallersInfoAndCallingId(decodedData);
+      },
+      () => {
+        connectSocket();
+        return () => disconnect();
+      },
+      setSocketListeners,
+      verifyLoggedInToken,
+      callInitialization,
+    ],
+    [
+      verifyCallersInfoToken,
+      connectSocket,
+      setSocketListeners,
+      verifyLoggedInToken,
+      callInitialization,
+    ]
+  );
 
-  // Step 2: Connect socket
-  useEffect(() => {
-    if (currentStep !== 1) return;
-    connectSocket();
-  }, [currentStep, socket]);
+  // Execute steps for call setup
+  const executeSteps = useCallback(async () => {
+    const stepFunction = setUpfuncs[currentStep];
+    if (stepFunction) {
+      const result = await stepFunction();
+      if (typeof result === "function") return result;
+    } else console.log(`Invalid step: ${currentStep}`);
+  }, [currentStep, setUpfuncs]);
 
-  // Step 3: Set socket listeners
+  // Execute steps to set up call based on current step
   useEffect(() => {
-    if (currentStep !== 2) return;
-    setSocketListeners();
-  }, [currentStep, socket]);
-
-  // Step 4: Verify logged in token
-  useEffect(() => {
-    if (currentStep !== 3) return;
-    verifyLoggedInToken();
-  }, [currentStep, callingId]);
-
-  // Step 5: Call initialization
-  useEffect(() => {
-    if (currentStep !== 4) return;
-    callInitialization();
-  }, [currentStep, userInformation.userId, callersInfo]);
+    executeSteps();
+  }, [currentStep, socket, callingId, userInformation.userId, callersInfo]);
 
   // Set button disabled status
   useEffect(() => {
@@ -305,6 +324,48 @@ const Page = () => {
     });
   }, [callSetted]);
 
+  // Caller offer call to callee
+  const makeCall = async () => {
+    try {
+      socket.emit("change_call_setting", {
+        callingId,
+        value: myCurrentMedia.current,
+      });
+      peerConnectionRef.current = new RTCPeerConnection(configuration);
+      peerConnectionRef.current.onicecandidate = (e) => {
+        const message = {
+          callingId,
+          type: "candidate",
+          callersInfo,
+          candidate: e.candidate?.candidate || null,
+          sdpMid: e.candidate?.sdpMid,
+          sdpMLineIndex: e.candidate?.sdpMLineIndex,
+        };
+        socket.emit("webrtc_call", message);
+      };
+      peerConnectionRef.current.ontrack = (e) => {
+        if (remoteVideo.current) remoteVideo.current.srcObject = e.streams[0];
+      };
+      if (peerConnectionRef.current && localStreamRef.current)
+        localStreamRef.current
+          .getTracks()
+          .forEach((track) =>
+            peerConnectionRef.current!.addTrack(track, localStreamRef.current!)
+          );
+      const offer = await peerConnectionRef.current.createOffer();
+      socket.emit("webrtc_call", {
+        callingId,
+        type: "offer",
+        callersInfo,
+        sdp: offer.sdp,
+      });
+      await peerConnectionRef.current.setLocalDescription(offer);
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  // Callee answer offer from caller
   const handleOffer = async (offer: RTCSessionDescriptionInit) => {
     if (peerConnectionRef.current) {
       console.error("existing peerconnection");
@@ -348,6 +409,7 @@ const Page = () => {
     }
   };
 
+  // Caller handle answer from callee
   const handleAnswer = async (answer: RTCSessionDescriptionInit) => {
     if (!peerConnectionRef.current) {
       console.error("no peerconnection");
@@ -360,6 +422,7 @@ const Page = () => {
     }
   };
 
+  // Handle candidate from other
   const handleCandidate = async (candidate: RTCIceCandidateInit) => {
     try {
       if (!peerConnectionRef.current) {
@@ -372,46 +435,7 @@ const Page = () => {
     }
   };
 
-  const makeCall = async () => {
-    try {
-      socket.emit("change_call_setting", {
-        callingId,
-        value: myCurrentMedia.current,
-      });
-      peerConnectionRef.current = new RTCPeerConnection(configuration);
-      peerConnectionRef.current.onicecandidate = (e) => {
-        const message = {
-          callingId,
-          type: "candidate",
-          callersInfo,
-          candidate: e.candidate?.candidate || null,
-          sdpMid: e.candidate?.sdpMid,
-          sdpMLineIndex: e.candidate?.sdpMLineIndex,
-        };
-        socket.emit("webrtc_call", message);
-      };
-      peerConnectionRef.current.ontrack = (e) => {
-        if (remoteVideo.current) remoteVideo.current.srcObject = e.streams[0];
-      };
-      if (peerConnectionRef.current && localStreamRef.current)
-        localStreamRef.current
-          .getTracks()
-          .forEach((track) =>
-            peerConnectionRef.current!.addTrack(track, localStreamRef.current!)
-          );
-      const offer = await peerConnectionRef.current.createOffer();
-      socket.emit("webrtc_call", {
-        callingId,
-        type: "offer",
-        callersInfo,
-        sdp: offer.sdp,
-      });
-      await peerConnectionRef.current.setLocalDescription(offer);
-    } catch (err) {
-      console.error(err);
-    }
-  };
-
+  // Hang up
   const hangup = async () => {
     console.log("Hanging up");
     if (peerConnectionRef.current) {
@@ -426,6 +450,7 @@ const Page = () => {
     return router.push("/home");
   };
 
+  // Handle hang up button click
   const handleHangupBtnClick = async () => {
     hangup();
     socket.emit("webrtc_call", {
@@ -435,6 +460,7 @@ const Page = () => {
     });
   };
 
+  // Toggle self video
   const toggleVideo = () => {
     setMediaSettings((prev) => {
       const newVideoOn = !prev.videoOn;
@@ -456,6 +482,7 @@ const Page = () => {
     });
   };
 
+  // Toggle self mic
   const toggleMic = () => {
     setMediaSettings((prev) => {
       const newMicOn = !prev.micOn;
@@ -477,6 +504,7 @@ const Page = () => {
     });
   };
 
+  // Toggle other's sound
   const muteSound = () => {
     if (!remoteVideo.current) return;
     if (mediaSettings.soundOn) {
