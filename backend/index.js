@@ -53,7 +53,7 @@ io.on("connection", (socket) => {
   // Handle messages from the client
   socket.on("send_message", (message) => {
     console.log("Message received:", message);
-    socket.to(message.conversationId).emit("receive_message", message);
+    socket.to(message.conversationId).emit("send_message", message);
   });
 
   // Handle sent friend request
@@ -61,31 +61,31 @@ io.on("connection", (socket) => {
     console.log("Friend request received:", friendRequest);
     const senderId = friendRequest.sender.senderId;
     const receiverId = friendRequest.receiver.receiverId;
-    io.to(senderId).emit("receive_friend_request", friendRequest);
-    io.to(receiverId).emit("receive_friend_request", friendRequest);
+    io.to(senderId).emit("send_friend_request", friendRequest);
+    io.to(receiverId).emit("send_friend_request", friendRequest);
   });
 
   // Handle rejected or canceld friend request
   socket.on("cancel_reject_friend_request", (friendRequest) => {
     const { senderId, receiverId } = friendRequest;
     console.log("Friend request canceled or rejected:", friendRequest);
-    io.to(senderId).emit("canceled_rejected_friend_request", friendRequest);
-    io.to(receiverId).emit("canceled_rejected_friend_request", friendRequest);
+    io.to(senderId).emit("cancel_reject_friend_request", friendRequest);
+    io.to(receiverId).emit("cancel_reject_friend_request", friendRequest);
   });
 
   // Handle accepted friend request
   socket.on("accept_friend_request", (friendRequest) => {
     console.log("Friend request accepted:", friendRequest);
     const { senderId, receiverId } = friendRequest;
-    io.to(senderId).emit("accepted_friend_request", friendRequest);
-    io.to(receiverId).emit("accepted_friend_request", friendRequest);
+    io.to(senderId).emit("accept_friend_request", friendRequest);
+    io.to(receiverId).emit("accept_friend_request", friendRequest);
   });
 
   // Handle created group
   socket.on("create_group", (group) => {
     console.log("Group created:", group);
     for (const participantId of group.participantIDs) {
-      io.to(participantId).emit("group_created", group);
+      io.to(participantId).emit("create_group", group);
     }
   });
 

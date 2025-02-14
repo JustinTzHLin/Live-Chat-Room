@@ -9,9 +9,11 @@ import {
 } from "@/components/ui/dialog";
 import * as VisuallyHidden from "@radix-ui/react-visually-hidden";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { MessageSquareMore } from "lucide-react";
+import { MessageSquareMore, Phone } from "lucide-react";
 import { useUserStore } from "@/stores/userStore";
 import getNameInitials from "@/utils/getNameInitials";
+import useUnexpectedErrorHandler from "@/utils/useUnexpectedErrorHandler";
+import axiosInstance from "@/lib/axios";
 
 const ContactInfoDialog = ({
   contactInfoDialogOpen,
@@ -28,6 +30,7 @@ const ContactInfoDialog = ({
   };
   setCurrentSection: (section: string) => void;
 }) => {
+  const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL;
   const conversations = useUserStore(
     (state) => state.userChatData.conversations
   );
@@ -35,9 +38,35 @@ const ContactInfoDialog = ({
     () => Object.values(conversations),
     [conversations]
   );
-  const { setCurrentChatInfo, setMainPageSectionFlow } = useUserStore(
-    (state) => state
-  );
+  const { setCurrentChatInfo, setMainPageSectionFlow, userInformation } =
+    useUserStore((state) => state);
+  const { handleUnexpectedError } = useUnexpectedErrorHandler();
+
+  const handleCalltoFriend = async () => {
+    const callersInfo = {
+      caller: {
+        id: userInformation.userId,
+        username: userInformation.username,
+        email: userInformation.email,
+      },
+      callee: contactInfo,
+    };
+    const callTab = window.open("", "_blank", "width=400,height=1000");
+    try {
+      const issueCallersInfoResponse = await axiosInstance.post(
+        `${BACKEND_URL}/token/issueOtherToken`,
+        callersInfo,
+        { withCredentials: true }
+      );
+      if (issueCallersInfoResponse.data.generatedToken && callTab)
+        callTab.location.href = `/stream?callersInfoToken=${issueCallersInfoResponse.data.otherToken}`;
+    } catch (err) {
+      callTab?.close();
+      handleUnexpectedError(err);
+    } finally {
+      setContactInfoDialogOpen(false);
+    }
+  };
 
   return (
     <Dialog
@@ -57,26 +86,38 @@ const ContactInfoDialog = ({
             </Avatar>
             <div className="text-xl font-medium">{contactInfo.username}</div>
             <DialogDescription>{contactInfo.email}</DialogDescription>
-            <Button
-              variant="ghost"
-              size="icon"
-              className="text-muted-foreground w-10 h-10"
-              onClick={() => {
-                setContactInfoDialogOpen(false);
-                setCurrentChatInfo(
-                  (prev: any) =>
-                    userConversationsData.find(
-                      (conversation) =>
-                        conversation.type === "private" &&
-                        conversation.participantIDs.includes(contactInfo.id)
-                    ) || prev
-                );
-                setCurrentSection("chat");
-                setMainPageSectionFlow((prev) => [...prev, "chat"]);
-              }}
-            >
-              <MessageSquareMore style={{ width: "26px", height: "26px" }} />
-            </Button>
+            <div className="flex gap-2">
+              <Button
+                variant="ghost"
+                size="icon"
+                type="button"
+                className="text-muted-foreground w-10 h-10"
+                onClick={() => {
+                  setContactInfoDialogOpen(false);
+                  setCurrentChatInfo(
+                    (prev: any) =>
+                      userConversationsData.find(
+                        (conversation) =>
+                          conversation.type === "private" &&
+                          conversation.participantIDs.includes(contactInfo.id)
+                      ) || prev
+                  );
+                  setCurrentSection("chat");
+                  setMainPageSectionFlow((prev) => [...prev, "chat"]);
+                }}
+              >
+                <MessageSquareMore style={{ width: "26px", height: "26px" }} />
+              </Button>
+              <Button
+                variant="ghost"
+                size="icon"
+                type="button"
+                className="text-muted-foreground w-10 h-10"
+                onClick={handleCalltoFriend}
+              >
+                <Phone style={{ width: "24px", height: "24px" }} />
+              </Button>
+            </div>
           </div>
         </DialogHeader>
       </DialogContent>

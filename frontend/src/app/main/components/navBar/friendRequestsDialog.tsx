@@ -89,19 +89,19 @@ const FriendRequestsDialog = ({
       }
     };
     if (socket) {
-      socket.on("receive_friend_request", handleSocketSentFriendRequest);
+      socket.on("send_friend_request", handleSocketSentFriendRequest);
       socket.on(
-        "canceled_rejected_friend_request",
+        "cancel_reject_friend_request",
         handleSocketFriendRequestAction
       );
-      socket.on("accepted_friend_request", handleSocketFriendRequestAction);
+      socket.on("accept_friend_request", handleSocketFriendRequestAction);
       return () => {
-        socket.off("receive_friend_request", handleSocketSentFriendRequest);
+        socket.off("send_friend_request", handleSocketSentFriendRequest);
         socket.off(
-          "canceled_rejected_friend_request",
+          "cancel_reject_friend_request",
           handleSocketFriendRequestAction
         );
-        socket.off("accepted_friend_request", handleSocketFriendRequestAction);
+        socket.off("accept_friend_request", handleSocketFriendRequestAction);
       };
     }
   }, [socket, userId]);

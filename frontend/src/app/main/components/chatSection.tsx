@@ -96,17 +96,18 @@ const ChatSection = ({
       },
       callee,
     };
-    const issueCallersInfoResponse = await axiosInstance.post(
-      `${BACKEND_URL}/token/issueOtherToken`,
-      callersInfo,
-      { withCredentials: true }
-    );
-    if (issueCallersInfoResponse.data.generatedToken) {
-      window.open(
-        `/stream?callersInfoToken=${issueCallersInfoResponse.data.otherToken}`,
-        "_blank",
-        "width=400,height=1000"
+    const callTab = window.open("", "_blank", "width=400,height=1000");
+    try {
+      const issueCallersInfoResponse = await axiosInstance.post(
+        `${BACKEND_URL}/token/issueOtherToken`,
+        callersInfo,
+        { withCredentials: true }
       );
+      if (issueCallersInfoResponse.data.generatedToken && callTab)
+        callTab.location.href = `/stream?callersInfoToken=${issueCallersInfoResponse.data.otherToken}`;
+    } catch (err) {
+      callTab?.close();
+      handleUnexpectedError(err);
     }
   };
 

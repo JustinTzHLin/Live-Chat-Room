@@ -89,21 +89,36 @@ const Page = () => {
                     className="h-10 w-10"
                     variant="outline"
                     onClick={async () => {
-                      const issueCallersInfoResponse = await axiosInstance.post(
-                        `${BACKEND_URL}/token/issueOtherToken`,
-                        {
-                          callersInfo: e.callersInfo,
-                          callingId: e.newCallingId,
-                        },
-                        { withCredentials: true }
+                      const callTab = window.open(
+                        "",
+                        "_blank",
+                        "width=400,height=1000"
                       );
-                      if (issueCallersInfoResponse.data.generatedToken) {
-                        window.open(
-                          `/stream?callersInfoToken=${issueCallersInfoResponse.data.otherToken}`,
-                          "_blank",
-                          "width=400,height=1000"
-                        );
-                        dismiss(toastId);
+                      try {
+                        const issueCallersInfoResponse =
+                          await axiosInstance.post(
+                            `${BACKEND_URL}/token/issueOtherToken`,
+                            {
+                              callersInfo: e.callersInfo,
+                              callingId: e.newCallingId,
+                            },
+                            { withCredentials: true }
+                          );
+                        if (
+                          issueCallersInfoResponse.data.generatedToken &&
+                          callTab
+                        ) {
+                          callTab.location.href = `/stream?callersInfoToken=${issueCallersInfoResponse.data.otherToken}`;
+                          // window.open(
+                          //   `/stream?callersInfoToken=${issueCallersInfoResponse.data.otherToken}`,
+                          //   "_blank",
+                          //   "width=400,height=1000"
+                          // );
+                          dismiss(toastId);
+                        }
+                      } catch (err) {
+                        callTab?.close();
+                        handleUnexpectedError(err);
                       }
                     }}
                   >
@@ -265,16 +280,13 @@ const Page = () => {
     };
     // send data and save it on server
     if (socket) {
-      socket.on("receive_message", handleSocketSentMessage);
-      socket.on("accepted_friend_request", handleSocketAcceptedFriendRequest);
-      socket.on("group_created", handleSocketCreatedGroup);
+      socket.on("send_message", handleSocketSentMessage);
+      socket.on("accept_friend_request", handleSocketAcceptedFriendRequest);
+      socket.on("create_group", handleSocketCreatedGroup);
       return () => {
-        socket.off("receive_message", handleSocketSentMessage);
-        socket.off(
-          "accepted_friend_request",
-          handleSocketAcceptedFriendRequest
-        );
-        socket.off("group_created", handleSocketCreatedGroup);
+        socket.off("send_message", handleSocketSentMessage);
+        socket.off("accept_friend_request", handleSocketAcceptedFriendRequest);
+        socket.off("create_group", handleSocketCreatedGroup);
       };
     }
   }, [socket, userInformation.userId]);
