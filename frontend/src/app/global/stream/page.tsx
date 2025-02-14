@@ -1,13 +1,6 @@
 "use client";
 
-import {
-  useRef,
-  useEffect,
-  useState,
-  Suspense,
-  useCallback,
-  useMemo,
-} from "react";
+import { useRef, useEffect, useState, useCallback, useMemo } from "react";
 import { Button } from "@/components/ui/button";
 import {
   Video,
@@ -18,13 +11,9 @@ import {
   VolumeOff,
   Phone,
 } from "lucide-react";
-import { useUserStore, Friend } from "@/stores/userStore";
 import { useSocketStore } from "@/stores/socketStore";
-import useUnexpectedErrorHandler from "@/utils/useUnexpectedErrorHandler";
 import { useToast } from "@/hooks/use-toast";
-import { useSearchParams } from "next/navigation";
 import { useRouter } from "next/navigation";
-import axiosInstance from "@/lib/axios";
 
 const configuration = {
   iceServers: [
@@ -36,10 +25,9 @@ const configuration = {
 };
 
 const Page = () => {
-  const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL;
+  const callingId = "global";
   const [currentStep, setCurrentStep] = useState(0);
   const [callSetted, setCallSetted] = useState(false);
-  const [callingId, setCallingId] = useState("");
   const [callSettings, setCallSettings] = useState({
     videoShareBtnDisabled: true,
     hangupBtnDisabled: true,
@@ -53,83 +41,19 @@ const Page = () => {
     p2VideoOn: false,
     p2MicOn: true,
   });
-  const myCurrentMedia = useRef({
+  const myCurrentMediaRef = useRef({
     videoOn: false,
     micOn: true,
   });
-  interface CallersInfo {
-    caller: Friend;
-    callee: Friend;
-  }
-  const [callersInfo, setCallersInfo] = useState<CallersInfo | null>(null);
   const peerConnectionRef = useRef<null | RTCPeerConnection>(null);
   const localStreamRef = useRef<null | MediaStream>(null);
   const localVideo = useRef<null | HTMLVideoElement>(null);
   const remoteVideo = useRef<null | HTMLVideoElement>(null);
-  const { userInformation, setUserInformation } = useUserStore(
-    (state) => state
-  );
   const { socket, connect, disconnect } = useSocketStore((state) => state);
-  const { handleUnexpectedError } = useUnexpectedErrorHandler();
   const { toast } = useToast();
-  const searchParams = useSearchParams();
   const router = useRouter();
 
-  // Step 1-1: Verify callers info token
-  const verifyCallersInfoToken = useCallback(async () => {
-    try {
-      const callersInfoToken = searchParams.get("callersInfoToken");
-      if (!callersInfoToken) {
-        toast({
-          variant: "destructive",
-          title: "Info not found",
-          description: "Please try again.",
-          duration: 3000,
-        });
-        window.close();
-        return router.push("/home");
-      }
-      const verifyCallersInfoTokenResponse = await axiosInstance.post(
-        `${BACKEND_URL}/token/verifyParamToken`,
-        {
-          token: callersInfoToken,
-        },
-        { withCredentials: true }
-      );
-      if (!verifyCallersInfoTokenResponse.data.tokenVerified) {
-        toast({
-          variant: "destructive",
-          title: "Token malformed",
-          description: "The token is malformed. Please try again.",
-          duration: 3000,
-        });
-        window.close();
-        return router.push("/home");
-      }
-      return verifyCallersInfoTokenResponse.data.decoded;
-    } catch (err) {
-      handleUnexpectedError(err);
-    }
-  }, []);
-
-  // Step 1-2: Set callers info and calling id
-  const setCallersInfoAndCallingId = useCallback(async (decodedData: any) => {
-    if ("callingId" in decodedData) {
-      const { callersInfo: callersInfoDecoded, callingId: callingIdDecoded } =
-        decodedData;
-      setCallingId(callingIdDecoded);
-      setCallersInfo(callersInfoDecoded);
-    } else {
-      const newCallingId = `${Date.now().toString(36)}-${Math.random()
-        .toString(36)
-        .substring(2, 10)}`;
-      setCallingId(newCallingId);
-      setCallersInfo(decodedData);
-    }
-    setCurrentStep(1);
-  }, []);
-
-  // Step 2: Connect socket
+  // Step 1: Connect socket
   const connectSocket = useCallback(() => {
     if (socket) return;
     const onMaxRetries = () => {
@@ -142,17 +66,16 @@ const Page = () => {
       router.push("/home");
     };
     connect(onMaxRetries);
-    setCurrentStep(2);
+    setCurrentStep(1);
   }, [socket]);
 
-  // Step 3: Set socket listeners
+  // Step 2: Set socket listeners
   const setSocketListeners = useCallback(() => {
     if (!socket) return;
     const handleWebRTCMessage = (
       e: (RTCSessionDescriptionInit | RTCIceCandidateInit) & {
         callingId: string;
         type: string;
-        callersInfo: CallersInfo;
       }
     ) => {
       if (!localStreamRef.current) return console.log("not ready yet");
@@ -169,7 +92,7 @@ const Page = () => {
             return console.log("already in call, ignoring");
           else return makeCall();
         case "bye":
-          if (peerConnectionRef.current) return hangup();
+          if (peerConnectionRef.current) return guestHangup();
           else return console.log("not in call, ignoring");
         default:
           console.log("unhandled", e);
@@ -191,59 +114,17 @@ const Page = () => {
     };
     socket.on("webrtc_call", handleWebRTCMessage);
     socket.on("change_call_setting", handleCallSettingChange);
-    setCurrentStep(3);
+    socket.emit("join_room", callingId);
+    setCurrentStep(2);
     return () => {
       socket.off("webrtc_call", handleWebRTCMessage);
       socket.off("change_call_setting", handleCallSettingChange);
     };
   }, [socket]);
 
-  // Step 4: Verify logged in token
-  const verifyLoggedInToken = useCallback(async () => {
-    if (!callingId) return;
-    try {
-      const tokenVerified = await axiosInstance(
-        `${BACKEND_URL}/token/verifyLoggedInToken`,
-        { withCredentials: true }
-      );
-      if (tokenVerified.data.tokenVerified) {
-        socket.emit("join_room", callingId);
-        setUserInformation(tokenVerified.data.user);
-        socket.emit("join_room", tokenVerified.data.user.userId);
-        setCurrentStep(4);
-      } else {
-        router.push("/home");
-        if (tokenVerified.data.errorMessage === "no token found")
-          toast({
-            title: "No token found",
-            description: "Please login instead.",
-            duration: 3000,
-          });
-        else if (tokenVerified.data.errorMessage === "jwt malformed")
-          toast({
-            variant: "destructive",
-            title: "Token malformed",
-            description: "The token is malformed. Please login instead.",
-            duration: 3000,
-          });
-        else if (tokenVerified.data.errorMessage === "jwt expired")
-          toast({
-            variant: "destructive",
-            title: "Token expired",
-            description: "The token has expired. Please login instead.",
-            duration: 3000,
-          });
-        else throw new Error("Token not verified");
-      }
-    } catch (err) {
-      router.push("/home");
-      handleUnexpectedError(err, "Please login instead.");
-    }
-  }, [socket, callingId]);
-
-  // Step 5: Call initialization
+  // Step 3: Call initialization
   const callInitialization = useCallback(async () => {
-    if (!userInformation.userId || !callersInfo) return;
+    if (!socket) return;
     try {
       localStreamRef.current = await navigator.mediaDevices.getUserMedia({
         video: true,
@@ -256,48 +137,31 @@ const Page = () => {
           track.enabled = false;
         });
         setCallSetted(true);
-        if (callersInfo?.callee.id === userInformation.userId) {
-          socket.emit("webrtc_call", {
-            callingId: callingId,
-            type: "ready",
-            callersInfo,
-          });
-        } else {
-          socket.emit("webrtc_call", {
-            newCallingId: callingId,
-            callingId: callersInfo?.callee.id,
-            type: "call_request",
-            callersInfo,
-          });
-        }
+        socket.emit("webrtc_call", {
+          callingId: callingId,
+          type: "ready",
+        });
+        socket.emit("webrtc_call", {
+          callingId: callingId,
+          type: "call_request",
+        });
       } else throw new Error("No local video");
     } catch (err) {
       console.error(err);
     }
-  }, [userInformation.userId, callersInfo]);
+  }, [socket]);
 
   // Steps array for call setup
   const setUpfuncs = useMemo(
     () => [
-      async () => {
-        const decodedData = await verifyCallersInfoToken();
-        if (decodedData) setCallersInfoAndCallingId(decodedData);
-      },
       () => {
         connectSocket();
         return () => disconnect();
       },
       setSocketListeners,
-      verifyLoggedInToken,
       callInitialization,
     ],
-    [
-      verifyCallersInfoToken,
-      connectSocket,
-      setSocketListeners,
-      verifyLoggedInToken,
-      callInitialization,
-    ]
+    [connectSocket, setSocketListeners, callInitialization]
   );
 
   // Execute steps for call setup
@@ -307,12 +171,12 @@ const Page = () => {
       const result = await stepFunction();
       if (typeof result === "function") return result;
     } else console.log(`Invalid step: ${currentStep}`);
-  }, [currentStep, setUpfuncs]);
+  }, [setUpfuncs, currentStep]);
 
   // Execute steps to set up call based on current step
   useEffect(() => {
     executeSteps();
-  }, [currentStep, socket, callingId, userInformation.userId, callersInfo]);
+  }, [currentStep, socket]);
 
   // Set button disabled status
   useEffect(() => {
@@ -329,14 +193,13 @@ const Page = () => {
     try {
       socket.emit("change_call_setting", {
         callingId,
-        value: myCurrentMedia.current,
+        value: myCurrentMediaRef.current,
       });
       peerConnectionRef.current = new RTCPeerConnection(configuration);
       peerConnectionRef.current.onicecandidate = (e) => {
         const message = {
           callingId,
           type: "candidate",
-          callersInfo,
           candidate: e.candidate?.candidate || null,
           sdpMid: e.candidate?.sdpMid,
           sdpMLineIndex: e.candidate?.sdpMLineIndex,
@@ -356,14 +219,13 @@ const Page = () => {
       socket.emit("webrtc_call", {
         callingId,
         type: "offer",
-        callersInfo,
         sdp: offer.sdp,
       });
       await peerConnectionRef.current.setLocalDescription(offer);
     } catch (err) {
       console.error(err);
     }
-  }, [socket, callingId, callersInfo]);
+  }, [socket]);
 
   // Callee answer offer from caller
   const handleOffer = useCallback(
@@ -378,7 +240,6 @@ const Page = () => {
           const message = {
             callingId,
             type: "candidate",
-            callersInfo,
             candidate: e.candidate?.candidate || null,
             sdpMid: e.candidate?.sdpMid,
             sdpMLineIndex: e.candidate?.sdpMLineIndex,
@@ -399,12 +260,10 @@ const Page = () => {
             );
         }
         await peerConnectionRef.current.setRemoteDescription(offer);
-
         const answer = await peerConnectionRef.current.createAnswer();
         socket.emit("webrtc_call", {
           callingId,
           type: "answer",
-          callersInfo,
           sdp: answer.sdp,
         });
         await peerConnectionRef.current.setLocalDescription(answer);
@@ -412,7 +271,7 @@ const Page = () => {
         console.error(err);
       }
     },
-    [socket, callingId, callersInfo]
+    [socket]
   );
 
   // Caller handle answer from callee
@@ -458,9 +317,20 @@ const Page = () => {
       localStreamRef.current.getTracks().forEach((track) => track.stop());
     localStreamRef.current = null;
     setCallSetted(false);
-    window.close();
-    return router.push("/home");
+    setTimeout(() => {
+      router.push("/home");
+    }, 5000);
   }, []);
+
+  // Guest hang up
+  const guestHangup = useCallback(async () => {
+    hangup();
+    toast({
+      title: "Guest has ended the call",
+      description: "You will be redirected to the home page in 5 seconds.",
+      duration: 5000,
+    });
+  }, [hangup]);
 
   // Handle hang up button click
   const handleHangupBtnClick = useCallback(async () => {
@@ -468,9 +338,13 @@ const Page = () => {
     socket.emit("webrtc_call", {
       callingId,
       type: "bye",
-      callersInfo,
     });
-  }, [socket, hangup, callingId, callersInfo]);
+    toast({
+      title: "Call ended",
+      description: "You will be redirected to the home page in 5 seconds.",
+      duration: 5000,
+    });
+  }, [hangup, socket]);
 
   // Toggle self video
   const toggleVideo = useCallback(() => {
@@ -486,13 +360,13 @@ const Page = () => {
           videoOn: newVideoOn,
         },
       });
-      myCurrentMedia.current = {
-        ...myCurrentMedia.current,
+      myCurrentMediaRef.current = {
+        ...myCurrentMediaRef.current,
         videoOn: newVideoOn,
       };
       return { ...prev, videoOn: newVideoOn };
     });
-  }, [socket, callingId]);
+  }, [socket]);
 
   // Toggle self mic
   const toggleMic = useCallback(() => {
@@ -508,20 +382,20 @@ const Page = () => {
           micOn: newMicOn,
         },
       });
-      myCurrentMedia.current = {
-        ...myCurrentMedia.current,
+      myCurrentMediaRef.current = {
+        ...myCurrentMediaRef.current,
         micOn: newMicOn,
       };
       return { ...prev, micOn: newMicOn };
     });
-  }, [socket, callingId]);
+  }, [socket]);
 
   // Toggle other's sound
   const muteSound = useCallback(() => {
     if (!remoteVideo.current) return;
     remoteVideo.current.muted = mediaSettings.soundOn;
     setMediaSettings((prev) => ({ ...prev, soundOn: !mediaSettings.soundOn }));
-  }, [mediaSettings]);
+  }, [mediaSettings.soundOn]);
 
   return (
     currentStep > 0 && (
@@ -539,8 +413,7 @@ const Page = () => {
             )}
             <div className="w-full flex items-center justify-end absolute top-full left-full translate-x-[-100%] translate-y-[-100%] text-lg text-white">
               <div className="flex items-center bg-slate-800 bg-opacity-70 rounded-lg m-1 px-1.5 gap-1">
-                {userInformation.username}
-                <p className="text-sm font-semibold">(You)</p>
+                <p className="text-sm font-semibold">You</p>
                 {!mediaSettings.micOn && (
                   <MicOff
                     strokeWidth={2.5}
@@ -563,11 +436,7 @@ const Page = () => {
             )}
             <div className="w-full flex items-center justify-end absolute top-full left-full translate-x-[-100%] translate-y-[-100%] text-lg text-white">
               <div className="flex items-center justify-center bg-slate-800 bg-opacity-70 rounded-lg m-1 px-1.5">
-                {userInformation.userId === callersInfo?.caller.id
-                  ? callersInfo?.callee.username
-                  : userInformation.userId === callersInfo?.callee.id
-                  ? callersInfo?.caller.username
-                  : ""}
+                <p className="text-sm font-semibold">Guest</p>
                 {!mediaSettings.p2MicOn && (
                   <MicOff
                     strokeWidth={2.5}
@@ -627,12 +496,4 @@ const Page = () => {
   );
 };
 
-const App = () => {
-  return (
-    <Suspense>
-      <Page />
-    </Suspense>
-  );
-};
-
-export default App;
+export default Page;

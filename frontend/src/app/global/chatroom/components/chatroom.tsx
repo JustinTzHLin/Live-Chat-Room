@@ -7,17 +7,17 @@ const ChatRoom = () => {
   const socket = useSocketStore((state) => state.socket);
   const [message, setMessage] = useState<string>("");
   const [messages, setMessages] = useState<
-    Array<{ text: string; createdAt: Date; conversationId?: string }>
+    Array<{ text: string; createdAt: string; conversationId?: string }>
   >([]);
 
   useEffect(() => {
     if (socket) {
       socket.emit("join_room", "global");
       socket.on(
-        "receive_message",
+        "send_message",
         (message: {
           text: string;
-          createdAt: Date;
+          createdAt: string;
           conversationId: string;
         }) => {
           console.log("Received message:", message);
@@ -31,14 +31,22 @@ const ChatRoom = () => {
     e.preventDefault();
     console.log("Sending message:", message);
     if (message) {
+      const createdAt = new Date().toLocaleString("en-US", {
+        year: "numeric",
+        month: "numeric",
+        day: "numeric",
+        hour: "numeric",
+        minute: "numeric",
+        hour12: true,
+      });
       setMessages((prevMessages) => [
         ...prevMessages,
-        { text: message, createdAt: new Date() },
+        { text: message, createdAt },
       ]);
       socket.emit("send_message", {
         conversationId: "global",
         text: message,
-        createdAt: new Date(),
+        createdAt,
       });
       setMessage("");
     }
@@ -51,16 +59,7 @@ const ChatRoom = () => {
         {messages.map((msg, index) => (
           <div key={index} className="flex flex-col justify-between px-2">
             <div className="text-base break-words">{msg.text}</div>
-            <div className="text-xs text-muted-foreground">
-              {msg.createdAt.toLocaleString("en-US", {
-                year: "numeric",
-                month: "numeric",
-                day: "numeric",
-                hour: "numeric",
-                minute: "numeric",
-                hour12: true,
-              })}
-            </div>
+            <div className="text-xs text-muted-foreground">{msg.createdAt}</div>
           </div>
         ))}
       </div>

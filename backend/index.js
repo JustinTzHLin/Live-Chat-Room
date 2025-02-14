@@ -67,8 +67,8 @@ io.on("connection", (socket) => {
 
   // Handle rejected or canceld friend request
   socket.on("cancel_reject_friend_request", (friendRequest) => {
-    const { senderId, receiverId } = friendRequest;
     console.log("Friend request canceled or rejected:", friendRequest);
+    const { senderId, receiverId } = friendRequest;
     io.to(senderId).emit("cancel_reject_friend_request", friendRequest);
     io.to(receiverId).emit("cancel_reject_friend_request", friendRequest);
   });
