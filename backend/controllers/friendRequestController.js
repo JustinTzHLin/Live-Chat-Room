@@ -32,7 +32,7 @@ friendRequestController.sendFriendRequest = async (req, res, next) => {
         );
       }
     } else {
-      friendRequest = await FriendRequest.create({
+      friendRequest = await FriendRequest.insertOne({
         senderId,
         receiverId,
       });

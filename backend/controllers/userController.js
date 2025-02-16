@@ -69,12 +69,11 @@ userController.createUser = async (req, res, next) => {
     const { username, email, password } = req.body;
     const salt = await bcrypt.genSalt(SALT_WORK_FACTOR);
     const hashedPassword = await bcrypt.hash(password, salt);
-    const user = new User({
+    const authenticatedUser = await User.insertOne({
       username,
       email,
       password: hashedPassword,
     });
-    const authenticatedUser = await user.save();
     res.locals.result.userCreated = true;
     res.locals.result.authenticatedUser = authenticatedUser;
     return next();
@@ -214,8 +213,7 @@ userController.createGroup = async (req, res, next) => {
   }
   const { newGroup } = req.body;
   try {
-    const group = new Conversation(newGroup);
-    const createdGroup = await group.save();
+    const createdGroup = await Conversation.insertOne(newGroup);
     res.locals.result = {
       groupCreated: true,
       createdGroup,
