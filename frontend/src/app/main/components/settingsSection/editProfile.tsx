@@ -1,8 +1,9 @@
 import { useState, useEffect, useCallback } from "react";
 import { useToast } from "@/hooks/use-toast";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import EditPictureDialog from "./editPictureDialog";
 import { useUserStore } from "@/stores/userStore";
 import { useTheme } from "next-themes";
 import getNameInitials from "@/utils/getNameInitials";
@@ -25,6 +26,9 @@ const EditProfile = () => {
   const { userInformation, setUsername, setJicId } = useUserStore(
     (state) => state
   );
+  const [editPicture, setEditPicture] = useState<boolean>(false);
+  const [editPictureDialogOpen, setEditPictureDialogOpen] =
+    useState<boolean>(false);
   const [editUsername, setEditUsername] = useState<boolean>(false);
   const [newUsername, setNewUsername] = useState<string>(
     userInformation.username
@@ -107,13 +111,37 @@ const EditProfile = () => {
     }
   }, [newJicId, userInformation.jicId]);
 
+  useEffect(() => {
+    setEditPicture(editPictureDialogOpen);
+  }, [editPictureDialogOpen]);
+
   return (
     <div className="flex flex-col justify-center items-center w-full gap-4 p-4">
-      <Avatar className="w-20 h-20">
-        <AvatarFallback className="text-3xl font-semibold">
-          {getNameInitials(userInformation.username)}
-        </AvatarFallback>
-      </Avatar>
+      <div className="relative p-0.5">
+        <Avatar className="w-20 h-20">
+          <AvatarImage
+            src={
+              userInformation.profilePic
+                ? `data:${userInformation.profilePic.type};base64,${Buffer.from(
+                    userInformation.profilePic.buffer.data
+                  ).toString("base64")}`
+                : undefined
+            }
+          />
+          <AvatarFallback className="text-3xl font-semibold">
+            {getNameInitials(userInformation.username)}
+          </AvatarFallback>
+        </Avatar>
+        <Button
+          variant="outline"
+          size="icon"
+          className="absolute bottom-0 right-0 rounded-full text-muted-foreground w-7 h-7 hover:bg-white"
+          disabled={editPicture}
+          onClick={() => setEditPictureDialogOpen(true)}
+        >
+          <PencilLine style={{ width: "18px", height: "18px" }} />
+        </Button>
+      </div>
       <div className="flex justify-center items-center gap-1">
         <div className="text-xl font-medium">{userInformation.username}</div>
         <Button
@@ -235,6 +263,10 @@ const EditProfile = () => {
       <div className="text-sm text-muted-foreground">
         {userInformation.email}
       </div>
+      <EditPictureDialog
+        editPictureDialogOpen={editPictureDialogOpen}
+        setEditPictureDialogOpen={setEditPictureDialogOpen}
+      />
     </div>
   );
 };

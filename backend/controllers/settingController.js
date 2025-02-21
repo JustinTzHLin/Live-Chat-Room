@@ -196,4 +196,42 @@ settingController.updateJicId = async (req, res, next) => {
   }
 };
 
+// change profile picture
+settingController.changeProfilePicture = async (req, res, next) => {
+  if (!res.locals.result.tokenVerified) {
+    res.locals.skipIssueToken = true;
+    return next();
+  }
+  const { userId } = res.locals.result.user;
+  try {
+    const profilePic =
+      req.body.action === "remove"
+        ? null
+        : {
+            name: req.body.name,
+            size: req.body.size,
+            type: req.body.type,
+            buffer: Buffer.from(req.body.arrayBuffer, "base64"),
+          };
+    const updatedUser = await User.findByIdAndUpdate(
+      userId,
+      { profilePic },
+      { new: true }
+    );
+    res.locals.result = {
+      profilePictureChanged: true,
+      authenticatedUser: updatedUser,
+    };
+    return next();
+  } catch (err) {
+    return next({
+      log: `settingController.changeProfilePicture error: ${err}`,
+      status: 500,
+      message: {
+        error: "Error occurred in settingController.changeProfilePicture.",
+      },
+    });
+  }
+};
+
 export default settingController;

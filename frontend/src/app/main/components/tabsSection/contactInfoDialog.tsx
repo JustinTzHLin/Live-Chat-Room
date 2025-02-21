@@ -8,9 +8,9 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import * as VisuallyHidden from "@radix-ui/react-visually-hidden";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { MessageSquareMore, Phone } from "lucide-react";
-import { useUserStore } from "@/stores/userStore";
+import { useUserStore, Friend } from "@/stores/userStore";
 import getNameInitials from "@/utils/getNameInitials";
 import useUnexpectedErrorHandler from "@/utils/useUnexpectedErrorHandler";
 import axiosInstance from "@/lib/axios";
@@ -23,11 +23,7 @@ const ContactInfoDialog = ({
 }: {
   contactInfoDialogOpen: boolean;
   setContactInfoDialogOpen: (open: boolean) => void;
-  contactInfo: {
-    username: string;
-    email: string;
-    id: string;
-  };
+  contactInfo: Friend;
   setCurrentSection: (section: string) => void;
 }) => {
   const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL;
@@ -80,6 +76,15 @@ const ContactInfoDialog = ({
           </VisuallyHidden.Root>
           <div className="flex flex-col justify-center items-center w-full gap-2">
             <Avatar className="w-20 h-20">
+              <AvatarImage
+                src={
+                  contactInfo.profilePic
+                    ? `data:${contactInfo.profilePic.type};base64,${Buffer.from(
+                        contactInfo.profilePic.buffer.data
+                      ).toString("base64")}`
+                    : undefined
+                }
+              />
               <AvatarFallback className="text-3xl font-semibold">
                 {getNameInitials(contactInfo.username)}
               </AvatarFallback>

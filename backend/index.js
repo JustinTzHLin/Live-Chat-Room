@@ -27,8 +27,8 @@ const corsOptions = {
 expressServer.use(cors(corsOptions));
 
 // Other Middleware
-expressServer.use(express.json());
-expressServer.use(express.urlencoded({ extended: true }));
+expressServer.use(express.json({ limit: "16mb" }));
+expressServer.use(express.urlencoded({ limit: "16mb", extended: true }));
 
 // Socket.io server
 const server = createServer(expressServer);

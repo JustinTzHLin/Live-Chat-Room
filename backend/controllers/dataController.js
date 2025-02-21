@@ -15,9 +15,10 @@ dataController.fetchUserFriends = async (req, res, next) => {
         const friend = await User.findById(friendId);
         if (friend) {
           const friendInfo = {
+            id: friend._id,
             email: friend.email,
             username: friend.username,
-            id: friend._id,
+            profilePic: friend.profilePic,
           };
           res.locals.result.friends.push(friendInfo);
         }
@@ -85,6 +86,24 @@ dataController.fetchUserChats = async (req, res, next) => {
       log: `dataController.fetchUserChats error: ${err}`,
       status: 500,
       message: { error: "Error occurred in dataController.fetchUserChats." },
+    });
+  }
+};
+
+dataController.fetchProfilePircture = async (req, res, next) => {
+  if (!res.locals.result.tokenVerified) return next();
+  try {
+    const { userId } = res.locals.result.user;
+    const profilePicObj = await User.findById(userId).select("profilePic");
+    res.locals.result.user.profilePic = profilePicObj.profilePic || null;
+    return next();
+  } catch (err) {
+    return next({
+      log: `dataController.fetchProfilePircture error: ${err}`,
+      status: 500,
+      message: {
+        error: "Error occurred in dataController.fetchProfilePircture.",
+      },
     });
   }
 };

@@ -144,4 +144,12 @@ router.post(
   (req, res) => res.status(200).json(res.locals.result)
 );
 
+router.post(
+  "/changeProfilePicture",
+  tokenController.verifyLoggedInToken,
+  settingController.changeProfilePicture,
+  tokenController.issueToken,
+  (req, res) => res.status(200).json(res.locals.result)
+);
+
 export default router;

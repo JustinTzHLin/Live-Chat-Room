@@ -1,5 +1,15 @@
 import { create } from "zustand";
 
+interface ProfilePic {
+  name: string;
+  size: number;
+  type: string;
+  buffer: {
+    type: string;
+    data: Buffer;
+  };
+}
+
 interface UserInformation {
   userId: string;
   username: string;
@@ -8,6 +18,7 @@ interface UserInformation {
   twoFactor: string;
   theme: string;
   timeZone: string | null;
+  profilePic: ProfilePic | null;
   createdAt: Date;
   lastActive: Date;
 }
@@ -34,6 +45,7 @@ export interface Friend {
   id: string;
   username: string;
   email: string;
+  profilePic: ProfilePic | null;
 }
 
 interface UserChatData {
@@ -106,6 +118,7 @@ export const useUserStore = create<userState>((set) => ({
     twoFactor: "none",
     theme: "system",
     timeZone: null,
+    profilePic: null,
     createdAt: new Date(),
     lastActive: new Date(),
   },

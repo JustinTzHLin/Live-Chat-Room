@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import ContactInfoDialog from "./tabsSection/contactInfoDialog";
-import { useUserStore } from "@/stores/userStore";
+import { useUserStore, Friend } from "@/stores/userStore";
 import getNameInitials from "@/utils/getNameInitials";
 
 const TabsSection = ({
@@ -17,14 +17,11 @@ const TabsSection = ({
   const { userChatData, setCurrentChatInfo, setMainPageSectionFlow } =
     useUserStore((state) => state);
   const [contactInfoDialogOpen, setContactInfoDialogOpen] = useState(false);
-  const [contactInfo, setContactInfo] = useState<{
-    username: string;
-    email: string;
-    id: string;
-  }>({
+  const [contactInfo, setContactInfo] = useState<Friend>({
     username: "",
     email: "",
     id: "",
+    profilePic: null,
   });
 
   return (
