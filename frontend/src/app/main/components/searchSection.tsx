@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { ChevronLeft, X, TextSearch } from "lucide-react";
-import { useUserStore } from "@/stores/userStore";
+import { useUserStore, Friend } from "@/stores/userStore";
 import { Message } from "@/stores/userStore";
 import ContactInfoDialog from "./tabsSection/contactInfoDialog";
 import getNameInitials from "@/utils/getNameInitials";
@@ -15,14 +15,11 @@ const SearchSection = ({
 }) => {
   const [contactInfoDialogOpen, setContactInfoDialogOpen] = useState(false);
   const [searching, setSearching] = useState(false);
-  const [contactInfo, setContactInfo] = useState<{
-    username: string;
-    email: string;
-    id: string;
-  }>({
+  const [contactInfo, setContactInfo] = useState<Friend>({
     username: "",
     email: "",
     id: "",
+    profilePic: null,
   });
   const {
     userChatData,

@@ -44,11 +44,7 @@ const AddFriendDialog = ({
   const socket = useSocketStore((state) => state.socket);
   const [radioValue, setRadioValue] = useState<string>("email");
   const [searchInput, setSearchInput] = useState<string>("");
-  const [searchedUser, setSearchedUser] = useState<Friend | null>({
-    id: "",
-    username: "",
-    email: "",
-  });
+  const [searchedUser, setSearchedUser] = useState<Friend | null>(null);
   const [showQrCode, setShowQrCode] = useState<boolean>(false);
   const [qrCodeUrl, setQrCodeUrl] = useState<string>("");
   const [timeLeft, setTimeLeft] = useState<number>(0);
