@@ -4,22 +4,25 @@
 
 ## 📖 Table of Contents
 
-1. [About Just In Chat](#about-just-in-chat)
-2. [Getting Started](#getting-started)
-3. [Technologies Used](#technologies-used)
+1. [About Just In Chat](#-about-just-in-chat)
+2. [Getting Started](#-getting-started)
+3. [Technologies Used](#-technologies-used)
    - [Frontend](#frontend)
    - [Backend](#backend)
    - [Real-time Communication](#real-time-communication)
-5. [License](#license)
+4. [Local Deployment](#-local-deployment)
+5. [License](#-license)
 
 ## 💬 About Just In Chat
 
-**Just In Chat** is a modern, secure, and private messaging platform designed for real-time communication. With end-to-end encryption and seamless connectivity, it offers a fast, intuitive, and secure chat experience.
+**Just In Chat** is a modern, secure, and privacy-focused messaging platform designed for real-time communication. We prioritizes user privacy with end-to-end encryption and a commitment to minimal data collection.  It offers a fast, intuitive, and secure chat experience, perfect for individuals, teams, or communities who value their privacy.
 
 ## 🚀 Getting Started
 
-Start chatting instantly!  
-👉 [Try it here](https://just-in-chat.vercel.app/)
+Start chatting instantly!
+1. Visit the live demo: 👉 [link](https://just-in-chat.vercel.app/)
+2. Create an account or log in.
+3. Start chatting!
 
 ## 🛠 Technologies Used
 
@@ -45,6 +48,63 @@ Start chatting instantly!
 [![Socket.io](https://img.shields.io/badge/Socket.io-010101?style=for-the-badge&logo=Socket.io&logoColor=white)](https://socket.io/)
 [![WebRTC](https://img.shields.io/badge/WebRTC-333333?style=for-the-badge&logo=WebRTC&logoColor=white)](https://webrtc.org/)
 
+## 💻 Local Deployment
+
+To run **Just In Chat** locally, follow the steps below:
+
+1. **Clone the repository**:
+```bash
+   git clone https://github.com/JustinTzHLin/Live-Chat-Room.git
+   cd Live-Chat-Room
+```
+
+2. **Set up the Frontend:**
+- Navigate to the `frontend` directory and install dependencies:
+```bash
+   cd frontend
+   npm install
+```
+- Create a `.env.local` file in the `frontend` directory and configure the required environment variables.  
+   For reference, you can check the following examples:
+   - [Frontend Environment Variables](frontend/.env.example)
+- For **development** mode, run:
+```bash
+   npm run dev
+```  
+&emsp;&emsp;This will start the frontend on http://localhost:3000.
+- For **production** mode, run:
+```bash
+   npm run build
+   npm start
+```
+&emsp;&emsp;This will start the production build of the frontend.
+
+3. **Set up the Backend:**
+- Navigate to the `backend` directory and install dependencies:
+```bash
+   cd ../backend
+   npm install
+```
+- Create a `.env.local` file in the `backend` directory and configure the required environment variables.  
+   For reference, you can check the following examples:
+   - [Backend Environment Variables](backend/.env.example)
+- For **development** mode, run:
+```bash
+   npm run dev
+```
+&emsp;&emsp;This will start the backend on http://localhost:8000.
+- For **production** mode, run:
+```bash
+   npm start
+```
+&emsp;&emsp;This will start the backend in production mode.
+
+4. **Connecting Frontend and Backend**
+- Ensure the backend is running before starting the frontend.
+- Make sure the correct URLs are configured in the `.env.local` files for both the frontend and backend.
+
+&emsp;Once both parts are running, you can access the application by visiting http://localhost:3000.
+
 ## 📜 License
 
-Just In Chat is licensed under the **MIT License**, which allows you to freely use, modify, and distribute it without restrictions.
+**Just In Chat** is licensed under the **MIT License**, which allows you to use, modify, and distribute it without restrictions freely.
