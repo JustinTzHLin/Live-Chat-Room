@@ -12,7 +12,7 @@ import {
   Phone,
 } from "lucide-react";
 import { useSocketStore } from "@/stores/socketStore";
-import { webrtcConfig } from "@/lib/webRTCCOnfig";
+import { webrtcConfig } from "@/lib/webrtcConfig";
 import { useToast } from "@/hooks/use-toast";
 import { useRouter } from "next/navigation";
 

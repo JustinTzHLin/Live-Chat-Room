@@ -20,7 +20,7 @@ import {
 } from "lucide-react";
 import { useUserStore, Friend } from "@/stores/userStore";
 import { useSocketStore } from "@/stores/socketStore";
-import { webrtcConfig } from "@/lib/webRTCCOnfig";
+import { webrtcConfig } from "@/lib/webrtcConfig";
 import useUnexpectedErrorHandler from "@/utils/useUnexpectedErrorHandler";
 import { useToast } from "@/hooks/use-toast";
 import { useSearchParams } from "next/navigation";
@@ -292,19 +292,15 @@ const Page = () => {
     ]
   );
 
-  // Execute steps for call setup
-  const executeSteps = useCallback(async () => {
-    const stepFunction = setUpfuncs[currentStep];
-    if (stepFunction) {
-      const result = await stepFunction();
-      if (typeof result === "function") return result;
-    } else console.log(`Invalid step: ${currentStep}`);
-  }, [currentStep, setUpfuncs]);
-
   // Execute steps to set up call based on current step
   useEffect(() => {
-    executeSteps();
-  }, [currentStep, socket, callingId, userInformation.userId, callersInfo]);
+    (async () => {
+      if (currentStep < setUpfuncs.length) {
+        const result = await setUpfuncs[currentStep]();
+        if (typeof result === "function") return result;
+      } else console.log(`Invalid step: ${currentStep}`);
+    })();
+  }, [currentStep, setUpfuncs]);
 
   // Set button disabled status
   useEffect(() => {
