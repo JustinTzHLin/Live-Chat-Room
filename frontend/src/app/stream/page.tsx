@@ -20,20 +20,12 @@ import {
 } from "lucide-react";
 import { useUserStore, Friend } from "@/stores/userStore";
 import { useSocketStore } from "@/stores/socketStore";
+import { webrtcConfig } from "@/lib/webRTCCOnfig";
 import useUnexpectedErrorHandler from "@/utils/useUnexpectedErrorHandler";
 import { useToast } from "@/hooks/use-toast";
 import { useSearchParams } from "next/navigation";
 import { useRouter } from "next/navigation";
 import axiosInstance from "@/lib/axios";
-
-const configuration = {
-  iceServers: [
-    {
-      urls: ["stun:stun1.l.google.com:19302", "stun:stun2.l.google.com:19302"],
-    },
-  ],
-  iceCandidatePoolSize: 10,
-};
 
 const Page = () => {
   const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL;
@@ -331,7 +323,7 @@ const Page = () => {
         callingId,
         value: myCurrentMedia.current,
       });
-      peerConnectionRef.current = new RTCPeerConnection(configuration);
+      peerConnectionRef.current = new RTCPeerConnection(webrtcConfig);
       peerConnectionRef.current.onicecandidate = (e) => {
         const message = {
           callingId,
@@ -373,7 +365,7 @@ const Page = () => {
         return;
       }
       try {
-        peerConnectionRef.current = new RTCPeerConnection(configuration);
+        peerConnectionRef.current = new RTCPeerConnection(webrtcConfig);
         peerConnectionRef.current.onicecandidate = (e) => {
           const message = {
             callingId,

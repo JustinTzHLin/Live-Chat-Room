@@ -12,17 +12,9 @@ import {
   Phone,
 } from "lucide-react";
 import { useSocketStore } from "@/stores/socketStore";
+import { webrtcConfig } from "@/lib/webRTCCOnfig";
 import { useToast } from "@/hooks/use-toast";
 import { useRouter } from "next/navigation";
-
-const configuration = {
-  iceServers: [
-    {
-      urls: ["stun:stun1.l.google.com:19302", "stun:stun2.l.google.com:19302"],
-    },
-  ],
-  iceCandidatePoolSize: 10,
-};
 
 const Page = () => {
   const callingId = "global";
@@ -195,7 +187,7 @@ const Page = () => {
         callingId,
         value: myCurrentMediaRef.current,
       });
-      peerConnectionRef.current = new RTCPeerConnection(configuration);
+      peerConnectionRef.current = new RTCPeerConnection(webrtcConfig);
       peerConnectionRef.current.onicecandidate = (e) => {
         const message = {
           callingId,
@@ -235,7 +227,7 @@ const Page = () => {
         return;
       }
       try {
-        peerConnectionRef.current = new RTCPeerConnection(configuration);
+        peerConnectionRef.current = new RTCPeerConnection(webrtcConfig);
         peerConnectionRef.current.onicecandidate = (e) => {
           const message = {
             callingId,
